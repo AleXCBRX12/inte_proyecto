@@ -82,9 +82,12 @@ TEMPLATES = [
 # ========================
 # DATABASE (Default: PostgreSQL/SQLite, secundario: MongoDB)
 # ========================
+# ========================
+# DATABASE
+# ========================
 import dj_database_url
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
     DATABASES = {
@@ -94,6 +97,7 @@ if DATABASE_URL:
         )
     }
 else:
+    # Si no hay DATABASE_URL, usamos SQLite (solo para local)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
