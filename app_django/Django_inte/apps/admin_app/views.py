@@ -592,6 +592,14 @@ def actualizar_estado(request, id):
 
         # 2. Procesar Integrantes adicionales
         integrantes = solicitud.get("integrantes") or []
+        
+        # Robustez: si integrantes es un string (JSON), lo parseamos
+        if isinstance(integrantes, str):
+            try:
+                integrantes = json.loads(integrantes)
+            except Exception:
+                integrantes = []
+
         for integrante in integrantes:
             i_correo = (integrante.get("correo") or "").strip().lower()
             i_nombre = (integrante.get("nombre") or "Integrante").strip()
@@ -636,7 +644,7 @@ def actualizar_estado(request, id):
     )
 
     # Elimina la solicitud del tablero (aceptada pasa a usuarios, rechazada se descarta).
-    db.solicitudes.delete_one({"_id": solicitud_obj_id})
+    db.solicitudes.delete_one({"_id": solicitud["_id"]})
 
     return JsonResponse({"success": True, "mail_enviado": correo_enviado})
 

@@ -1,30 +1,22 @@
-from pymongo import MongoClient
-from bson import ObjectId
+import os
+import sys
 
-MONGO_URI = "mongodb+srv://milton_user:Mongo123456@incubadoradeproyectoemp.ptri94g.mongodb.net/?retryWrites=true&w=majority"
+# Force the Django context to load the actual database
+sys.path.append('c:\\Users\\milto\\Desktop\\inte2.0-main\\app_django\\Django_inte')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+import django
+django.setup()
 
-def check_roles():
-    try:
-        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
-        db = client["milton_user"]
-        
-        # Check roles
-        roles = list(db.roles.find())
-        print("--- Roles in DB ---")
-        for r in roles:
-            print(f"ID: {r['_id']} ({type(r['_id'])}) | Nombre: {r.get('nombre')}")
-            
-        # Target user's role
-        target_role_id_str = "699eb18f8a2f8c9f2f85cc98"
-        role_by_objid = db.roles.find_one({"_id": ObjectId(target_role_id_str)})
-        role_by_str = db.roles.find_one({"_id": target_role_id_str})
-        
-        print(f"\nSearching for {target_role_id_str}:")
-        print(f"By ObjectId: {'Found' if role_by_objid else 'NOT Found'}")
-        print(f"By String: {'Found' if role_by_str else 'NOT Found'}")
-        
-    except Exception as e:
-        print(f"Error: {e}")
+from config.database.mongo import db
 
-if __name__ == "__main__":
-    check_roles()
+roles = list(db.roles.find())
+print("Roles in DB:")
+for r in roles:
+    print(r)
+
+req = db.solicitudes.find_one()
+if req:
+    print("\nFirst Solicitude:")
+    print(req)
+else:
+    print("\nNo solicitudes found.")
