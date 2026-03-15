@@ -2,6 +2,7 @@ services:
   - type: web
     name: django-inte
     env: python
+    rootDir: app_django/Django_inte
     buildCommand: ./build.sh
     startCommand: gunicorn config.wsgi:application
     envVars:
