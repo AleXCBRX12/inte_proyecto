@@ -1,0 +1,10 @@
+{
+  "_id": "69929b674a1a2e5b4999b6a8",
+  "titulo": "Convocatorias Abiertas",
+  "descripcion": "ddd\r\n",
+  "fecha_inicio": "2004-03-06T19:33",
+  "fecha_fin": "2026-02-22T01:21",
+  "estado": "abierta",
+  "fecha_creacion": "2026-02-15 22:21:59.417000",
+  "creado_por": "admin"
+}

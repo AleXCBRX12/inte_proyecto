@@ -1,0 +1,38 @@
+<!-- =========================
+      MODAL CREAR
+========================= -->
+<div class="modal" id="modalCrear">
+    <div class="modal-content">
+        <button type="button" class="modal-close" onclick="cerrarModalCrear()">×</button>
+
+        <h3>Crear Nueva Convocatoria</h3>
+
+        <form id="formCrear"
+              method="POST"
+              enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            <input type="text"
+                   name="titulo"
+                   id="crearTitulo"
+                   placeholder="Título de la convocatoria"
+                   required>
+
+            <input type="datetime-local"
+                   name="fecha_fin"
+                   id="crearFecha"
+                   required>
+
+            <input type="file"
+                   name="banner"
+                   id="crearBanner">
+
+            <div class="modal-actions">
+                <button type="submit" class="btn-guardar">
+                    Crear Convocatoria
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

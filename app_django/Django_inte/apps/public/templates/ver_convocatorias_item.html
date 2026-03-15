@@ -1,0 +1,140 @@
+{% load static %}
+<div class="showcase-card {% if not item.banner %}no-image{% endif %}" data-tipo="{{ item.tipo }}" data-id="{{ item.id }}">
+    <!-- Banner Image (Top) - Only if exists -->
+    {% if item.banner %}
+    <div class="showcase-media" onclick="ampliarImagen('data:image/png;base64,{{ item.banner }}', '{{ item.titulo|escapejs }}')">
+        <img src="data:image/png;base64,{{ item.banner }}" alt="{{ item.titulo }}">
+        
+        <!-- Status Badge -->
+        <div class="showcase-badge {{ item.estado|slugify }}">
+            {{ item.estado }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Content Body -->
+    <div class="showcase-body">
+        {% if not item.banner %}
+        <div class="showcase-badge-inline {{ item.tipo }}" style="margin-bottom:10px; font-weight:700; color:var(--showcase-accent);">
+            {{ item.tipo|upper }}
+            {% if item.estado %} - {{ item.estado }}{% endif %}
+        </div>
+        {% endif %}
+        <h3 class="showcase-title">{{ item.titulo }}</h3>
+        <p class="showcase-description">{{ item.contenido|truncatewords:25 }}</p>
+        
+        <div class="showcase-meta">
+            <span class="meta-date"><i class="bi bi-calendar3"></i> {{ item.fecha }}</span>
+            <div class="showcase-stats">
+                {% if item.tipo == 'anuncio' %}
+                    {% if item.reacciones_count > 0 %}
+                    <span class="stat-item"><i class="bi bi-heart-fill"></i> {{ item.reacciones_count }}</span>
+                    {% endif %}
+                    {% if item.comentarios_count > 0 %}
+                    <span class="stat-item"><i class="bi bi-chat-fill"></i> {{ item.comentarios_count }}</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="showcase-actions">
+        {% if item.tipo == 'convocatoria' %}
+            {# Para Convocatorias: Botón de postulación condicional #}
+            {% if item.puede_postular %}
+                <a href="{% url 'solicitud_ingreso' %}" class="btn-postular-premium">
+                    Postularme Ahora <i class="bi bi-arrow-right"></i>
+                </a>
+            {% else %}
+                <div class="btn-cerrado-premium">
+                    <i class="bi bi-lock-fill"></i> Convocatoria Finalizada
+                </div>
+            {% endif %}
+        {% else %}
+            {# Para Anuncios: Mostrar reacciones/comentarios solo si está logueado #}
+            {% if request.session.usuario_id %}
+                <button class="showcase-action-btn react-btn {% if item.ya_reacciono %}active{% endif %}" 
+                        onclick="toggleReaction('{{ item.id }}', this, 'love')">
+                    <i class="bi {% if item.ya_reacciono %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                    <span>{{ item.reacciones_count|default:0 }}</span>
+                </button>
+                <button class="showcase-action-btn" onclick="focusComment('{{ item.id }}')">
+                    <i class="bi bi-chat"></i>
+                    <span>{{ item.comentarios_count|default:0 }}</span>
+                </button>
+            {% else %}
+                <span style="color: #94a3b8; font-size: 0.85rem; font-style: italic;">Inicia sesión para interactuar</span>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- Comments Section (Solo anuncios logueados) -->
+    {% if request.session.usuario_id and item.tipo == 'anuncio' %}
+    <div class="showcase-comments-area">
+        <div class="comments-list" id="comments-list-{{ item.id }}">
+            {% for comment in item.comentarios %}
+            <div class="showcase-comment-item">
+                <span class="comment-author">{{ comment.nombre }}</span>
+                <p class="comment-text">{{ comment.texto }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="showcase-comment-input-wrapper">
+            <input type="text" class="showcase-comment-input" id="input-{{ item.id }}" 
+                   placeholder="Escribe un comentario..." 
+                   onkeypress="if(event.key === 'Enter') sendComment('{{ item.id }}')">
+            <button class="showcase-send-btn" onclick="sendComment('{{ item.id }}')">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+if (typeof toggleReaction === 'undefined') {
+    function toggleReaction(id, btn, tipo) {
+        fetch("{% url 'reaccionar_convocatoria' %}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+            body: JSON.stringify({ convocatoria_id: id, tipo: tipo })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload(); 
+            } else {
+                alert(data.message || "Error al procesar la reacción");
+            }
+        });
+    }
+
+    function sendComment(id) {
+        const input = document.getElementById(`input-${id}`);
+        const texto = input.value.trim();
+        if (!texto) return;
+
+        fetch("{% url 'comentar_convocatoria' %}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+            body: JSON.stringify({ convocatoria_id: id, texto: texto })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                input.value = "";
+                location.reload(); 
+            } else {
+                alert(data.message || "Error al enviar comentario");
+            }
+        });
+    }
+
+    function focusComment(id) {
+        const input = document.getElementById(`input-${id}`);
+        if (input) input.focus();
+    }
+}
+</script>

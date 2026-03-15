@@ -1,0 +1,97 @@
+{% extends "panel_admin.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/chat_admin.css' %}?v=2.0">
+
+<div
+    class="chat-admin-shell"
+    id="chatAdminApp"
+    data-conversations-url="{% url 'chat_admin_conversaciones' %}"
+    data-messages-url-template="{% url 'chat_admin_mensajes' 'USER_ID' %}"
+    data-send-url-template="{% url 'chat_admin_enviar' 'USER_ID' %}"
+    data-edit-url-template="{% url 'chat_admin_editar' 'MSG_ID' %}"
+    data-delete-url-template="{% url 'chat_admin_eliminar' 'MSG_ID' %}"
+    data-initial-user="{{ usuario_inicial }}"
+>
+    <aside class="chat-admin-conversations">
+        <div class="chat-admin-title">Proyectos</div>
+        <div id="conversationList" class="conversation-list">
+            {% for conv in conversaciones %}
+            <button
+                type="button"
+                class="conversation-item"
+                data-user-id="{{ conv.proyecto_id }}"
+                data-user-name="{{ conv.proyecto_nombre }}"
+            >
+                <div class="conversation-main">
+                    <span class="conversation-name">{{ conv.proyecto_nombre }}</span>
+                    <span class="conversation-mail">{{ conv.lider }}</span>
+                </div>
+                <div class="conversation-preview">
+                    <span>{{ conv.ultimo_mensaje|default:"Sin mensajes" }}</span>
+                    <small>{{ conv.hora_ultimo_mensaje }}</small>
+                </div>
+            </button>
+            {% empty %}
+            <p class="conversation-empty">No hay proyectos activos.</p>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <section class="chat-admin-panel">
+        <header class="chat-header">
+            <h3>Centro de Mensajería por Proyecto</h3>
+            <div class="chat-context-info">
+                <p>Proyecto: <strong id="chatWithName">Selecciona un proyecto</strong></p>
+                <p id="chatWithLeader" class="chat-leader-sub">Líder: <span>-</span></p>
+            </div>
+        </header>
+
+        <div id="chatMessages" class="chat-messages">
+            <p class="chat-placeholder">Selecciona una conversación para iniciar.</p>
+        </div>
+
+        <form id="chatAdminForm" class="chat-form">
+            <div class="chat-actions-left">
+                <button type="button" id="emojiAdminBtn" class="chat-tool-btn" title="Emojis">😊</button>
+                <label for="chatAdminFile" class="chat-tool-btn" title="Adjuntar archivo">📎</label>
+                <input id="chatAdminFile" type="file" class="chat-file-input">
+            </div>
+            <div id="emojiAdminPicker" class="emoji-picker" hidden>
+                <button type="button">😀</button><button type="button">😂</button><button type="button">😍</button>
+                <button type="button">🔥</button><button type="button">👍</button><button type="button">👏</button>
+                <button type="button">🙏</button><button type="button">🚀</button><button type="button">🎉</button>
+            </div>
+            <input id="chatAdminInput" type="text" placeholder="Escribe un mensaje..." maxlength="800">
+            <button type="submit">Enviar</button>
+        </form>
+        <div id="chatAdminPreview" class="chat-attach-preview" hidden></div>
+    </section>
+
+    <!-- MODALES PREMIUM ADMIN -->
+    <div id="modalEditAdmin" class="chat-m-overlay" hidden>
+        <div class="chat-m-content">
+            <h3>Editar Mensaje Administrativo</h3>
+            <textarea id="editAdminInput" rows="4"></textarea>
+            <div class="chat-m-actions">
+                <button type="button" class="chat-m-btn-cancel" onclick="closeEditModal()">Cancelar</button>
+                <button type="button" class="chat-m-btn-save" onclick="saveEditMessage()">Actualizar Mensaje</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalDeleteAdmin" class="chat-m-overlay" hidden>
+        <div class="chat-m-content">
+            <h3>Confirmar eliminación</h3>
+            <p>El mensaje será reemplazado por un aviso de eliminación de forma permanente.</p>
+            <div class="chat-m-actions">
+                <button type="button" class="chat-m-btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button type="button" class="chat-m-btn-delete" onclick="confirmDeleteMessage()">Eliminar permanentemente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/chat_admin.js' %}"></script>
+{% endblock %}

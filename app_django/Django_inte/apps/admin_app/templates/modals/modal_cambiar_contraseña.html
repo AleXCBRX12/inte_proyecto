@@ -1,0 +1,246 @@
+{% load static %}
+<style>
+/* ===== MODAL CAMBIO DE CONTRASEÑA ===== */
+#modalPassword {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* muy arriba para sobrepasar navbar y menús */
+}
+
+/* ===== CONTENIDO MODAL ===== */
+#modalPassword .modal-contenido {
+    background: #ffffff;
+    padding: 40px 30px;
+    width: 420px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    position: relative;
+    transform: scale(0.8);
+    opacity: 0;
+    animation: modalPasswordEntrada 0.35s ease forwards;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+}
+
+/* TITULO */
+#modalPassword h3 {
+    text-align: center;
+    color: #1e3a8a;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* INPUT PASSWORD CON OJO */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding: 15px 45px 15px 16px;
+    font-size: 15px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #fafafa;
+    transition: 0.2s;
+}
+
+.password-wrapper input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 6px rgba(59,130,246,0.25);
+    outline: none;
+}
+
+/* ICONO VER PASSWORD */
+.password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 18px;
+}
+
+.password-toggle:hover {
+    color: #3b82f6;
+}
+
+/* BOTONES */
+#modalPassword .modal-buttons {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+#modalPassword .modal-buttons button {
+    flex: 1;
+    padding: 12px 0;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: none;
+}
+
+/* EFECTO BRILLO BOTONES */
+#modalPassword .modal-buttons button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: rgba(255,255,255,0.22);
+    transform: skewX(-25deg);
+    transition: 0.7s;
+}
+
+#modalPassword .modal-buttons button:hover::before {
+    left: 130%;
+}
+
+/* BOTON ACEPTAR */
+#modalPassword .modal-buttons button.aceptar {
+    background: #1e3a8a;
+    color: #ffffff;
+}
+
+/* BOTON CANCELAR */
+#modalPassword .modal-buttons button.cancelar {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+#modalPassword .modal-buttons button.cancelar::before {
+    background: rgba(255,255,255,0.15);
+}
+
+/* BOTON CERRAR */
+#modalPassword .modal-close {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #444;
+}
+
+#modalPassword .modal-close:hover {
+    color: #ef4444;
+}
+
+/* ANIMACION */
+@keyframes modalPasswordEntrada {
+    0% { transform: scale(0.8); opacity: 0; }
+    60% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+</style>
+
+<!-- Modal Cambiar Contraseña -->
+<div id="modalPassword" class="modal">
+    <div class="modal-contenido">
+        <button class="modal-close" onclick="cerrarModalPassword()">&times;</button>
+        <h3>Cambiar Contraseña</h3>
+        <div class="password-wrapper">
+            <input type="password" id="nuevaPassword" placeholder="Nueva contraseña">
+            <span class="password-toggle" onclick="togglePassword()">
+                <i class="bi bi-eye"></i>
+            </span>
+        </div>
+        <div class="modal-buttons">
+            <button class="aceptar" onclick="confirmarCambioPassword()">Aceptar</button>
+            <button class="cancelar" onclick="cerrarModalPassword()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// VARIABLE GLOBAL PARA BLOQUEAR MENUS
+let modalAbierto = false;
+
+// ABRIR MODAL
+function abrirModalPassword(){
+    modalAbierto = true;
+    document.getElementById("modalPassword").style.display = "flex";
+
+    // Ocultar navbar y menús
+    document.querySelectorAll("nav, header, .menu-acciones").forEach(el => {
+        el.style.visibility = "hidden";
+    });
+}
+
+// CERRAR MODAL
+function cerrarModalPassword(){
+    modalAbierto = false;
+    document.getElementById("modalPassword").style.display = "none";
+
+    // Mostrar navbar y menús nuevamente
+    document.querySelectorAll("nav, header, .menu-acciones").forEach(el => {
+        el.style.visibility = "visible";
+    });
+}
+
+// TOGGLE PASSWORD
+function togglePassword(){
+    const input = document.getElementById("nuevaPassword");
+    const icon = document.querySelector("#modalPassword .password-toggle i");
+    if(input.type === "password"){
+        input.type = "text";
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+
+// CONFIRMAR CAMBIO PASSWORD
+function confirmarCambioPassword(){
+    const nueva = document.getElementById("nuevaPassword").value;
+    if(!nueva || nueva.length < 8) return;
+
+    fetch("{% url 'actualizar_password_admin' 'TEMP' %}".replace("TEMP", adminId), {
+        method: "POST",
+        headers: {
+            "Content-Type":"application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({password: nueva})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+            cerrarModalPassword();
+            location.reload();
+        }
+    }).catch(err => console.error(err));
+}
+
+// BLOQUEO DE MENÚ DESPLEGABLE MIENTRAS MODAL ESTÁ ABIERTO
+document.querySelectorAll(".acciones button").forEach(btn => {
+    btn.addEventListener("click", e => {
+        if(modalAbierto){
+            e.stopPropagation();
+            e.preventDefault();
+        }
+    });
+});
+</script>

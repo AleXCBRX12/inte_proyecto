@@ -1,0 +1,71 @@
+{% load static %}
+<!-- Lightbox para ver imagen más grande -->
+<div id="lightbox-convocatoria" class="lightbox-modal portal-modal" onclick="cerrarLightbox()">
+    <span class="close-lightbox">&times;</span>
+    <img class="lightbox-content" id="img-ampliada">
+    <div id="caption-lightbox"></div>
+</div>
+
+<!-- Modal para ver Noticia Completa -->
+<div id="modal-noticia" class="modal portal-modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="cerrarModalNoticia()">&times;</button>
+        <div class="modal-body-content">
+            <span id="noticia-fecha" class="card-category"></span>
+            <h2 id="noticia-titulo" class="card-title" style="font-size: 1.8rem; margin-top: 10px;"></h2>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <div id="noticia-texto" style="color: #475569; line-height: 1.6; font-size: 1.1rem; white-space: pre-wrap;"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-guardar" onclick="cerrarModalNoticia()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function ampliarImagen(src, title) {
+    const lightbox = document.getElementById('lightbox-convocatoria');
+    const imgAmpliada = document.getElementById('img-ampliada');
+    const caption = document.getElementById('caption-lightbox');
+    
+    if (src && !src.includes('None') && src !== 'data:image/png;base64,') {
+        imgAmpliada.src = src;
+        caption.innerText = title;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function cerrarLightbox() {
+    const lightbox = document.getElementById('lightbox-convocatoria');
+    if (lightbox) {
+        lightbox.classList.remove('active');
+    }
+    document.body.style.overflow = ''; 
+}
+
+function mostrarNoticiaCompleta(titulo, contenido, fecha) {
+    document.getElementById('noticia-titulo').innerText = titulo;
+    document.getElementById('noticia-texto').innerText = contenido;
+    document.getElementById('noticia-fecha').innerText = fecha;
+    
+    document.getElementById('modal-noticia').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalNoticia() {
+    const modal = document.getElementById('modal-noticia');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    document.body.style.overflow = ''; 
+}
+
+// Cerrar modales con la tecla Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape") {
+        cerrarLightbox();
+        cerrarModalNoticia();
+    }
+});
+</script>

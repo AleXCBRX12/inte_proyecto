@@ -1,0 +1,39 @@
+{% extends "portal_publico.html" %}
+{% load static %}
+
+{% block title %}Anuncios{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/ver_anuncios.css' %}">
+
+<div class="uta-wrapper">
+    <header class="panel-header">
+        <div>
+            <h1 class="seccion-titulo">Muro de Avisos</h1>
+            <p class="subtitulo-publico">Comunicados oficiales de la Incubadora de Proyectos</p>
+        </div>
+    </header>
+
+    <div class="muro-publico">
+        {% for anuncio in anuncios %}
+        <article class="uta-card-publica">
+           
+            
+            <div class="info-publica">
+                <span class="fecha-badge">
+                    <i class="bi bi-calendar3"></i> {{ anuncio.fecha }}
+                </span>
+                <h3>{{ anuncio.titulo }}</h3>
+                <p>{{ anuncio.contenido }}</p>
+            </div>
+
+            <div class="card-footer-decor"></div>
+        </article>
+        {% empty %}
+        <div class="uta-card-admin-item no-anuncios">
+            <p>Por el momento no hay anuncios publicados.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

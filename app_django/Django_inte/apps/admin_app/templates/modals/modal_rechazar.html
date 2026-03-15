@@ -1,0 +1,18 @@
+<div class="solicitud-modal" id="modalRechazar" style="display: none;">
+    <div class="solicitud-modal-content" style="max-width: 500px;">
+        <button class="modal-close" onclick="cerrarModal('modalRechazar')">×</button>
+        <h3>Rechazar Solicitud</h3>
+        <p style="color: #64748b; margin-bottom: 20px;">Por favor, indica el motivo del rechazo. Esta información será enviada al emprendedor.</p>
+        
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label for="motivoRechazo" style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Motivo del Rechazo</label>
+            <textarea id="motivoRechazo" class="form-control" rows="5" placeholder="Ej: Tu propuesta requiere más detalles sobre el modelo de negocio..." style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; font-family: inherit; resize: none;"></textarea>
+            <small id="errorMotivo" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 4px;">Debes ingresar un motivo.</small>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 0; padding-top: 0; border: none; justify-content: flex-end; gap: 12px;">
+            <button class="modal-btn" onclick="cerrarModal('modalRechazar')" style="background: #f1f5f9; color: #475569;">Cancelar</button>
+            <button class="modal-btn modal-rechazar" onclick="confirmarRechazo()" style="margin: 0; background: #ef4444; color: white;">Confirmar Rechazo</button>
+        </div>
+    </div>
+</div>

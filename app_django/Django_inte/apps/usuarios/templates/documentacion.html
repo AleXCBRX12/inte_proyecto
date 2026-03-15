@@ -1,0 +1,290 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/contraro.css' %}">
+    <title>Contrato de Incubacion</title>
+</head>
+<body>
+
+<header class="contract-navbar">
+    <div class="contract-navbar-inner">
+        <div class="brand-wrap">
+            <div class="brand-logo">
+                <img src="{% static 'img/logo.png' %}" alt="Logo incubadora" >
+            </div>
+            <div class="brand-copy">
+                <h1 class="brand-title">Portal Institucional Emprendedor</h1>
+                <p class="brand-subtitle">Incubadora de Negocios UT Acapulco</p>
+            </div>
+        </div>
+        <div class="brand-chip">Contrato de incubacion</div>
+        <button type="button" class="logout-link" onclick="abrirModalLogout()">Cerrar sesión</button>
+    </div>
+</header>
+
+<div class="contract-layout">
+    <div class="contract-head">
+        <h2 style="margin:0 0 6px 0;">Contrato de Incubacion</h2>
+        <div>Descarga, edita en tu computadora, sube y firma en plataforma.</div>
+    </div>
+
+    {% if error %}
+    <div class="alertx">{{ error }}</div>
+    {% endif %}
+
+    <div class="contract-grid">
+        <div class="cardx">
+            <h3 style="margin-top:0;">Contrato vigente</h3>
+            {% if contrato_vigente %}
+                <p><strong>Archivo:</strong> {{ contrato_vigente.nombre_archivo }}</p>
+                <p><a class="btnx btn-secondary" href="{{ contrato_vigente_descarga_url }}">Descargar contrato</a></p>
+                {% if contrato_vigente_es_pdf %}
+                    <iframe class="pdf-frame" src="{{ contrato_vigente_ver_url }}" title="Contrato vigente"></iframe>
+                {% else %}
+                    <p class="hint">Vista previa no disponible para este tipo de archivo. Descargalo para editarlo.</p>
+                {% endif %}
+            {% else %}
+                <p>No hay contrato vigente cargado por administracion.</p>
+            {% endif %}
+        </div>
+
+        <div class="cardx">
+            <h3 style="margin-top:0;">Estado de tu contrato</h3>
+            <p>
+                {% if contrato_estado == "Aceptado" %}
+                    <span class="status-pill ok">{{ contrato_estado }}</span>
+                {% elif contrato_estado == "En revision" %}
+                    <span class="status-pill warn">{{ contrato_estado }}</span>
+                {% elif contrato_estado == "Rechazado" %}
+                    <span class="status-pill bad">{{ contrato_estado }}</span>
+                {% else %}
+                    <span class="status-pill">{{ contrato_estado }}</span>
+                {% endif %}
+            </p>
+
+            {% if contrato_aceptado %}
+                <p>Tu contrato fue aceptado. Ya tienes acceso total a la plataforma.</p>
+            {% elif contrato_pendiente %}
+                <p>Tu contrato esta en revision. Espera respuesta del administrador.</p>
+            {% else %}
+                <p>Debes subir tu contrato editado y anexar firmas.</p>
+            {% endif %}
+
+            {% if mostrar_formularios %}
+            <div class="form-block">
+                <h4>Subir contrato editado y firmar</h4>
+                <p class="hint">Elige cuantas firmas anexaras segun integrantes del proyecto.</p>
+
+                <form id="uploadSignForm" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="subir_contrato_editado">
+                    <input type="hidden" name="firmas_json" id="firmasJsonInput">
+
+                    <div class="field-item">
+                        <label>Contrato editado (subir en PDF para anexar firmas)</label>
+                        <input type="file" name="contrato_editado" accept=".pdf" required>
+                    </div>
+
+                    <div class="field-item">
+                        <label>Cantidad de firmas a anexar</label>
+                        <select id="numeroFirmasSelect">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+
+                    <div id="firmasContainer"></div>
+                    <button class="btnx btn-primary" type="submit">Enviar contrato firmado</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+<script>
+    const form = document.getElementById("uploadSignForm");
+    if (form) {
+        const numeroSelect = document.getElementById("numeroFirmasSelect");
+        const firmasContainer = document.getElementById("firmasContainer");
+        const firmasJsonInput = document.getElementById("firmasJsonInput");
+        const firmasMap = {};
+
+        function crearBloqueFirma(index) {
+            const wrap = document.createElement("div");
+            wrap.className = "field-item";
+            wrap.innerHTML = `
+                <label>Firmante ${index + 1}</label>
+                <input type="text" name="firmante_nombre_${index}" placeholder="Nombre completo" required>
+                <input type="text" name="firmante_rol_${index}" placeholder="Rol (ej. Representante legal)" required style="margin-top:6px;">
+                <canvas id="firmaCanvas_${index}" class="sign-pad"></canvas>
+                <button type="button" class="btnx btn-secondary" id="clear_${index}">Limpiar firma</button>
+            `;
+            firmasContainer.appendChild(wrap);
+
+            const canvas = wrap.querySelector(`#firmaCanvas_${index}`);
+            const pad = new SignaturePad(canvas, { penColor: "#1f3c88" });
+            firmasMap[index] = pad;
+
+            const resize = () => {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                pad.clear();
+            };
+            resize();
+            window.addEventListener("resize", resize);
+            wrap.querySelector(`#clear_${index}`).addEventListener("click", () => pad.clear());
+        }
+
+        function renderFirmas() {
+            firmasContainer.innerHTML = "";
+            Object.keys(firmasMap).forEach(k => delete firmasMap[k]);
+            const total = Number(numeroSelect.value || 1);
+            for (let i = 0; i < total; i++) {
+                crearBloqueFirma(i);
+            }
+        }
+
+        numeroSelect.addEventListener("change", renderFirmas);
+        renderFirmas();
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const total = Number(numeroSelect.value || 1);
+
+            const firmas = [];
+            for (let i = 0; i < total; i++) {
+                const nombre = (form.querySelector(`[name="firmante_nombre_${i}"]`)?.value || "").trim();
+                const rol = (form.querySelector(`[name="firmante_rol_${i}"]`)?.value || "").trim();
+                const pad = firmasMap[i];
+
+                if (!nombre || !rol || !pad || pad.isEmpty()) {
+                    alert(`Completa nombre, rol y firma del firmante ${i + 1}.`);
+                    return;
+                }
+
+                firmas.push({
+                    nombre: nombre,
+                    rol: rol,
+                    firma_base64: pad.toDataURL("image/png")
+                });
+            }
+            firmasJsonInput.value = JSON.stringify(firmas);
+
+            const archivoInput = form.querySelector('input[name="contrato_editado"]');
+            const file = archivoInput.files && archivoInput.files[0];
+            if (!file) {
+                alert("Debes seleccionar el contrato editado en PDF.");
+                return;
+            }
+            if (!file.name.toLowerCase().endsWith(".pdf")) {
+                alert("Para anexar firmas al contrato, sube el archivo en PDF.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function () {
+                try {
+                    const originalPdfBytes = reader.result;
+                    const pdfDoc = await PDFLib.PDFDocument.load(originalPdfBytes);
+                    const pages = pdfDoc.getPages();
+                    let paginaActual = pages[pages.length - 1];
+                    let { width, height } = paginaActual.getSize();
+
+                    const filasEnUltima = 6;
+                    const yPrimeraFila = 185;
+                    const saltoFila = 22;
+                    const xNumero = 54;
+                    const xNombre = 82;
+                    const xFirma = width - 210;
+                    const wFirma = 145;
+                    const hFirma = 36;
+
+                    function textoCorto(txt, max) {
+                        if (!txt) return "";
+                        return txt.length > max ? `${txt.slice(0, max - 1)}...` : txt;
+                    }
+
+                    for (let idx = 0; idx < firmas.length; idx++) {
+                        const f = firmas[idx];
+                        const imgBytes = await fetch(f.firma_base64).then(r => r.arrayBuffer());
+                        const img = await pdfDoc.embedPng(imgBytes);
+
+                        if (idx < filasEnUltima) {
+                            const y = yPrimeraFila - (idx * saltoFila);
+                            paginaActual.drawText(`${idx + 1}.-`, { x: xNumero, y: y, size: 10, color: PDFLib.rgb(0.08, 0.08, 0.08) });
+                            paginaActual.drawText(textoCorto(`${f.nombre} (${f.rol})`, 56), { x: xNombre, y: y, size: 9, color: PDFLib.rgb(0.15, 0.15, 0.15) });
+                            paginaActual.drawLine({
+                                start: { x: xFirma - 4, y: y + 2 },
+                                end: { x: xFirma + wFirma + 4, y: y + 2 },
+                                thickness: 0.8,
+                                color: PDFLib.rgb(0.35, 0.35, 0.35)
+                            });
+                            paginaActual.drawImage(img, { x: xFirma, y: y - 10, width: wFirma, height: hFirma });
+                            continue;
+                        }
+
+                        const extraIdx = idx - filasEnUltima;
+                        const porPaginaExtra = 8;
+                        if (extraIdx % porPaginaExtra === 0) {
+                            paginaActual = pdfDoc.addPage([width, height]);
+                            paginaActual.drawText("Firmas adicionales de integrantes", {
+                                x: 40, y: height - 42, size: 13, color: PDFLib.rgb(0.08, 0.15, 0.36)
+                            });
+                        }
+                        const pos = extraIdx % porPaginaExtra;
+                        const yExtra = height - 82 - (pos * 88);
+
+                        paginaActual.drawText(`${idx + 1}.- ${f.nombre}`, { x: 40, y: yExtra, size: 11, color: PDFLib.rgb(0.08, 0.08, 0.08) });
+                        paginaActual.drawText(`Rol: ${f.rol}`, { x: 40, y: yExtra - 14, size: 10, color: PDFLib.rgb(0.2, 0.2, 0.2) });
+                        paginaActual.drawLine({
+                            start: { x: width - 240, y: yExtra - 2 },
+                            end: { x: width - 60, y: yExtra - 2 },
+                            thickness: 1,
+                            color: PDFLib.rgb(0.35, 0.35, 0.35)
+                        });
+                        paginaActual.drawImage(img, { x: width - 230, y: yExtra - 24, width: 160, height: 52 });
+                    }
+
+                    const firmadoBytes = await pdfDoc.save();
+                    const firmadoBlob = new Blob([firmadoBytes], { type: "application/pdf" });
+
+                    const formData = new FormData();
+                    formData.append("csrfmiddlewaretoken", form.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                    formData.append("accion", "subir_contrato_editado");
+                    formData.append("firmas_json", JSON.stringify(firmas));
+                    formData.append("contrato_editado", firmadoBlob, file.name.replace(/\.pdf$/i, "") + "_firmado.pdf");
+
+                    const resp = await fetch("", { method: "POST", body: formData });
+                    if (resp.ok) {
+                        window.location.reload();
+                    } else {
+                        alert("No se pudo enviar el contrato firmado.");
+                    }
+                } catch (err) {
+                    alert("Ocurrio un error al anexar firmas al PDF.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    }
+</script>
+
+{% include "modals/modal_cerrar_sesion.html" %}
+</body>
+</html>

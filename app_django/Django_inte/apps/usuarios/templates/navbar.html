@@ -1,0 +1,67 @@
+{% load static %}<link rel="stylesheet" href="{% static 'css/navbar_emprendedor.css' %}?v=30">
+
+<header class="main-header">
+
+<div class="logo-container">
+<div class="logo-circle">
+<img src="{% static 'img/logo.png' %}" class="logo-img">
+
+</div>
+
+<h1 class="logo-title">Portal Institucional Emprendedor</h1>
+</div>
+
+
+<!-- BOTON HAMBURGUESA -->
+
+<div class="menu-toggle" id="menuToggle">
+<span></span>
+<span></span>
+<span></span>
+</div>
+
+
+
+<nav class="nav-menu" id="navMenu">
+
+<a href="{% url 'portal_publico' %}">Inicio</a>
+<a href="{% url 'perfil_emprendedor' %}">Mi proyecto</a>
+<a href="{% url 'expediente_usuario' %}">Expediente</a>
+<a href="{% url 'chat_usuario' %}">Chat con admin</a>
+<a href="{% url 'lista_anuncios' %}">Anuncios</a>
+
+</nav>
+
+
+<div class="avatar-container" id="avatarMenu">
+
+<div class="avatar">
+{{ request.session.nombre|slice:":1"|upper }}
+</div>
+
+<div class="dropdown">
+
+<a href="{% url 'perfil_emprendedor' %}">
+<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12 12c2.7 0 4.5-2.2 4.5-4.5S14.7 3 12 3 7.5 5.2 7.5 7.5 9.3 12 12 12zm0 2c-3.3 0-9 1.7-9 5v2h18v-2c0-3.3-5.7-5-9-5z"/>
+</svg>
+Ver perfil
+</a>
+
+<a href="#" onclick="abrirModalLogout(); return false;">
+<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+<path d="M16 17l5-5-5-5v3H9v4h7v3z"/>
+<path d="M4 4h8v2H6v12h6v2H4z"/>
+</svg>
+Cerrar sesión
+</a>
+
+</div>
+
+</div>
+
+</header>
+
+{% include "modals/modal_cerrar_sesion.html" %}
+
+<script src="{% static 'js/navbar.js' %}"></script>

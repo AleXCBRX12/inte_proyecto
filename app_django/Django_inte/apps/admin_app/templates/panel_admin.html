@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="{% static 'css/panel_admin_mejorado.css' %}?v=40">
+<title>Panel Administrador</title>
+
+</head>
+
+<body>
+
+    {% include "navbar_admin/navbar_admin.html" %}
+
+<div class="layout">
+    <div class="sidebar">
+
+        <a href="{% url 'panel_publicaciones_admin' %}" class="{% if request.resolver_match.url_name == 'panel_publicaciones_admin' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 4h16v4H4zM4 10h10v4H4zM4 16h7v4H4z" stroke="currentColor"/>
+            </svg>Publicaciones</a>
+
+        <a href="{% url 'solicitudes_panel' %}" class="{% if request.resolver_match.url_name == 'solicitudes_panel' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M3 7h18l-2 10H5zM3 7l3-4h12l3 4" stroke="currentColor"/>
+            </svg>Solicitudes de usuarios</a>
+
+            <a href="{% url 'ver_contratos' %}" class="{% if request.resolver_match.url_name == 'ver_contratos' %}active{% endif %}" >
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M6 2h12v20H6zM9 6h6M9 10h6M9 14h4" stroke="currentColor" />
+                </svg>Contratos</a>
+
+            <a href="{% url 'contrato_vigente_admin' %}" class="{% if request.resolver_match.url_name == 'contrato_vigente_admin' %}active{% endif %}" >
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5" stroke="currentColor"/>
+                </svg>Contrato vigente</a>
+
+
+        <a href="{% url 'expedientes_admin' %}" class="{% if request.resolver_match.url_name == 'expedientes_admin' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5" stroke="currentColor"/>
+            </svg>Expedientes</a>
+
+        <a href="{% url 'proyectos_activos' %}" class="{% if request.resolver_match.url_name == 'proyectos_activos' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" stroke="currentColor"/>
+            </svg>Proyectos activos</a>
+
+        <a href="{% url 'usuarios' %}" class="{% if request.resolver_match.url_name == 'usuarios' %}active{% endif %}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M17 11c1.66 0 3-1.34 3-3s-1.34-3-3-3"/>
+                <path d="M2 21v-1c0-3.31 2.69-6 6-6h2c3.31 0 6 2.69 6 6v1"/>
+                <path d="M22 21v-1c0-2.67-1.68-4.93-4-5.8"/>
+            </svg>
+            Usuarios
+        </a>
+
+
+        <a href="{% url 'chat_admin' %}" class="{% if request.resolver_match.url_name == 'chat_admin' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M21 12a8 8 0 11-3-6l3-3v9z" stroke="currentColor"/>
+            </svg>Chats</a>
+
+
+        <a href="{% url 'agregar_administrador' %}" class="{% if request.resolver_match.url_name == 'agregar_administrador' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" stroke="currentColor"/>
+                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor"/>
+                <path d="M19 8v4M17 10h4" stroke="currentColor"/>
+            </svg>
+            Agregar Administrador
+        </a>
+
+        <a href="{% url 'calendario_admin' %}" class="{% if request.resolver_match.url_name == 'calendario_admin' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+                <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+                <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+                <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Calendario
+        </a>
+
+    </div>
+
+    <div class="main">
+
+    {% if messages %}
+    <div class="mensajes-globales">
+        {% for message in messages %}
+            <div class="alerta {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}
+    <h2>Bienvenido al Panel de Administración</h2>
+    {% endblock %}
+</div>
+</div>
+
+<div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+    {% include "common/shared_footer.html" %}
+
+<script src="{% static 'js/panel_admin.js' %}"></script>
+<script src="{% static 'js/toast.js' %}"></script>
+
+
+</body>
+</html>

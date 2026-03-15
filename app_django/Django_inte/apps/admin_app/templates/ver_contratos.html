@@ -1,0 +1,108 @@
+{% extends 'panel_admin.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/ver_contratos.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="uta-wrapper">
+    <div class="panel-header">
+        <h2>Contratos enviados por usuarios</h2>
+        <div class="search-container">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="search" id="buscarContrato" placeholder="Buscar por nombre, correo o estado...">
+            </div>
+        </div>
+    </div>
+
+    <div id="mensajeSinResultados" class="no-anuncios" style="display: none;">
+        <i class="bi bi-search"></i> No se encontraron contratos que coincidan con tu búsqueda.
+    </div>
+
+    
+
+    {% for contrato in todos_los_contratos %}
+    <div class="uta-card-admin-item" data-search="{{ contrato.nombre_contrato }} {{ contrato.usuario_nombre }} {{ contrato.usuario_correo }} {{ contrato.estado }}">
+        <div class="info">
+            <strong>{{ contrato.nombre_contrato }}</strong>
+            <div><strong>Enviado por:</strong> {{ contrato.usuario_nombre }}</div>
+            {% if contrato.usuario_correo %}
+            <div><strong>Correo:</strong> {{ contrato.usuario_correo }}</div>
+            {% endif %}
+            <div>Firmado en plataforma: {% if contrato.firmado %}Si{% else %}No{% endif %}</div>
+            <div>Total de firmas anexadas: {{ contrato.firmas_total|default:0 }}</div>
+            <span class="{% if contrato.estado == 'aceptado' %}estado-aceptado{% elif contrato.estado == 'rechazado' %}estado-rechazado{% else %}estado-pendiente{% endif %}">
+                Estado: {{ contrato.estado|default:"enviado"|title }}
+            </span>
+        </div>
+
+        <div class="acciones">
+            {% if contrato.estado != 'aceptado' and contrato.estado != 'rechazado' %}
+                <a href="{% url 'ver_contrato' contrato.id %}" target="_blank" class="btn-ver">
+                    <i class="bi bi-eye"></i> Ver contrato
+                </a>
+                <form action="{% url 'confirmar_contrato' contrato.id %}" method="POST" style="display: contents;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-aceptar" name="decision" value="aceptado">
+                        <i class="bi bi-check-circle"></i> Aceptar
+                    </button>
+                    <button type="button" class="btn-rechazar" data-role="rechazar">
+                        <i class="bi bi-x-circle"></i> Rechazar
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'ver_contrato' contrato.id %}" target="_blank" class="btn-ver btn-ver-solo">
+                    <i class="bi bi-eye"></i> Ver contrato
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="no-anuncios">
+        No se han recibido contratos aun.
+    </div>
+    {% endfor %}
+</div>
+
+
+<script>
+const buscador = document.getElementById('buscarContrato');
+const tarjetas = Array.from(document.querySelectorAll('.uta-card-admin-item'));
+const mensajeVacio = document.getElementById('mensajeSinResultados');
+if (buscador) {
+    buscador.addEventListener('input', () => {
+        const term = buscador.value.trim().toLowerCase();
+        let visibles = 0; 
+
+        tarjetas.forEach(card => {
+            const hay = card.dataset.search.toLowerCase().includes(term);
+            card.style.display = hay ? '' : 'none';
+            if (hay) visibles++;
+        });
+
+        
+        if (visibles === 0 && tarjetas.length > 0) {
+            mensajeVacio.style.display = 'block';
+        } else {
+            mensajeVacio.style.display = 'none';
+        }
+    });
+}
+
+document.querySelectorAll('button[data-role="rechazar"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const form = btn.closest('form');
+        const motivoInput = form.querySelector('input[name="motivo_rechazo"]');
+        const motivo = prompt("Ingresa el motivo del rechazo para notificar al usuario:");
+        if (motivo && motivo.trim().length > 2) {
+            motivoInput.value = motivo.trim();
+            form.submit();
+        } else if (motivo !== null) {
+            alert("Debes ingresar un motivo válido.");
+        }
+    });
+});
+</script>
+
+{% endblock %}

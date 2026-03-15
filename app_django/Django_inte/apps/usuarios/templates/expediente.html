@@ -1,0 +1,102 @@
+{% extends "portal_publico.html" %}
+{% load static %}
+
+{% block title %}Expediente Versionado{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/expediente.css' %}">
+
+<section class="expediente-shell">
+    <div class="expediente-hero">
+        <div>
+            <p class="expediente-kicker">Expediente del equipo</p>
+            <h2>Documentación Compartida del Proyecto</h2>
+            <p class="expediente-subtitle">Los documentos subidos aquí son compartidos con todo tu equipo. Cada nueva carga con el mismo nombre genera una versión adicional y conserva las anteriores.</p>
+        </div>
+        <div class="expediente-stats">
+            <div class="stat-card">
+                <span class="stat-label">Documentos</span>
+                <strong>{{ total_documentos }}</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Versiones</span>
+                <strong>{{ total_versiones }}</strong>
+            </div>
+        </div>
+    </div>
+
+    {% if mensaje_exito %}
+    <div class="feedback ok">Documento cargado correctamente. Se registró una nueva versión en el expediente del equipo.</div>
+    {% endif %}
+
+    {% if error %}
+    <div class="feedback error">{{ error }}</div>
+    {% endif %}
+
+    <div class="expediente-grid">
+        <aside class="upload-card">
+            <h3>Subir nueva version</h3>
+            <p>Usa el mismo nombre del documento para que la plataforma incremente su version automaticamente.</p>
+
+            <form method="POST" enctype="multipart/form-data" class="upload-form">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="subir_documento_versionado">
+
+                <label for="nombre_documento">Nombre del documento</label>
+                <input id="nombre_documento" name="nombre_documento" type="text" placeholder="Ej. Plan de negocios" required>
+
+                <label for="archivo_documento">Archivo</label>
+                <input id="archivo_documento" name="archivo_documento" type="file" required>
+
+                <button type="submit">Guardar nueva version</button>
+            </form>
+
+            <div class="upload-tip">
+                <strong>Regla de versionado:</strong>
+                si subes otra vez <em>Plan de negocios</em>, la plataforma lo guardara como `v2`, luego `v3`, y asi sucesivamente.
+            </div>
+        </aside>
+
+        <div class="history-column">
+            {% if expedientes %}
+                {% for expediente in expedientes %}
+                <article class="document-card">
+                    <div class="document-card-head">
+                        <div>
+                            <h3>{{ expediente.nombre_documento }}</h3>
+                            <p>Ultima actualizacion: {{ expediente.ultima_fecha }}</p>
+                        </div>
+                        <div class="version-badge">{{ expediente.ultima_version_label }}</div>
+                    </div>
+
+                    <div class="document-meta">
+                        <span>{{ expediente.total_versiones }} versiones registradas</span>
+                    </div>
+
+                    <div class="version-list">
+                        {% for version in expediente.versiones %}
+                        <div class="version-row">
+                            <div class="version-main">
+                                <strong>Version {{ version.version }}</strong>
+                                <span>{{ version.nombre_archivo }}</span>
+                            </div>
+                            <div class="version-side">
+                                <span>{{ version.fecha_subida }}</span>
+                                <span>{{ version.tamano_archivo }}</span>
+                                <a href="{% url 'descargar_documento_expediente' version.id %}">Descargar</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </article>
+                {% endfor %}
+            {% else %}
+                <div class="empty-card">
+                    <h3>Aún no hay documentos en el expediente del equipo</h3>
+                    <p>Sube el primer archivo para comenzar a registrar versiones y mantener el expediente de tu proyecto actualizado para todos los miembros.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

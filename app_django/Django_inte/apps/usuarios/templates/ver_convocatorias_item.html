@@ -1,0 +1,114 @@
+{% load static %}
+<article class="social-post-card {% if item.tipo == 'convocatoria' %}convocatoria-premium{% endif %}">
+    <!-- Card Header -->
+    <header class="post-header">
+        <div class="profile-info">
+            <div class="profile-pic">
+                <img src="{% static 'img/semilla_sol.png' %}" alt="Hub Logo">
+            </div>
+            <div class="profile-text">
+                <span class="profile-name">Hub UT Acapulco</span>
+                <span class="post-time">{{ item.fecha }} · <i class="bi bi-globe"></i></span>
+            </div>
+        </div>
+        {% if item.tipo == 'convocatoria' %}
+            <div class="badge-premium-conv">{{ item.estado|upper }}</div>
+        {% endif %}
+    </header>
+
+    <!-- Post Content -->
+    <div class="post-content-text">
+        <h3 class="post-title">{{ item.titulo }}</h3>
+        <p class="post-description">{{ item.contenido|truncatewords:40 }}</p>
+    </div>
+
+    <!-- Post Media -->
+    {% if item.banner %}
+    <div class="post-media" onclick="ampliarImagen('data:image/png;base64,{{ item.banner }}', '{{ item.titulo|escapejs }}')">
+        <img src="data:image/png;base64,{{ item.banner }}" alt="{{ item.titulo }}">
+    </div>
+    {% endif %}
+
+    {% if item.tipo == 'convocatoria' %}
+        <!-- Convocatoria Minimal Actions -->
+        <div class="post-actions-premium">
+            {% if item.puede_postular %}
+                <a href="{% url 'solicitud_ingreso' %}" class="btn-postular-premium">
+                    <i class="bi bi-send-fill"></i> Postularme Ahora
+                </a>
+            {% else %}
+                <span class="btn-cerrado-premium">
+                    <i class="bi bi-lock-fill"></i> Convocatoria Finalizada
+                </span>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Standard Engagement for Announcements (if visited by visitor) -->
+        <div class="engagement-stats">
+            <div class="reactions">
+                <span class="reaction-icons">
+                    <i class="bi bi-hand-thumbs-up-fill like"></i>
+                </span>
+                <span class="count">Interesados</span>
+            </div>
+        </div>
+        <div class="post-actions">
+            <button class="action-btn"><i class="bi bi-hand-thumbs-up"></i> Me gusta</button>
+            <button class="action-btn"><i class="bi bi-share"></i> Compartir</button>
+        </div>
+    {% endif %}
+</article>
+
+<style>
+.convocatoria-premium {
+    border: 2px solid #f1f5f9;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+}
+.badge-premium-conv {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-weight: 800;
+    font-size: 0.7rem;
+}
+.post-actions-premium {
+    padding: 20px;
+    background: #f8fafc;
+    display: flex;
+    justify-content: center;
+}
+.btn-postular-premium {
+    width: 100%;
+    text-align: center;
+    background: #1a1a1a;
+    color: white;
+    padding: 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.btn-postular-premium:hover {
+    background: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.btn-cerrado-premium {
+    width: 100%;
+    text-align: center;
+    background: #e2e8f0;
+    color: #64748b;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+</style>

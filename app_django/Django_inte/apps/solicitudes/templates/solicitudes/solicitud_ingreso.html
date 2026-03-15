@@ -1,0 +1,633 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitud de Incubación</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+/* ==============================
+   1. Paleta de colores
+============================== */
+:root {
+    --azul: #1f3c88;
+    --azul2: #2d5bd1;
+    --gris: #f4f6f9;
+    --gris2: #e6e9ef;
+    --blanco: #ffffff;
+    --texto: #2b2b2b;
+}
+
+/* ==============================
+   2. Reset + tipografía
+============================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--gris);
+    margin: 0;
+}
+
+/* ==============================
+   3. Header fijo
+============================== */
+header {
+    background: linear-gradient(90deg, var(--azul), var(--azul2));
+    color: var(--blanco);
+    padding: 10px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+header h1 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+}
+
+nav a {
+    color: var(--blanco);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+nav a:hover {
+    opacity: 1;
+}
+
+/* ==============================
+   4. Contenedor principal
+============================== */
+.main-container {
+    margin-top: 90px;
+    display: flex;
+    justify-content: center;
+    padding: 20px 10px;
+}
+
+.card {
+    width: 100%;
+    max-width: 850px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(31, 60, 136, 0.2);
+    background: var(--blanco);
+}
+
+.card-header {
+    background: linear-gradient(90deg, var(--azul), var(--azul2));
+    color: var(--blanco);
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+    padding: 15px 10px;
+}
+
+h5 {
+    color: var(--azul);
+    margin-top: 15px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ==============================
+   5. Inputs y selects
+============================== */
+input,
+textarea,
+select {
+    border-radius: 6px !important;
+    border: 1px solid var(--gris2);
+    padding: 6px 10px;
+    font-size: 13px;
+    transition: all 0.25s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--azul2);
+    box-shadow: 0 0 8px rgba(45, 91, 209, 0.35);
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* ==============================
+   6. Botones
+============================== */
+.btn-primary {
+    background: linear-gradient(90deg, var(--azul), var(--azul2));
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(45, 91, 209, 0.3);
+}
+
+.btn-success {
+    background: linear-gradient(90deg, #4caf50, #81c784);
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(72, 187, 120, 0.3);
+}
+
+/* Contenedor de botones */
+.botones-form {
+    display: flex;
+    justify-content: center;   
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* BOTONES MÁS PEQUEÑOS EN PC */
+.botones-form .btn {
+    flex: 0;                   
+    min-width: 180px;          
+}
+
+/* ==============================
+   7. Alertas
+============================== */
+#alertPlaceholder .alert {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 300px;
+    max-width: 90%;
+    z-index: 2000;
+    border-radius: 12px;
+    padding: 14px 22px;
+    font-size: 14px;
+    text-align: center;
+    color: #fff;
+    backdrop-filter: blur(5px);
+    opacity: 1;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    transition: all 0.4s ease, transform 0.4s ease;
+    font-weight: 500;
+}
+
+#alertPlaceholder .alert-success {
+    background: rgba(76, 175, 80, 0.95);
+}
+
+#alertPlaceholder .alert-danger {
+    background: rgba(220, 53, 69, 0.95);
+}
+
+#alertPlaceholder .alert-warning {
+    background: rgba(255, 193, 7, 0.95);
+    color: #2b2b2b;
+}
+
+#alertPlaceholder .alert.hide {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-25px);
+}
+
+/* ==============================
+   8. Responsive
+============================== */
+@media (max-width: 768px) {
+
+    .main-container {
+        padding: 15px 10px;
+    }
+
+    h5 {
+        font-size: 13px;
+    }
+
+    .botones-form {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .botones-form .btn {
+        width: auto;
+        min-width: 180px;
+    }
+    .table-responsive {
+        font-size: 12px;
+    }
+    #membersTable input {
+        padding: 4px 6px;
+        min-width: 80px;
+    }
+}
+</style>
+</head>
+
+<body>
+    {% include 'apartados_visitante/navbar_visitante.html' %}
+
+    <div class="main-container">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3>Solicitud de Ingreso a la Incubadora</h3>
+                <p class="mb-0">Formato de evaluación de emprendimientos</p>
+            </div>
+
+            <div class="card-body p-4">
+                <div id="alertPlaceholder"></div>
+
+                <form id="solicitudForm" method="POST" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Información Personal -->
+                    <h5><i class="bi bi-person-fill"></i> Información Personal</h5>
+                    <div class="row g-2">
+                        <div class="col-md-6"><input class="form-control" name="nombre_completo" placeholder="Nombre completo" required></div>
+                        <div class="col-md-6">
+                        <input class="form-control" type="email" name="correo" placeholder="Correo electrónico" required pattern="^[a-zA-Z0-9._%+-]+@utacapulco\.edu\.mx$" title="El correo debe terminar en @utacapulco.edu.mx"></div>
+                        <div class="col-md-2"><input class="form-control" type="number" name="edad" placeholder="Edad" required min="1" max="100"></div>
+                        <div class="col-md-3"><input class="form-control" name="matricula" placeholder="Matrícula" required></div>
+                        <div class="col-md-3"><input class="form-control" name="telefono" placeholder="Teléfono" required></div>
+                        <div class="col-md-4"><input class="form-control" name="nivel" placeholder="Nivel" required></div>
+                        <div class="col-md-4"><input class="form-control" type="number" name="integrantes_equipo" placeholder="Integrantes en equipo" required min="1" max="100"></div>
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input class="form-control" name="carrera" id="carreraLeader" placeholder="Selecciona tu carrera" required readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="openCareerModal('carreraLeader')">Seleccionar</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6"><input class="form-control" name="asesor_academico" placeholder="Asesor académico" required></div>
+                        <div class="col-md-6"><input class="form-control" name="tutor" placeholder="Tutor" required></div>
+                        <div class="col-10"><input class="form-control" name="direccion" placeholder="Dirección" required></div>
+                    </div>
+
+                    <!-- Información del Emprendimiento -->
+                    <h5><i class="bi bi-lightbulb-fill"></i> Información del Emprendimiento</h5>
+                    <div class="row g-2">
+                        <div class="col-12"><textarea class="form-control" name="descripcion_negocio" placeholder="Descripción breve" required></textarea></div>
+                        <div class="col-md-6"><input class="form-control" name="nombre_proyecto" placeholder="Nombre del proyecto" required></div>
+                        <div class="col-md-6"><input class="form-control" name="ubicacion_emprendimiento" placeholder="Ubicación" required></div>
+                        <div class="col-md-6"><input class="form-control" name="inicio_emprendimiento" placeholder="Inicio" required></div>
+                        <div class="col-md-6"><input class="form-control" name="clientes_clave" placeholder="Clientes clave" required></div>
+                        <div class="col-12"><textarea class="form-control" name="problema_resuelve" placeholder="Problema que resuelve" required></textarea></div>
+                        <div class="col-md-12"><textarea class="form-control" name="innovacion" placeholder="Innovación" required></textarea></div>
+                        <div class="col-12"><textarea class="form-control" name="valor_cliente" placeholder="Valor al cliente" required></textarea></div>
+                        <div class="col-md-6"><input class="form-control" name="producto_servicio" placeholder="Producto o servicio" required></div>
+                        <div class="col-md-6"><input class="form-control" name="idea_7_palabras" placeholder="Idea en 7 palabras" required></div>
+                        <div class="col-md-6"><select class="form-control" name="alta_sat" required>
+                            <option value="">¿Dado de alta en SAT?</option>
+                            <option value="SI">Sí</option>
+                            <option value="NO">No</option>
+                        </select></div>
+                        <div class="col-md-6"><select class="form-control" name="programas_previos" required>
+                            <option value="">¿Participaron en otros programas?</option>
+                            <option value="SI">Sí</option>
+                            <option value="NO">No</option>
+                        </select></div>
+                        <div class="col-md-6"><input class="form-control" type="number" name="personas_trabajan" placeholder="Personas en proyecto" required min="1" max="100"></div>
+                        <div class="col-md-6"><input class="form-control" type="number" name="miembros_incubacion" placeholder="Miembros incubación" required min="1" max="100"></div>
+                    </div>
+
+                    <!-- Sección de Integrantes del Equipo -->
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5><i class="bi bi-people-fill"></i> Integrantes del Equipo</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="addMemberBtn">
+                                <i class="bi bi-plus-circle"></i> Agregar integrante
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm" id="membersTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nombre Completo</th>
+                                        <th>Matrícula</th>
+                                        <th>Teléfono</th>
+                                        <th>Correo</th>
+                                        <th>Carrera</th>
+                                        <th>Nivel/Grupo</th>
+                                        <th>Cuatri</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="membersBody">
+                                    <!-- Aquí se agregarán los integrantes dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted small">Agregue a todos los integrantes de su equipo. Cada uno recibirá sus credenciales si el proyecto es aceptado.</p>
+                    </div>
+
+                    <h5 class="mt-4"><i class="bi bi-person-badge-fill"></i> Información del Líder del Equipo</h5>
+                    <textarea class="form-control mb-3" name="descripcion_lider" placeholder="Descríbete" required></textarea>
+                    <input class="form-control mb-3" name="rol_lider" placeholder="¿Cuál es tu rol en el emprendimiento?" required>
+                    <textarea class="form-control mb-3" name="habilidades" placeholder="Tus habilidades" required></textarea>
+                    <textarea class="form-control mb-4" name="logro_asombroso" placeholder="Cuéntanos algo asombroso que hayas construido" required></textarea>
+
+                    <div class="botones-form">
+                        <button type="submit" class="btn btn-primary w-50" id="submitBtn">Enviar Solicitud</button>
+                    </div>
+
+                {% include "solicitudes/cedula_inscripcion.html" %}
+
+                <!-- Modal para Selección de Carrera -->
+                <div class="modal fade" id="careerModal" tabindex="-1" aria-labelledby="careerModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="careerModalLabel" style="color: white; margin: 0;"><i class="bi bi-mortarboard-fill"></i> Seleccionar Carrera</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="d-grid gap-2">
+                          <button type="button" class="btn btn-outline-primary text-start" onclick="selectCareer('Desarrollo de Software Multiplataforma')">
+                            <i class="bi bi-code-slash"></i> Desarrollo de Software Multiplataforma
+                          </button>
+                          <button type="button" class="btn btn-outline-primary text-start" onclick="selectCareer('Mantenimiento Industrial')">
+                            <i class="bi bi-gear-fill"></i> Mantenimiento Industrial
+                          </button>
+                          <button type="button" class="btn btn-outline-primary text-start" onclick="selectCareer('Gastronomía')">
+                            <i class="bi bi-egg-fried"></i> Gastronomía
+                          </button>
+                          <button type="button" class="btn btn-outline-primary text-start" onclick="selectCareer('Mercadotecnia')">
+                            <i class="bi bi-graph-up-arrow"></i> Mercadotecnia
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const form = document.getElementById("solicitudForm");
+const submitBtn = document.getElementById("submitBtn");
+const alertPlaceholder = document.getElementById("alertPlaceholder");
+
+// ==================== Función de alertas ====================
+function showAlert(message, type = "success", timeout = 5000) {
+    const alert = document.createElement("div");
+    alert.className = `alert alert-${type} fade show text-center`;
+    alert.role = "alert";
+    alert.innerText = message;
+    alertPlaceholder.appendChild(alert);
+
+    // Desaparecer con transición suave
+    setTimeout(() => {
+        alert.classList.add("hide"); // activa animación
+        setTimeout(() => alert.remove(), 400); // remover después de 0.5s
+    }, timeout);
+}
+
+// ==================== Validación en tiempo real del correo ====================
+const correoInput = form.querySelector("[name='correo']");
+
+// Crear contenedor de error si no existe
+let correoError = document.getElementById("correoError");
+if (!correoError) {
+    correoError = document.createElement("small");
+    correoError.id = "correoError";
+    correoError.className = "text-danger";
+    correoError.style.display = "none";
+    correoError.style.fontSize = "12px";
+    correoInput.parentElement.appendChild(correoError);
+}
+
+// Expresión regular estricta para correo
+const correoRegex = /^[a-zA-Z0-9._%+-]+@utacapulco\.edu\.mx$/;
+
+correoInput.addEventListener("input", function() {
+    const value = correoInput.value.trim();
+    if (value === "" || correoRegex.test(value)) {
+        correoInput.classList.remove("is-invalid");
+        correoError.style.display = "none";
+    } else {
+        correoInput.classList.add("is-invalid");
+        correoError.innerText = "El correo debe terminar en @utacapulco.edu.mx";
+        correoError.style.display = "block";
+    }
+});
+
+// ==================== Lógica de Integrantes Dinámicos ====================
+const addMemberBtn = document.getElementById("addMemberBtn");
+const membersBody = document.getElementById("membersBody");
+
+function createMemberRow() {
+    const tr = document.createElement("tr");
+    const uniqueId = "carrera_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+    tr.innerHTML = `
+        <td><input type="text" class="form-control form-control-sm member-nombre" placeholder="Nombre" required></td>
+        <td><input type="text" class="form-control form-control-sm member-matricula" placeholder="Matrícula" required></td>
+        <td><input type="text" class="form-control form-control-sm member-telefono" placeholder="Teléfono" required></td>
+        <td><input type="email" class="form-control form-control-sm member-correo" placeholder="Correo" required></td>
+        <td>
+            <div class="input-group input-group-sm">
+                <input type="text" class="form-control form-control-sm member-carrera" id="${uniqueId}" placeholder="Carrera" required readonly>
+                <button class="btn btn-outline-secondary" type="button" onclick="openCareerModal('${uniqueId}')"><i class="bi bi-list"></i></button>
+            </div>
+        </td>
+        <td><input type="text" class="form-control form-control-sm member-nivel" placeholder="Nivel/Grupo" required></td>
+        <td><input type="text" class="form-control form-control-sm member-cuatri" placeholder="Cuatri" required></td>
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-member-btn">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tr.querySelector(".remove-member-btn").addEventListener("click", () => tr.remove());
+    return tr;
+}
+
+let activeCareerInputId = null;
+const careerModal = new bootstrap.Modal(document.getElementById('careerModal'));
+
+function openCareerModal(inputId) {
+    activeCareerInputId = inputId;
+    careerModal.show();
+}
+
+function selectCareer(careerName) {
+    if (activeCareerInputId) {
+        document.getElementById(activeCareerInputId).value = careerName;
+        careerModal.hide();
+    }
+}
+
+addMemberBtn.addEventListener("click", () => {
+    membersBody.appendChild(createMemberRow());
+});
+
+// Agregar uno por defecto
+membersBody.appendChild(createMemberRow());
+
+// ==================== Envío del formulario ====================
+form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    // Validación de campos obligatorios
+    if (!form.checkValidity()) {
+        showAlert("❌ Por favor completa todos los campos requeridos.", "danger");
+        return;
+    }
+
+    // Validación estricta del correo (Líder)
+    const correoValido = correoRegex.test(correoInput.value.trim());
+    if (!correoValido) {
+        correoInput.classList.add("is-invalid");
+        correoError.innerText = "El correo debe terminar en @utacapulco.edu.mx";
+        correoError.style.display = "block";
+        showAlert("❌ El correo del líder no es válido.", "danger");
+        return;
+    }
+
+    // Recopilar integrantes
+    const integrantes = [];
+    const rows = membersBody.querySelectorAll("tr");
+    let integrantesValidos = true;
+
+    rows.forEach(row => {
+        const nombre = row.querySelector(".member-nombre").value.trim();
+        const matricula = row.querySelector(".member-matricula").value.trim();
+        const telefono = row.querySelector(".member-telefono").value.trim();
+        const correo = row.querySelector(".member-correo").value.trim();
+        const carrera = row.querySelector(".member-carrera").value.trim();
+        const nivel = row.querySelector(".member-nivel").value.trim();
+        const cuatri = row.querySelector(".member-cuatri").value.trim();
+
+        if (!nombre || !correo || !matricula) {
+            integrantesValidos = false;
+        }
+
+        integrantes.push({
+            nombre, matricula, telefono, correo, carrera, nivel, cuatri
+        });
+    });
+
+    if (!integrantesValidos) {
+        showAlert("❌ Por favor completa los datos de todos los integrantes.", "danger");
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Enviando...";
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    data.integrantes = integrantes; // Añadimos la lista de integrantes
+
+    try {
+        const response = await fetch("{% url 'solicitud_ingreso' %}", {
+            method: "POST",
+            headers: { 
+                "X-CSRFToken": data.csrfmiddlewaretoken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            showAlert("✅ Solicitud enviada con éxito. Revisa tu correo.", "success");
+            form.reset();
+            membersBody.innerHTML = "";
+            membersBody.appendChild(createMemberRow());
+            correoInput.classList.remove("is-invalid");
+            correoError.style.display = "none";
+        } else {
+            const errData = await response.json();
+            showAlert("❌ Error: " + (errData.error || "Ocurrió un problema"), "danger");
+        }
+    } catch (error) {
+        showAlert("⚠️ No se pudo conectar con el servidor", "warning");
+        console.error(error);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Enviar Solicitud";
+    }
+});
+</script>
+
+<script>
+    // ==================== Generación de PDF ====================
+    async function generarPDF() {
+        // Llenar datos dinámicamente
+        document.getElementById("pdf_nombre").innerText =
+            document.querySelector("[name='nombre_completo']").value;
+
+        document.getElementById("pdf_correo").innerText =
+            document.querySelector("[name='correo']").value;
+
+        document.getElementById("pdf_carrera").innerText =
+            document.querySelector("[name='carrera']").value;
+
+        document.getElementById("pdf_matricula").innerText =
+            document.querySelector("[name='matricula']").value;
+
+        document.getElementById("pdf_telefono").innerText =
+            document.querySelector("[name='telefono']").value;
+
+        document.getElementById("pdf_proyecto").innerText =
+            document.querySelector("[name='nombre_proyecto']").value;
+
+        document.getElementById("pdf_descripcion").innerText =
+            document.querySelector("[name='descripcion_negocio']").value;
+
+        document.getElementById("pdf_fecha").innerText =
+            new Date().toLocaleDateString();
+
+        const cedula = document.getElementById("cedulaPDF");
+        cedula.style.display = "block";
+
+        const canvas = await html2canvas(cedula, { scale: 2 });
+        const imgData = canvas.toDataURL("image/png");
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF("p", "mm", "a4");
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save("Cedula_Inscripcion.pdf");
+
+        cedula.style.display = "none";
+    }
+</script>
+</body>
+
+</html>

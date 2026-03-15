@@ -1,0 +1,50 @@
+{% extends "panel_admin.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/perfil_admin.css' %}">
+
+<div class="perfil-overlay">
+
+    <div class="perfil-card">
+
+        <span class="cerrar" onclick="cerrarPerfil()">&times;</span>
+
+        <!-- LATERAL -->
+        <div class="perfil-lateral">
+            <div class="perfil-avatar">
+                {{ request.session.nombre|slice:":1" }}
+            </div>
+
+            <div class="rol-badge">
+                {{ request.session.rol }}
+            </div>
+        </div>
+
+        <!-- DETALLE -->
+        <div class="perfil-detalle">
+            <h2>Información del Perfil</h2>
+
+            <div class="campo">
+                <label>Nombre completo</label>
+                <div class="valor">
+                    {{ request.session.nombre }} {{ request.session.apellido_paterno }} {{ request.session.apellido_materno }}
+                </div>
+            </div>
+
+            <div class="campo">
+                <label>Correo electrónico</label>
+                <div class="valor">
+                    {{ request.session.correo }}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{% static 'js/perfil_admin.js' %}"></script>
+
+{% endblock %}

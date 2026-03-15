@@ -1,0 +1,189 @@
+{% extends 'panel_admin.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/expedientes_admin.css' %}">
+
+<div class="expedientes-wrap">
+    <div class="expedientes-head">
+        <div>
+            <h2>Expedientes versionados</h2>
+            <p>Visualiza las versiones de documentos que cada usuario ha cargado. Interfaz ligera y sin ruido.</p>
+        </div>
+        <div class="metric-grid">
+            <div class="metric-card">
+                <span>Usuarios con acceso</span>
+                <strong>{{ total_usuarios }}</strong>
+            </div>
+            <div class="metric-card">
+                <span>Documentos distintos</span>
+                <strong>{{ total_documentos }}</strong>
+            </div>
+            <div class="metric-card">
+                <span>Versiones totales</span>
+                <strong>{{ total_versiones }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="expedientes-toolbar">
+        <input type="search" id="buscadorUsuarios" placeholder="Buscar por nombre o correo">
+        <span class="toolbar-hint">Tip: abre solo al usuario que necesitas revisar.</span>
+    </div>
+
+    <div class="usuarios-lista">
+        <!-- SECCIÓN DE PROYECTOS -->
+        {% for proyecto in proyectos_expedientes %}
+        <div class="proyecto-header">
+            <h3><i class="bi bi-briefcase-fill"></i> Proyecto: {{ proyecto.nombre_proyecto }}</h3>
+            <span class="badge-equipo">Equipo ({{ proyecto.integrantes|length }})</span>
+        </div>
+
+        <div class="usuario-card" data-target="proj-{{ proyecto.id_proyecto }}" data-search="{{ proyecto.nombre_proyecto }}">
+            <div class="usuario-info">
+                <div>
+                    <div class="usuario-nombre">
+                        Documentación del Equipo
+                    </div>
+                    <div class="usuario-correo">
+                        {% for integrante in proyecto.integrantes %}
+                            {{ integrante.nombre|default:"Sin nombre" }}{% if integrante.es_lider %} (Líder){% endif %}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="usuario-pills">
+                    <span class="pill">Docs {{ proyecto.total_documentos }}</span>
+                    <span class="pill">Ver {{ proyecto.total_versiones }}</span>
+                </div>
+            </div>
+            <div class="usuario-meta">
+                <span>Ultima carga: {{ proyecto.ultima_fecha }}</span>
+                <button class="toggle-btn" data-target="proj-{{ proyecto.id_proyecto }}">Ver versiones</button>
+            </div>
+        </div>
+
+        <div class="expediente-panel" id="proj-{{ proyecto.id_proyecto }}">
+            {% if proyecto.expedientes %}
+                {% for expediente in proyecto.expedientes %}
+                <div class="expediente-card">
+                    <div class="expediente-head">
+                        <div>
+                            <div class="expediente-nombre">{{ expediente.nombre_documento }}</div>
+                            <div class="expediente-meta">{{ expediente.total_versiones }} versiones • Ultima {{ expediente.ultima_fecha }}</div>
+                        </div>
+                        <span class="badge">{{ expediente.ultima_version_label }}</span>
+                    </div>
+                    <div class="versiones">
+                        {% for version in expediente.versiones %}
+                        <div class="version-row">
+                            <div class="version-info">
+                                <div class="version-title">Version {{ version.version }}</div>
+                                <div class="version-meta">{{ version.fecha_subida }} • {{ version.tamano_archivo }}</div>
+                                <div class="version-file">{{ version.nombre_archivo }}</div>
+                            </div>
+                            <div class="version-actions">
+                                <a class="view-btn" href="{% url 'ver_documento_expediente_admin' version.id %}" target="_blank" rel="noopener">Ver</a>
+                                <a class="download-btn" href="{{ version.download_url }}" target="_blank" rel="noopener">Descargar</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty">Aun no hay documentos para este equipo.</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- SECCIÓN DE USUARIOS SIN PROYECTO -->
+        {% if usuarios_sin_proyecto %}
+        <div class="proyecto-header huerfanos">
+            <h3><i class="bi bi-person-slash"></i> Usuarios sin equipo asignado</h3>
+        </div>
+        {% for usuario in usuarios_sin_proyecto %}
+        <div class="usuario-card" data-target="exp-{{ usuario.id }}" data-search="{{ usuario.nombre }} {{ usuario.correo }}">
+            <!-- ... contenido similar al de arriba ... -->
+            <div class="usuario-info">
+                <div>
+                    <div class="usuario-nombre">{{ usuario.nombre|default:"Sin nombre" }}</div>
+                    <div class="usuario-correo">{{ usuario.correo|default:"Sin correo" }}</div>
+                </div>
+                <div class="usuario-pills">
+                    <span class="pill">Docs {{ usuario.total_documentos }}</span>
+                    <span class="pill">Ver {{ usuario.total_versiones }}</span>
+                </div>
+            </div>
+            <div class="usuario-meta">
+                <span>Ultima carga: {{ usuario.ultima_fecha }}</span>
+                <button class="toggle-btn" data-target="exp-{{ usuario.id }}">Ver versiones</button>
+            </div>
+        </div>
+        <div class="expediente-panel" id="exp-{{ usuario.id }}">
+            {% if usuario.expedientes %}
+                {% for expediente in usuario.expedientes %}
+                <div class="expediente-card">
+                    <div class="expediente-head">
+                        <div>
+                            <div class="expediente-nombre">{{ expediente.nombre_documento }}</div>
+                            <div class="expediente-meta">{{ expediente.total_versiones }} versiones • Ultima {{ expediente.ultima_fecha }}</div>
+                        </div>
+                        <span class="badge">{{ expediente.ultima_version_label }}</span>
+                    </div>
+                    <div class="versiones">
+                        {% for version in expediente.versiones %}
+                        <div class="version-row">
+                            <div class="version-info">
+                                <div class="version-title">Version {{ version.version }}</div>
+                                <div class="version-meta">{{ version.fecha_subida }} • {{ version.tamano_archivo }}</div>
+                                <div class="version-file">{{ version.nombre_archivo }}</div>
+                            </div>
+                            <div class="version-actions">
+                                <a class="view-btn" href="{% url 'ver_documento_expediente_admin' version.id %}" target="_blank" rel="noopener">Ver</a>
+                                <a class="download-btn" href="{{ version.download_url }}" target="_blank" rel="noopener">Descargar</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty">Aun no hay documentos para este usuario.</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<script>
+(() => {
+    const searchInput = document.getElementById("buscadorUsuarios");
+    const cards = Array.from(document.querySelectorAll(".usuario-card"));
+    const toggles = document.querySelectorAll(".toggle-btn");
+
+    toggles.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const targetId = btn.dataset.target;
+            const panel = document.getElementById(targetId);
+            const isOpen = panel.classList.toggle("open");
+            btn.textContent = isOpen ? "Ocultar versiones" : "Ver versiones";
+        });
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener("input", () => {
+            const term = searchInput.value.trim().toLowerCase();
+            cards.forEach(card => {
+                const hayCoincidencia = card.dataset.search.toLowerCase().includes(term);
+                const panel = document.getElementById(card.dataset.target);
+                card.style.display = hayCoincidencia ? "" : "none";
+                if (panel) {
+                    panel.style.display = hayCoincidencia ? "" : "none";
+                }
+            });
+        });
+    }
+})();
+</script>
+{% endblock %}

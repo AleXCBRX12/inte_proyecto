@@ -1,0 +1,86 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/detalle_solicitud.css' %}">
+
+<div class="solicitud-modal" id="modalDetalle">
+    <div class="solicitud-modal-content">
+        <button class="modal-close" onclick="cerrarModal('modalDetalle')">×</button>
+        <h3>Detalle de Solicitud</h3>
+
+        <div class="modal-grid">
+
+            <div class="modal-section">
+                <h5>Información Personal</h5>
+                <p><strong>Nombre:</strong> <span id="modalNombre"></span></p>
+                <p><strong>Correo:</strong> <span id="modalCorreo"></span></p>
+                <p><strong>Edad:</strong> <span id="modalEdad"></span></p>
+                <p><strong>Carrera:</strong> <span id="modalCarrera"></span></p>
+                <p><strong>Nivel:</strong> <span id="modalNivel"></span></p>
+                <p><strong>Matrícula:</strong> <span id="modalMatricula"></span></p>
+                <p><strong>Asesor:</strong> <span id="modalAsesor"></span></p>
+                <p><strong>Tutor:</strong> <span id="modalTutor"></span></p>
+                <p><strong>Teléfono:</strong> <span id="modalTelefono"></span></p>
+                <p><strong>Dirección:</strong> <span id="modalDireccion"></span></p>
+                <p><strong>Integrantes:</strong> <span id="modalIntegrantes"></span></p>
+            </div>
+
+            <div class="modal-section">
+                <h5>Información del Proyecto</h5>
+                <p><strong>Proyecto:</strong> <span id="modalProyecto"></span></p>
+                <p><strong>Descripción:</strong> <span id="modalDescripcion"></span></p>
+                <p><strong>Ubicación:</strong> <span id="modalUbicacion"></span></p>
+                <p><strong>Inicio:</strong> <span id="modalInicio"></span></p>
+                <p><strong>Clientes:</strong> <span id="modalClientes"></span></p>
+                <p><strong>Problema:</strong> <span id="modalProblema"></span></p>
+                <p><strong>Producto:</strong> <span id="modalProducto"></span></p>
+                <p><strong>Innovación:</strong> <span id="modalInnovacion"></span></p>
+                <p><strong>Valor:</strong> <span id="modalValor"></span></p>
+                <p><strong>Idea:</strong> <span id="modalIdea"></span></p>
+                <p><strong>Alta SAT:</strong> <span id="modalSat"></span></p>
+                <p><strong>Personas:</strong> <span id="modalPersonasTrabajan"></span></p>
+                <p><strong>Incubación:</strong> <span id="modalMiembrosIncubacion"></span></p>
+                <p><strong>Programas:</strong> <span id="modalProgramasPrevios"></span></p>
+            </div>
+
+            <div class="modal-section full">
+                <h5>Líder del Equipo</h5>
+                <p><strong>Descripción:</strong> <span id="modalDescripcionLider"></span></p>
+                <p><strong>Rol:</strong> <span id="modalRol"></span></p>
+                <p><strong>Habilidades:</strong> <span id="modalHabilidades"></span></p>
+                <p><strong>Logro:</strong> <span id="modalLogro"></span></p>
+                <p><strong>Estado:</strong> <span id="modalEstado"></span></p>
+                <p><strong>Fecha:</strong> <span id="modalFecha"></span></p>
+            </div>
+
+            <div class="modal-section full" id="seccionIntegrantes" style="display: none;">
+                <h5>Integrantes del Equipo</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered" style="font-size: 0.85rem; width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead style="background: #f8f9fa;">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Matrícula</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
+                                <th>Carrera</th>
+                                <th>Nivel</th>
+                                <th>Cuatri</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalIntegrantesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="modal-actions">
+            <button class="modal-btn modal-aceptar" onclick="aceptarDesdeDetalle()">
+                Aceptar
+            </button>
+            <button class="modal-btn modal-rechazar" onclick="rechazarDesdeDetalle()">
+                Rechazar
+            </button>
+        </div>
+
+    </div>
+</div>

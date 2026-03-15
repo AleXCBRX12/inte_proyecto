@@ -1,0 +1,87 @@
+{% extends "portal_publico.html" %}
+{% load static %}
+
+{% block title %}Chat con administrador{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/chat.css' %}?v=3.0">
+
+<main class="chat-user-wrapper"
+      id="chatUsuarioApp"
+      data-messages-url="{% url 'chat_usuario_mensajes' %}"
+      data-send-url="{% url 'chat_usuario_enviar' %}"
+      data-edit-url-template="{% url 'chat_usuario_editar' 'MSG_ID' %}"
+      data-delete-url-template="{% url 'chat_usuario_eliminar' 'MSG_ID' %}"
+      data-current-project-id="{{ proyectos.0.id|default:'' }}">
+
+    <!-- Sidebar removed as requested (single project view) -->
+
+    <section class="chat-user-card">
+        <header class="chat-user-header">
+            <h2 id="currentProjectTitle">
+                {% if proyectos %}
+                    {{ proyectos.0.nombre_proyecto }}
+                {% else %}
+                    Chat de Proyecto
+                {% endif %}
+            </h2>
+            <p>Admin: <strong>{{ admin_nombre }}</strong></p>
+        </header>
+
+        <div id="chatUsuarioMessages" class="chat-user-messages">
+            <p class="chat-user-placeholder">Cargando mensajes...</p>
+        </div>
+
+        <form id="chatUsuarioForm" class="chat-user-form">
+            <div class="chat-actions-left" style="display: flex; gap: 8px;">
+                <button type="button" id="emojiUsuarioBtn" class="chat-tool-btn" title="Emojis">😊</button>
+                <label id="chatUsuarioFileLabel" for="chatUsuarioFile" class="chat-tool-btn" title="Adjuntar archivo">📎</label>
+                <input id="chatUsuarioFile" type="file" style="display: none;">
+            </div>
+
+            <textarea id="chatUsuarioInput"
+                      placeholder="Escribe tu mensaje..."
+                      maxlength="800"
+                      rows="1"></textarea>
+
+            <button type="submit">Enviar</button>
+
+            <div id="emojiUsuarioPicker" class="chat-user-emoji" style="position: absolute; bottom: 85px; left: 24px; background: white; padding: 10px; border-radius: 12px; box-shadow: var(--p-shadow-xl); z-index: 100;" hidden>
+                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">😀</button>
+                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">😂</button>
+                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">😍</button>
+                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">🔥</button>
+                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">👍</button>
+                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">🚀</button>
+            </div>
+        </form>
+
+        <div id="chatUsuarioPreview" class="chat-user-attach-preview" hidden></div>
+
+        <!-- MODALES PREMIUM (IDENTICAL TO ADMIN) -->
+        <div id="modalEditUsuario" class="chat-m-overlay" hidden>
+            <div class="chat-m-content">
+                <h3>Editar Mensaje</h3>
+                <textarea id="editUsuarioInput" rows="4"></textarea>
+                <div class="chat-m-actions">
+                    <button type="button" class="chat-m-btn-cancel" onclick="closeEditModal()">Cancelar</button>
+                    <button type="button" class="chat-m-btn-save" onclick="saveEditMessage()">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modalDeleteUsuario" class="chat-m-overlay" hidden>
+            <div class="chat-m-content">
+                <h3>Confirmar eliminación</h3>
+                <p>El mensaje será reemplazado por un aviso de eliminación de forma permanente.</p>
+                <div class="chat-m-actions">
+                    <button type="button" class="chat-m-btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                    <button type="button" class="chat-m-btn-delete" onclick="confirmDeleteMessage()">Eliminar permanentemente</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="{% static 'js/chat_usuario.js' %}?v=3.0"></script>
+{% endblock %}

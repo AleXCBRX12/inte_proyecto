@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desarrolladores - UT Acapulco</title>
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}">
+    <style>
+        :root {
+            --azul: #1f3c88;
+            --azul-accent: #2563eb;
+            --white: #ffffff;
+            --slate-100: #f1f5f9;
+        }
+
+        body {
+            background-color: var(--slate-100);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding-top: 80px; /* Space for navbar */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto; /* Reducido de 40px */
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            flex: 1;
+        }
+
+        h1 {
+            color: var(--azul);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .dev-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .dev-card {
+            background: var(--white);
+            padding: 20px 30px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .dev-card:hover {
+            transform: translateX(10px);
+            border-color: var(--azul-accent);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1);
+        }
+
+        .dev-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dev-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--azul);
+        }
+
+        .dev-id {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+
+        .dev-badge {
+            background: var(--azul-accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: var(--azul);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'apartados_visitante/navbar_visitante.html' %}
+
+    <div class="container">
+        <a href="javascript:history.back()" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Volver
+        </a>
+
+        <h1>Equipo de Desarrollo</h1>
+        <p class="subtitle">Integrantes del Programa de Incubación Empresarial</p>
+
+        <div class="dev-list">
+            <div class="dev-card">
+                <div class="dev-info">
+                    <span class="dev-name">Karla Trujano Medina</span>
+                    <span class="dev-id">ID: 202404065</span>
+                </div>
+                <span class="dev-badge">Desarrollador</span>
+            </div>
+
+            <div class="dev-card">
+                <div class="dev-info">
+                    <span class="dev-name">Alejandro De Jesús Torres Reyes</span>
+                    <span class="dev-id">ID: 202404040</span>
+                </div>
+                <span class="dev-badge">Desarrollador</span>
+            </div>
+
+            <div class="dev-card">
+                <div class="dev-info">
+                    <span class="dev-name">José Maria Urzua Ochoa</span>
+                    <span class="dev-id">ID: 202404094</span>
+                </div>
+                <span class="dev-badge">Desarrollador</span>
+            </div>
+
+            <div class="dev-card">
+                <div class="dev-info">
+                    <span class="dev-name">Paola Ascencio Viveros</span>
+                    <span class="dev-id">ID: 202404062</span>
+                </div>
+                <span class="dev-badge">Desarrollador</span>
+            </div>
+
+            <div class="dev-card">
+                <div class="dev-info">
+                    <span class="dev-name">Milton Alejandro Bolaños De La Cruz</span>
+                    <span class="dev-id">ID: 202404096</span>
+                </div>
+                <span class="dev-badge">Desarrollador</span>
+            </div>
+        </div>
+    </div>
+
+    {% include 'common/shared_footer.html' %}
+</body>
+</html>

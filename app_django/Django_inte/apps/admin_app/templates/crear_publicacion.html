@@ -1,0 +1,484 @@
+{% extends 'panel_admin.html' %} 
+{% load static %}
+
+{% block content %} 
+<!-- Estilos base unificados de muro -->
+<link rel="stylesheet" href="{% static 'css/ver_convocatorias.css' %}?v=17">
+
+<div class="muro-admin-container">
+    <div class="publications-header" style="margin-bottom: 35px;">
+        <h2 style="font-size: 2.2rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Gestión de Publicaciones</h2>
+        <p class="muted" style="color: #64748b; font-size: 1.1rem;">Crea, filtra y administra tus publicaciones y convocatorias con un solo clic.</p>
+    </div>
+
+    <!-- Admin Filter & Search Bar -->
+    <div class="admin-filters-container">
+        <div class="search-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="text" id="adminSearch" class="admin-search-input" placeholder="Buscar por título..." onkeyup="filtrarPublicaciones()">
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setCategoryFilter('todo', this)">Todas</button>
+            <button class="filter-tab" onclick="setCategoryFilter('convocatoria', this)">Convocatorias</button>
+            <button class="filter-tab" onclick="setCategoryFilter('anuncio', this)">Avisos / Anuncios</button>
+        </div>
+
+        <div class="admin-actions-main">
+            <button class="btn-create-modal" onclick="abrirModalCrear()">
+                <i class="bi bi-plus-lg"></i> Crear Nueva
+            </button>
+        </div>
+    </div>
+
+    <!-- Publications List -->
+    <div class="showcase-grid" id="publicationsGrid">
+        {% if muro %}
+            {% for item in muro %}
+                <div class="showcase-card admin-mode card-item {% if not item.banner %}no-image{% endif %}" 
+                     data-id="{{ item.id }}" 
+                     data-tipo="{{ item.tipo }}" 
+                     data-titulo="{{ item.titulo|escapejs }}"
+                     data-contenido="{{ item.contenido|escapejs }}"
+                     data-date="{{ item.fecha_sort|date:'Y-m-d' }}T{{ item.fecha_sort|date:'H:i' }}"
+                     data-solo-emp="{{ item.solo_emprendedores|yesno:'true,false' }}">
+                    
+                    <!-- Actions Overlay for Admin -->
+                    <div class="showcase-admin-actions-premium">
+                        {% if item.tipo == 'convocatoria' %}
+                            <button class="action-btn-p edit-p" title="Editar Convocatoria"
+                                    onclick="editConvocatoria(this)">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="action-btn-p delete-p" title="Eliminar"
+                                    onclick="confirmDeleteConvocatoria('{{ item.id }}')">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        {% else %}
+                            <button onclick="editPublicacion(this)" 
+                                    class="action-btn-p edit-p" title="Editar Publicación">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button onclick="confirmDeletePublicacion('{{ item.id }}')" 
+                                    class="action-btn-p delete-p" title="Eliminar">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Media Section -->
+                    {% if item.banner %}
+                    <div class="showcase-media">
+                        <img src="data:image/png;base64,{{ item.banner }}" alt="{{ item.titulo }}">
+                        <div class="showcase-badge {{ item.tipo }}">
+                            {% if item.tipo == 'convocatoria' %}Convocatoria{% else %}Aviso{% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Body -->
+                    <div class="showcase-body">
+                        {% if not item.banner %}
+                        <div class="showcase-badge-inline {{ item.tipo }}" style="margin-bottom:12px; font-weight:800; color:var(--showcase-accent); font-size: 0.75rem; letter-spacing: 0.1em;">
+                            {% if item.tipo == 'convocatoria' %}CONVOCATORIA{% else %}AVISO{% endif %}
+                        </div>
+                        {% endif %}
+                        <div class="showcase-admin-tags">
+                            {% if item.solo_emprendedores %}
+                                <span class="status-badge-admin status-hidden">Privado</span>
+                            {% else %}
+                                <span class="status-badge-admin status-visible">Público</span>
+                            {% endif %}
+                        </div>
+                        <h3 class="showcase-title" style="margin-bottom: 10px;">{{ item.titulo }}</h3>
+                        <div class="showcase-description" style="margin-bottom: 20px;">
+                            {{ item.contenido|truncatewords:30 }}
+                        </div>
+                        <div class="showcase-meta">
+                            <span><i class="bi bi-calendar3" style="margin-right: 5px;"></i> {{ item.fecha }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            <div id="noResults" class="no-posts-full" style="display: none; width: 100%; grid-column: 1 / -1;">
+                <i class="bi bi-search" style="font-size: 3rem; color: #e2e8f0;"></i>
+                <p style="margin-top: 15px; font-size: 1.1rem; color: #64748b;">No se encontraron resultados para esta categoría o búsqueda.</p>
+            </div>
+        {% else %}
+            <div class="no-posts-full">
+                <i class="bi bi-mailbox" style="font-size: 4rem; color: #e2e8f0;"></i>
+                <p style="margin-top: 15px; font-size: 1.1rem;">Aún no hay publicaciones creadas.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Unificado de Creación/Edición -->
+<div id="modalPremium" class="modal-modern admin-modal-context">
+    <div class="modal-content-modern">
+        <div class="modal-header-modern">
+            <h3 id="modalTitle">Nueva Publicación</h3>
+            <div class="close-modal" onclick="cerrarModal()"><i class="bi bi-x-lg"></i></div>
+        </div>
+        
+        <div class="modal-body-modern">
+            <div class="modal-tabs" id="modalCreationTabs">
+                <button class="modal-tab-btn active" id="tabBtnNoticia" onclick="switchModalForm('anuncio')">Aviso / Anuncio</button>
+                <button class="modal-tab-btn" id="tabBtnConvocatoria" onclick="switchModalForm('convocatoria')">Convocatoria</button>
+            </div>
+
+            <!-- Form Publicaciones -->
+            <div id="modalFormNoticia" class="modal-form-container">
+                <form id="formAnuncio" method="POST" action="{% url 'crear_anuncio' %}" class="admin-form-modern">
+                    {% csrf_token %}
+                    <div class="form-group-modern">
+                        <label>Título del Aviso</label>
+                        <input type="text" id="anuncioTitulo" name="titulo" class="form-input-modern" placeholder="Escribe un título atractivo..." required>
+                    </div>
+                    <div class="form-group-modern">
+                        <label>Contenido</label>
+                        <textarea id="anuncioContenido" name="contenido" rows="5" class="form-input-modern" placeholder="Escribe los detalles del aviso..." required></textarea>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding: 12px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <input type="checkbox" id="anuncioAudiencia" name="solo_emprendedores" style="width:20px; height:20px; cursor:pointer;">
+                        <label for="anuncioAudiencia" style="font-size:0.95rem; font-weight:600; cursor:pointer; margin:0; color: #475569;">Solo visible para emprendedores registrados</label>
+                    </div>
+                    <div class="modal-footer-modern">
+                        <button type="button" class="btn-premium-post" style="background:#f1f5f9; color:#64748b;" onclick="cerrarModal()">Cancelar</button>
+                        <button type="submit" id="btnSubmitNoticia" class="btn-premium-post">Publicar Ahora</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Form Convocatoria -->
+            <div id="modalFormConvocatoria" class="modal-form-container" style="display:none;">
+                <form id="formCrear" method="POST" enctype="multipart/form-data" action="{% url 'crear_convocatoria' %}" class="admin-form-modern">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" id="editConvocatoriaId">
+                    <div class="form-group-modern">
+                        <label>Título de la Convocatoria</label>
+                        <input type="text" name="titulo" id="crearTitulo" class="form-input-modern" placeholder="Ej: Convocatoria Semilla 2026" required>
+                    </div>
+                    <div class="form-group-modern">
+                        <label>Fecha de Cierre</label>
+                        <input type="datetime-local" name="fecha_fin" id="crearFecha" class="form-input-modern" required>
+                    </div>
+                    <div class="form-group-modern">
+                        <label>Banner / Imagen (Opcional)</label>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="file" name="banner" id="crearBanner" accept="image/*" class="form-input-modern" style="width:100%;">
+                        </div>
+                    </div>
+                    <div class="modal-footer-modern">
+                        <button type="button" class="btn-premium-post" style="background:#f1f5f9; color:#64748b;" onclick="cerrarModal()">Cancelar</button>
+                        <button type="submit" id="btnSubmitConvocatoria" class="btn-premium-post" style="background:var(--showcase-text-main);">Publicar Convocatoria</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentCategory = 'todo';
+
+    function setCategoryFilter(category, btn) {
+        currentCategory = category;
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtrarPublicaciones();
+    }
+
+    function filtrarPublicaciones() {
+        const query = document.getElementById('adminSearch').value.toLowerCase();
+        const cards = document.querySelectorAll('.card-item');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const titulo = card.getAttribute('data-titulo').toLowerCase();
+            const tipo = card.getAttribute('data-tipo');
+            
+            const matchesQuery = titulo.includes(query);
+            const matchesCategory = (currentCategory === 'todo' || tipo === currentCategory);
+
+            if (matchesQuery && matchesCategory) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const noResults = document.getElementById('noResults');
+        if (noResults) {
+            noResults.style.display = (visibleCount === 0) ? 'block' : 'none';
+        }
+    }
+
+    function abrirModalCrear() {
+        document.getElementById('modalPremium').style.display = 'flex';
+        document.getElementById('modalTitle').innerText = "Crear Nueva Publicación";
+        document.getElementById('modalCreationTabs').style.display = 'flex';
+        resetForms();
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalPremium').style.display = 'none';
+    }
+
+    function showToast(title, message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icon = type === 'success' ? 'bi-check-circle-fill' : (type === 'error' ? 'bi-x-circle-fill' : 'bi-info-circle-fill');
+        
+        toast.innerHTML = `
+            <div class="toast-icon"><i class="bi ${icon}"></i></div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+        `;
+        
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
+
+    function openConfirmModal(onConfirm) {
+        const modal = document.getElementById('modalConfirmDelete');
+        const btn = document.getElementById('btnConfirmAction');
+        modal.style.display = 'flex';
+        
+        btn.onclick = () => {
+            onConfirm();
+            closeConfirmModal();
+        };
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('modalConfirmDelete').style.display = 'none';
+    }
+
+    // Interceptar form de anuncios/publicaciones
+    document.getElementById('formAnuncio').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const action = this.getAttribute('action');
+        const btn = document.getElementById('btnSubmitNoticia');
+        const isEditing = btn.innerText.includes('Guardar');
+        
+        try {
+            btn.disabled = true;
+            btn.innerText = 'Procesando...';
+            
+            const response = await fetch(action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(isEditing ? 'Actualizado' : 'Publicado', isEditing ? 'La publicación ha sido actualizada con éxito.' : 'Tu publicación está lista.');
+                cerrarModal();
+                if (!isEditing) {
+                    location.reload(); // De momento reload para no reconstruir todo el DOM complejo, pero ya funciona con éxito.
+                } else {
+                    location.reload();
+                }
+            } else {
+                showToast('Error', 'No se pudo procesar la solicitud.', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión', 'Inténtalo de nuevo más tarde.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = isEditing ? 'Guardar Cambios' : 'Publicar Ahora';
+        }
+    });
+
+    // Interceptar form de convocatorias
+    document.getElementById('formCrear').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const action = this.getAttribute('action');
+        const btn = document.getElementById('btnSubmitConvocatoria');
+        const isEditing = btn.innerText.includes('Guardar');
+
+        try {
+            btn.disabled = true;
+            btn.innerText = 'Cargando...';
+            
+            const response = await fetch(action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(isEditing ? 'Convocatoria Editada' : 'Convocatoria Creada', 'El cambio se ha guardado correctamente.');
+                cerrarModal();
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showToast('Error', data.error || 'Algo salió mal.', 'error');
+            }
+        } catch (error) {
+            showToast('Error', 'Error al procesar la convocatoria.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = isEditing ? 'Guardar Cambios' : 'Publicar Convocatoria';
+        }
+    });
+
+    function resetForms() {
+        document.getElementById('formAnuncio').reset();
+        document.getElementById('formCrear').reset();
+        document.getElementById('formAnuncio').action = "{% url 'crear_anuncio' %}";
+        document.getElementById('btnSubmitNoticia').innerText = "Publicar Ahora";
+        switchModalForm('anuncio');
+    }
+
+    function switchModalForm(tipo) {
+        if (tipo === 'anuncio') {
+            document.getElementById('modalFormNoticia').style.display = 'block';
+            document.getElementById('modalFormConvocatoria').style.display = 'none';
+            document.getElementById('tabBtnNoticia').classList.add('active');
+            document.getElementById('tabBtnConvocatoria').classList.remove('active');
+        } else {
+            document.getElementById('modalFormNoticia').style.display = 'none';
+            document.getElementById('modalFormConvocatoria').style.display = 'block';
+            document.getElementById('tabBtnNoticia').classList.remove('active');
+            document.getElementById('tabBtnConvocatoria').classList.add('active');
+        }
+    }
+
+    function editPublicacion(btn) {
+        const card = btn.closest('.card-item');
+        const id = card.getAttribute('data-id');
+        const titulo = card.getAttribute('data-titulo');
+        const contenido = card.getAttribute('data-contenido');
+        const soloEmp = card.getAttribute('data-solo-emp');
+
+        abrirModalCrear();
+        document.getElementById('modalTitle').innerText = "Editar Publicación";
+        document.getElementById('modalCreationTabs').style.display = 'none';
+        switchModalForm('anuncio');
+        
+        document.getElementById("anuncioTitulo").value = titulo;
+        document.getElementById("anuncioContenido").value = contenido;
+        document.getElementById("anuncioAudiencia").checked = (soloEmp === 'true');
+        document.getElementById("formAnuncio").action = `/admin/anuncios/editar/${id}/`;
+        document.getElementById('btnSubmitNoticia').innerText = "Guardar Cambios";
+    }
+
+    function editConvocatoria(btn) {
+        const card = btn.closest('.card-item');
+        const id = card.getAttribute('data-id');
+        const titulo = card.getAttribute('data-titulo');
+        const fecha = card.getAttribute('data-date');
+
+        abrirModalCrear();
+        document.getElementById('modalTitle').innerText = "Editar Convocatoria";
+        document.getElementById('modalCreationTabs').style.display = 'none';
+        switchModalForm('convocatoria');
+
+        document.getElementById("crearTitulo").value = titulo;
+        document.getElementById("crearFecha").value = fecha;
+        document.getElementById("editConvocatoriaId").value = id;
+        document.getElementById("formCrear").action = URL_EDITAR;
+        document.getElementById('btnSubmitConvocatoria').innerText = "Guardar Cambios";
+    }
+
+    function confirmDeletePublicacion(id) {
+        openConfirmModal(async () => {
+            try {
+                const response = await fetch(`/admin/anuncios/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}' }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Eliminado', 'La publicación ha sido removida.');
+                    const card = document.querySelector(`.card-item[data-id="${id}"]`);
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        setTimeout(() => card.remove(), 400);
+                    }
+                }
+            } catch (error) {
+                showToast('Error', 'No se pudo eliminar.', 'error');
+            }
+        });
+    }
+
+    function confirmDeleteConvocatoria(id) {
+        openConfirmModal(async () => {
+            try {
+                const formData = new FormData();
+                formData.append('id', id);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                
+                const response = await fetch(URL_ELIMINAR, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Eliminada', 'La convocatoria ha sido removida perfectamente.');
+                    const card = document.querySelector(`.card-item[data-id="${id}"]`);
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        setTimeout(() => card.remove(), 400);
+                    }
+                }
+            } catch (error) {
+                showToast('Error', 'No se pudo eliminar la convocatoria.', 'error');
+            }
+        });
+    }
+
+    // Cerrar modal al hacer clic fuera
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalPremium');
+        if (event.target == modal) {
+            cerrarModal();
+        }
+    }
+</script>
+
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Custom Confirmation Modal -->
+<div id="modalConfirmDelete" class="modal-confirm" style="display:none;">
+    <div class="modal-confirm-content">
+        <div class="modal-confirm-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h3 class="modal-confirm-title">¿Estás seguro?</h3>
+        <p class="modal-confirm-text">Esta acción no se puede deshacer. La publicación será eliminada permanentemente del sistema.</p>
+        <div class="modal-confirm-footer">
+            <button class="modal-confirm-btn btn-cancel" onclick="closeConfirmModal()">Cancelar</button>
+            <button id="btnConfirmAction" class="modal-confirm-btn btn-confirm-delete">Sí, Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const URL_CREAR = "{% url 'crear_convocatoria' %}";
+    const URL_EDITAR = "{% url 'editar_convocatoria' %}";
+    const URL_ELIMINAR = "{% url 'eliminar_convocatoria' %}";
+</script>
+{% endblock %}

@@ -1,0 +1,490 @@
+{% extends 'panel_admin.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+:root {
+    --azul: #1f3c88;
+    --azul2: #2d5bd1;
+    --verde-agua: #2dd4bf;
+    --gris: #f4f6f9;
+    --gris2: #e6e9ef;
+    --blanco: #ffffff;
+    --texto: #2b2b2b;
+}
+
+/* ===== CONTENEDOR ===== */
+
+.admins-container{
+    width:100%;
+    max-width:1000px;
+    margin:auto;
+}
+
+/* ===== CABECERA ===== */
+
+.header-container{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+    border-bottom:3px solid var(--verde-agua);
+    padding-bottom:12px;
+}
+
+.header-container h2{
+    font-size:28px;
+    font-weight:700;
+    color:var(--azul);
+    border-left:6px solid var(--verde-agua);
+    padding-left:14px;
+}
+
+/* ===== BOTONES ===== */
+
+.btn-crear,
+.btn-confirmar,
+.btn-cancelar{
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:12px 22px;
+    border-radius:8px;
+    border:none;
+    font-weight:600;
+    color:white;
+    cursor:pointer;
+    transition:all .25s ease;
+    box-shadow:0 4px 6px rgba(0,0,0,0.2);
+    text-align:center;
+}
+
+.btn-crear{
+    background:linear-gradient(135deg,var(--azul),var(--azul2));
+}
+
+.btn-confirmar{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+}
+
+.btn-cancelar{
+    background:linear-gradient(135deg,#9ca3af,#6b7280);
+}
+
+.btn-crear:hover,
+.btn-confirmar:hover,
+.btn-cancelar:hover{
+    transform:translateY(-3px) scale(1.04);
+    box-shadow:0 8px 16px rgba(0,0,0,0.3);
+}
+
+.btn-crear:active,
+.btn-confirmar:active,
+.btn-cancelar:active{
+    transform:translateY(0) scale(.97);
+}
+
+/* EFECTO LUZ */
+
+.btn-crear::before,
+.btn-confirmar::before,
+.btn-cancelar::before{
+    content:'';
+    position:absolute;
+    top:0;
+    left:-75%;
+    width:50%;
+    height:100%;
+    background:rgba(255,255,255,.3);
+    transform:skewX(-25deg);
+    transition:.7s;
+}
+
+.btn-crear:hover::before,
+.btn-confirmar:hover::before,
+.btn-cancelar:hover::before{
+    left:130%;
+}
+
+/* ===== TABLA ===== */
+
+.table-wrapper{
+    background:white;
+    border-radius:12px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+    overflow:visible;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    text-align:center;
+}
+
+thead{
+    background:var(--azul);
+    color:white;
+}
+
+thead th{
+    padding:14px;
+}
+
+tbody td{
+    padding:14px;
+    border-bottom:1px solid var(--gris2);
+}
+
+tbody tr:hover{
+    background:var(--gris);
+}
+
+tbody td:last-child{
+    display:flex;
+    justify-content:center;
+}
+
+/* ===== MENU OPCIONES ===== */
+
+.acciones{
+    position:relative;
+}
+
+.btn-opciones{
+    background:linear-gradient(135deg,var(--azul),var(--azul2));
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:10px 14px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.menu-acciones{
+    position:absolute;
+    top:45px;
+    right:0;
+    background:white;
+    border-radius:10px;
+    box-shadow:0 10px 25px rgba(0,0,0,.2);
+    display:none;
+    flex-direction:column;
+    min-width:200px;
+    z-index:9999;
+}
+
+.menu-acciones button{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:12px;
+    border:none;
+    background:white;
+    cursor:pointer;
+    font-weight:600;
+    transition:.2s;
+}
+
+.opcion-bloquear:hover{background:#fef3c7;}
+.opcion-password:hover{background:#dbeafe;}
+.opcion-eliminar:hover{background:#fee2e2;}
+.opcion-desbloquear:hover{background:#dcfce7;}
+
+/* ===== ESTADO ===== */
+
+.estado-cuenta{
+    font-weight:700;
+    padding:6px 12px;
+    border-radius:12px;
+    color:white;
+    display:inline-block;
+}
+
+.estado-activo{
+    background:#22c55e; /* verde */
+}
+
+.estado-bloqueado{
+    background:#dc2626; /* rojo */
+}
+</style>
+
+
+<div class="admins-container">
+
+    <div class="header-container">
+        <h2>Administradores</h2>
+        <button class="btn-crear" onclick="abrirModal()">
+            <i class="bi bi-person-plus"></i> Crear Administrador
+        </button>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Estado</th>
+                    <th>Contraseña</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for admin in administradores %}
+                <tr data-id="{{ admin.id }}">
+                    <td>{{ admin.nombre }}</td>
+                    <td>{{ admin.correo }}</td>
+
+                    <!-- ESTADO -->
+                    <td class="estado-col">
+                        {% if admin.bloqueado %}
+                        <span class="estado-cuenta estado-bloqueado">Bloqueado</span>
+                        {% else %}
+                        <span class="estado-cuenta estado-activo">Activo</span>
+                        {% endif %}
+                    </td>
+
+                    <td>{{ admin.password }}</td>
+
+                    <td>
+                        <div class="acciones">
+                            <button class="btn-opciones" onclick="toggleMenu(this)">
+                                <i class="bi bi-three-dots-vertical"></i> Opciones
+                            </button>
+                            <div class="menu-acciones">
+                                {% if admin.bloqueado %}
+                                    <!-- Solo mostrar desbloquear y eliminar -->
+                                    <button class="opcion-desbloquear" onclick="cambiarEstadoAdmin('{{ admin.id }}', false, this)">
+                                        <i class="bi bi-unlock"></i> Desbloquear
+                                    </button>
+                                    <button class="opcion-eliminar" onclick="eliminarAdmin('{{ admin.id }}')">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                {% else %}
+                                    <!-- Administrador activo: mostrar todas las opciones -->
+                                    <button class="opcion-bloquear" onclick="cambiarEstadoAdmin('{{ admin.id }}', true, this)">
+                                        <i class="bi bi-lock"></i> Bloquear
+                                    </button>
+                                    <button class="opcion-password" onclick="cambiarPasswordAdmin('{{ admin.id }}')">
+                                        <i class="bi bi-key"></i> Cambiar contraseña
+                                    </button>
+                                    <button class="opcion-eliminar" onclick="eliminarAdmin('{{ admin.id }}')">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No hay administradores registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% include "modals/modal_crear_admin.html" %}
+{% include "modals/modal_eliminar_admin.html" %}
+{% include "modals/modal_cambiar_contraseña.html" %}
+
+<script>
+let adminIdActual = null; // Guarda el id del admin seleccionado
+
+/* Abrir y cerrar modales de contraseña */
+function abrirModalPassword(id){
+    adminIdActual = id;
+    document.getElementById("modalPassword").style.display = "flex";
+    document.body.classList.add("modal-activo");
+    document.getElementById("nuevaPassword").value = "";
+}
+function cerrarModalPassword(){
+    document.getElementById("modalPassword").style.display = "none";
+    document.body.classList.remove("modal-activo");
+    adminIdActual = null;
+}
+
+/* Abrir y cerrar modal de eliminación */
+function abrirModalEliminar(id){
+    adminIdActual = id;
+    document.getElementById("modalEliminar").style.display = "flex";
+    document.body.classList.add("modal-activo");
+}
+function cerrarModalEliminar(){
+    document.getElementById("modalEliminar").style.display = "none";
+    document.body.classList.remove("modal-activo");
+    adminIdActual = null;
+}
+
+/* Confirmar cambio de contraseña */
+async function confirmarCambioPassword(){
+    const nueva = document.getElementById("nuevaPassword").value.trim();
+    if(!nueva || nueva.length < 8){
+        alert("La contraseña debe tener mínimo 8 caracteres");
+        return;
+    }
+    try {
+        const resp = await fetch("{% url 'actualizar_password_admin' 'TEMP' %}".replace("TEMP", adminIdActual), {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "X-CSRFToken":"{{ csrf_token }}"
+            },
+            body: JSON.stringify({password:nueva})
+        });
+        const data = await resp.json();
+        if(data.success){
+            cerrarModalPassword();
+            location.reload(); // recarga para reflejar el cambio
+        }
+    } catch(err){
+        console.error(err);
+        alert("Error al actualizar la contraseña");
+    }
+}
+
+/* Confirmar eliminación */
+async function confirmarEliminar(){
+    try {
+        const resp = await fetch("{% url 'eliminar_admin' 'TEMP' %}".replace("TEMP", adminIdActual), {
+            method:"POST",
+            headers:{ "Content-Type":"application/json", "X-CSRFToken":"{{ csrf_token }}" }
+        });
+        const data = await resp.json();
+        if(data.success){
+            document.querySelector(`tr[data-id='${adminIdActual}']`).remove();
+            cerrarModalEliminar();
+        }
+    } catch(err){
+        console.error(err);
+        alert("Error al eliminar el administrador");
+    }
+}
+
+/* Reemplaza los antiguos onclick de contraseña y eliminar */
+function cambiarPasswordAdmin(id){
+    abrirModalPassword(id);
+}
+function eliminarAdmin(id){
+    abrirModalEliminar(id);
+}
+
+/* Abrir y cerrar modal Crear Admin */
+function abrirModal(){
+    document.getElementById("modalAdmin").style.display="flex"
+    document.body.classList.add("modal-activo")
+}
+function cerrarModal(){
+    document.getElementById("modalAdmin").style.display="none"
+    document.body.classList.remove("modal-activo")
+}
+
+/* Crear Administrador */
+async function crearAdministrador() {
+    const nombre = document.querySelector('input[name="nombre"]').value;
+    const correo = document.querySelector('input[name="correo"]').value;
+    const pwd = document.getElementById("password").value;
+
+    if (!nombre || !correo || !pwd) {
+        alert("Por favor, rellena todos los campos");
+        return;
+    }
+
+    const response = await fetch("{% url 'crear_admin_api' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ nombre, correo, password: pwd })
+    });
+
+    const data = await response.json();
+    if (data.status === "success") {
+        alert("Administrador creado con éxito");
+        cerrarModal();
+        location.reload(); 
+    } else {
+        alert("Error: " + data.message);
+    }
+}
+
+/* Cambiar Estado Activo/Bloqueado */
+async function cambiarEstadoAdmin(id, bloquear, btn){
+    const url = bloquear ? "{% url 'bloquear_usuario' 'TEMP' %}".replace("TEMP", id) 
+                         : "{% url 'desbloquear_usuario' 'TEMP' %}".replace("TEMP", id);
+    const resp = await fetch(url, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", "X-CSRFToken":"{{ csrf_token }}" }
+    });
+    const data = await resp.json();
+    if(data.success){
+        const tr = btn.closest("tr");
+        const estadoSpan = tr.querySelector(".estado-col .estado-cuenta");
+
+        if(bloquear){
+            estadoSpan.textContent = "Bloqueado";
+            estadoSpan.classList.remove("estado-activo");
+            estadoSpan.classList.add("estado-bloqueado");
+
+            // Solo mostrar Desbloquear y Eliminar
+            const menu = tr.querySelector(".menu-acciones");
+            menu.innerHTML = `
+                <button class="opcion-desbloquear" onclick="cambiarEstadoAdmin('${id}', false, this)">
+                    <i class="bi bi-unlock"></i> Desbloquear
+                </button>
+                <button class="opcion-eliminar" onclick="eliminarAdmin('${id}')">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            `;
+        } else {
+            estadoSpan.textContent = "Activo";
+            estadoSpan.classList.remove("estado-bloqueado");
+            estadoSpan.classList.add("estado-activo");
+
+            // Restaurar todas las opciones
+            const menu = tr.querySelector(".menu-acciones");
+            menu.innerHTML = `
+                <button class="opcion-bloquear" onclick="cambiarEstadoAdmin('${id}', true, this)">
+                    <i class="bi bi-lock"></i> Bloquear
+                </button>
+                <button class="opcion-password" onclick="cambiarPasswordAdmin('${id}')">
+                    <i class="bi bi-key"></i> Cambiar contraseña
+                </button>
+                <button class="opcion-eliminar" onclick="eliminarAdmin('${id}')">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            `;
+        }
+    } else {
+        alert("No se pudo cambiar el estado");
+    }
+}
+
+/* abrir y cerrar menu */
+function toggleMenu(btn){
+    const menu = btn.nextElementSibling;
+    document.querySelectorAll(".menu-acciones").forEach(m=>{
+        if(m!==menu) m.style.display="none";
+    });
+    menu.style.display = menu.style.display==="flex" ? "none" : "flex";
+}
+
+/* cerrar si se da click fuera */
+document.addEventListener("click", function(e){
+    if(!e.target.closest(".acciones")){
+        document.querySelectorAll(".menu-acciones").forEach(m=>{ m.style.display="none"; });
+    }
+});
+</script>
+{% endblock %}

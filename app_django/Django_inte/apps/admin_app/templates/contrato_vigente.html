@@ -1,0 +1,44 @@
+{% extends 'panel_admin.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/contrato_vigente.css' %}">
+
+<div class="vigente-wrap">
+    <div class="panel-header">
+        <h2>Contrato vigente</h2>
+    </div>
+
+    <div class="vigente-card">
+        {% if contrato_vigente %}
+            <p><strong>Archivo actual:</strong> {{ contrato_vigente.nombre_archivo }}</p>
+            <p class="note">Flujo: usuario descarga, edita en su computadora, sube y firma en plataforma.</p>
+            <div class="vigente-actions">
+                <a class="btnx btn-link" href="{% url 'ver_contrato_vigente_admin' %}" target="_blank">Visualizar contrato vigente</a>
+            </div>
+        {% else %}
+            <p>No hay contrato vigente cargado.</p>
+        {% endif %}
+
+        <hr>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="actualizar">
+            <label><strong>Subir contrato vigente (PDF, DOCX o DOC)</strong></label><br><br>
+            <input type="file" name="contrato_vigente" accept=".pdf,.docx,.doc" required>
+            <div class="vigente-actions">
+                <button type="submit" class="btnx btn-primary">Guardar contrato vigente</button>
+            </div>
+        </form>
+
+        {% if contrato_vigente %}
+        <form method="POST" style="margin-top:10px;">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="eliminar">
+            <button type="submit" class="btnx btn-danger">Eliminar contrato vigente</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends "panel_admin.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/proyectos.css' %}?v=2">
+
+<div class="proyectos-wrapper">
+    <div class="page-head">
+        <div>
+            <p class="eyebrow">Visualización de proyectos aceptados</p>
+            <h2>Proyectos activos</h2>
+            <span class="hint">Listado actualizado en tiempo real tras cada cambio.</span>
+        </div>
+        <div class="actions">
+            <label class="pill-input">
+                Buscar
+                <input class="search-input" type="search" id="filtroTexto" placeholder="Proyecto o emprendedor" aria-label="Buscar proyecto o emprendedor">
+            </label>
+            <label class="pill-input">
+                Estado
+                <select id="filtroEstado">
+                    <option value="todos">Todos</option>
+                    <option value="Activo" selected>Activo</option>
+                    <option value="Finalizado">Finalizado</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </label>
+            <button class="btn ghost" id="btnRecargar">Actualizar</button>
+        </div>
+    </div>
+
+    <div class="panel-grid">
+        <div class="card list-card">
+            <div class="list-head">
+                <div class="list-title">
+                    <h3>Proyectos</h3>
+                    <small id="totalProyectos">0 proyectos</small>
+                </div>
+                <span class="chip live">Auto</span>
+            </div>
+            <div id="listaProyectos" class="project-list" aria-live="polite"></div>
+        </div>
+
+        <div class="card detail-card" id="detalleProyecto">
+            <p class="eyebrow">Detalle</p>
+            <h3 id="detalleNombre">Selecciona un proyecto</h3>
+            <div class="estado-row" id="detalleEstado">
+                <span class="chip">—</span>
+                <span class="muted">Sin selección</span>
+            </div>
+            <dl class="detail-grid">
+                <div>
+                    <dt>Emprendedor</dt>
+                    <dd id="detalleEmprendedor">—</dd>
+                </div>
+                <div>
+                    <dt>Correo</dt>
+                    <dd id="detalleCorreo">—</dd>
+                </div>
+                <div>
+                    <dt>Última actualización</dt>
+                    <dd id="detalleFecha">—</dd>
+                </div>
+                <div>
+                    <dt>Equipo</dt>
+                    <dd id="detalleEquipo">—</dd>
+                </div>
+            </dl>
+            <div class="resumen">
+                <h4>Resumen</h4>
+                <p id="detalleDescripcion">Selecciona un proyecto para ver su resumen.</p>
+            </div>
+            <div class="baja-box">
+                <div>
+                    <p class="eyebrow">Baja / cierre</p>
+                    <small id="detalleMotivo">Sin registro</small>
+                </div>
+                <div class="action-group" style="display: flex; gap: 8px;">
+                    <button class="btn ok" id="btnFinalizar" disabled title="Finalizar proyecto y enviar certificado">Finalizar</button>
+                    <button class="btn danger" id="btnBaja" disabled>Dar de baja</button>
+                    <button class="btn danger ghost" id="btnEliminar" disabled title="Eliminar definitivamente el proyecto y todos sus integrantes">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal baja -->
+<div class="modal" id="modalBaja" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3>Dar de baja proyecto</h3>
+            <button class="close" data-action="close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label class="pill-input">
+                Nuevo estado
+                <select id="estadoNuevo">
+                    <option value="Finalizado">Finalizado</option>
+                    <option value="Inactivo">Inactivo</option>
+                    <option value="Activo">Reactivar</option>
+                </select>
+            </label>
+            <label class="pill-input">
+                Motivo (opcional)
+                <textarea id="motivoBaja" rows="3" placeholder="Ej. Entregables completados, falta de participación, etc."></textarea>
+            </label>
+        </div>
+        <div class="modal-footer">
+            <button class="btn ghost" data-action="close">Cancelar</button>
+            <button class="btn danger" id="confirmarBaja">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal eliminar proyecto -->
+<div class="modal" id="modalEliminar" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3>Eliminar proyecto</h3>
+            <button class="close" data-action="close-delete">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="chip bad" style="width:100%; justify-content:center; padding:10px; font-size:13px;">
+                ⚠️ Esta acción es irreversible
+            </div>
+            <p style="font-size:13px; color:#374151; margin:8px 0;">Se eliminará permanentemente el proyecto <strong id="elimNombreProyecto"></strong>, las cuentas del líder y todos los integrantes, chats, documentos y contratos.</p>
+            <label class="pill-input">
+                Escribe <strong>ELIMINAR</strong> para confirmar
+                <input type="text" id="inputConfirmEliminar" placeholder="Escribe ELIMINAR" autocomplete="off">
+            </label>
+        </div>
+        <div class="modal-footer">
+            <button class="btn ghost" data-action="close-delete">Cancelar</button>
+            <button class="btn danger" id="confirmarEliminar" disabled>Eliminar definitivamente</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal éxito -->
+<div class="modal" id="modalExito" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3>Proyecto eliminado</h3>
+            <button class="close" id="btnCerrarExitoX">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="chip ok" style="width:100%; justify-content:center; padding:10px; font-size:13px;">
+                ✅ Eliminación completada
+            </div>
+            <p id="exitoMensaje" style="font-size:13px; color:#374151; margin:8px 0;">El proyecto y todos sus datos han sido eliminados correctamente.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" id="btnCerrarExito">Aceptar</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Finalizar -->
+<div class="modal" id="modalFinalizar" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3>Finalizar Proyecto</h3>
+            <button class="close" data-action="close-finalizar">&times;</button>
+        </div>
+        <form id="formFinalizar" enctype="multipart/form-data">
+            <div class="modal-body">
+                <div class="chip ok" style="width:100%; justify-content:center; padding:10px; font-size:13px; margin-bottom:15px;">
+                    🎓 El proyecto pasará a estado Finalizado
+                </div>
+                <p style="font-size:13px; color:#374151; margin-bottom:15px;">
+                    Sube el <strong>Certificado</strong> o <strong>Cédula</strong> de finalización. 
+                    Este documento se enviará automáticamente por correo a todos los integrantes del equipo.
+                </p>
+                
+                <label class="pill-input">
+                    Adjuntar certificado (PDF / Imagen)
+                    <input type="file" id="inputCertificado" name="certificado" accept=".pdf,image/*" required>
+                </label>
+                
+                <div id="finalizarStatus" style="margin-top:10px; font-size:12px; display:none;">
+                    <span class="spinner-small"></span> Enviando certificados...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn ghost" data-action="close-finalizar">Cancelar</button>
+                <button type="submit" class="btn ok" id="btnConfirmarFinalizar">Confirmar y Enviar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'js/proyectos.js' %}?v=4"></script>
+
+{% endblock %}

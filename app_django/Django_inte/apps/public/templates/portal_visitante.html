@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Público Institucional</title>
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}?v=70">
+</head>
+
+<body>
+
+    {% include 'apartados_visitante/navbar_visitante.html' %}
+    {% block content %}
+
+    <!-- ================= HERO CARRUSEL ================= -->
+    <section class="hero">
+        <div class="carousel">
+
+            <div class="slide active">
+                <img src="{% static 'img/acaclick.png' %}" alt="Programa de Incubación">
+                <div class="caption">
+                    <h2>Programa de Incubación Empresarial</h2>
+                    <p>Impulsamos ideas innovadoras y proyectos tecnológicos</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <img src="{% static 'img/semilla_sol.png' %}" alt="Semilla Sol">
+                <div class="caption">
+                    <h2>Programa de Incubación Empresarial</h2>
+                    <p>Impulsamos ideas innovadoras y proyectos tecnológicos</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <img src="{% static 'img/asesoria.png' %}" alt="Asesoría Especializada">
+                <div class="caption">
+                    <h2>Mentoría Especializada</h2>
+                    <p>Acompañamiento profesional para emprendedores</p>
+                </div>
+            </div>
+
+            <div class="slide">
+                <img src="{% static 'img/concurso.png' %}" alt="Convocatorias">
+                <div class="caption">
+                    <h2>Convocatorias Abiertas</h2>
+                    <p>Postula tu proyecto fácilmente</p>
+                </div>
+            </div>
+
+            <button class="prev">&#10094;</button>
+            <button class="next">&#10095;</button>
+
+        </div>
+    </section>
+
+
+    <section id="muro" class="section">
+        <div class="section-header-flex">
+            <h3>Nuestras Convocatorias</h3>
+            <a href="{% url 'ver_convocatorias' %}" class="btn-ver-todo">Ver todas</a>
+        </div>
+        {% include "ver_convocatorias.html" %}
+    </section>
+
+    <style>
+    .section-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding: 0 10px;
+    }
+    .section-header-flex h3 {
+        margin-bottom: 0 !important;
+    }
+    .btn-ver-todo {
+        padding: 8px 16px;
+        background: var(--azul, #3b82f6);
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    .btn-ver-todo:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    #convocatorias .btn-ver-todo {
+        background: #eab308;
+    }
+    </style>
+
+<!-- ================= INFORMACIÓN DEL PROGRAMA ================= -->
+<section id="programa" class="section">
+    <h3>Información del Programa</h3>
+
+    <div class="card card-programa">
+
+        <div class="bloque-info">
+            <h4>Objetivo del programa</h4>
+            <p>
+                El programa está diseñado para validar ideas de negocio y desarrollar
+                un plan estratégico durante el proceso de incubación.
+            </p>
+
+            <p>
+                Tiene una duración de <strong>16 semanas de asesorías formativas</strong>,
+                orientadas a fortalecer la viabilidad del proyecto y consolidar un
+                <strong>prototipo o producto mínimo viable (PMV)</strong>.
+            </p>
+        </div>
+
+        <div class="bloque-info">
+            <h4>Requisitos de participación</h4>
+            <ul class="lista-info">
+                <li>Contar con una propuesta clara de producto o servicio.</li>
+                <li>Compromiso de tiempo y dedicación durante el proceso de incubación.</li>
+                <li>Asistencia puntual a las sesiones de formación y asesoría.</li>
+            </ul>
+
+            <p class="nota-final">
+                Al concluir satisfactoriamente el programa, se otorgará una
+                <strong>constancia con validez estatal</strong> a todos los integrantes
+                de los proyectos incubados.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+
+
+
+<!-- ================= BASES DEL PROGRAMA ================= -->
+<section id="Bases" class="section">
+    <h3>Bases del programa</h3>
+
+    <div class="card card-bases">
+
+        <div class="bloque-base">
+            <h4>De los proyectos o ideas de negocio</h4>
+            <p>
+                Se podrán registrar proyectos que ofrezcan soluciones a problemáticas de mercado 
+                mediante el desarrollo de un <strong>producto, servicio, diseño, proceso, método 
+                o modelo de negocio</strong>, así como propuestas de organización productiva, 
+                distribución o comercialización.
+            </p>
+
+            <p>
+                Los proyectos podrán ser completamente nuevos o representar una mejora 
+                significativa que aporte valor a propuestas ya existentes.
+            </p>
+        </div>
+
+        <div class="bloque-base">
+            <h4>De los participantes</h4>
+            <p>
+                Podrán participar estudiantes legalmente inscritos de la 
+                <strong>Universidad Tecnológica de Acapulco</strong> y de la 
+                <strong>Unidad Académica del Valle de Ocotito</strong>.
+            </p>
+
+            <p>
+                Cada proyecto deberá estar acompañado durante todo el proceso por 
+                uno o dos asesores académicos, quienes podrán ser docentes o personal 
+                que labore en la institución.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+
+    <!-- ================= POSTULACIÓN ================= -->
+    <section id="postulacion" class="section">
+        <h3>Postulación</h3>
+
+        <div class="grid">
+
+            <div class="card">
+                <p>Formulario público de registro</p>
+                <a href="{% url 'solicitud_ingreso' %}" class="btn">Ir al formulario</a>
+            </div>
+            
+        </div>
+    </section>
+
+
+<!-- ================= PROCESO DE INSCRIPCIÓN ================= -->
+<section id="proceso_inscripcion" class="section">
+    <h3>Proceso de inscripción</h3>
+
+    <div class="card card-proceso">
+
+        <ul class="lista-proceso">
+            <li>
+                Los proyectos podrán registrarse de manera individual o en equipo,
+                con un máximo de cinco integrantes.
+            </li>
+
+            <li>
+                Para validar la participación del equipo, todos los integrantes deberán
+                completar los formatos de registro utilizando el mismo nombre del proyecto.
+            </li>
+
+            <li>
+                Se recibirán únicamente <strong>12 proyectos</strong>,
+                con un máximo de dos por programa educativo.
+            </li>
+
+            <li>
+                El proceso de inscripción será totalmente <strong>gratuito</strong>.
+            </li>
+
+            <li>
+                El registro se realizará en las oficinas del área NODESS.
+                Para la comunidad universitaria del Valle de Ocotito,
+                el registro se efectuará a través del correo:
+                <strong>nodess@utacapulco.edu.mx</strong>
+            </li>
+
+            <li>
+                La convocatoria estará vigente desde su publicación hasta el
+                <strong>viernes 06 de febrero de 2026</strong>,
+                o hasta agotar el número de proyectos recepcionados.
+            </li>
+        </ul>
+
+    </div>
+</section>
+
+    {% endblock %}
+    {% include "common/shared_footer.html" %}
+
+    {% include "portal_modals.html" %}
+    <script src="{% static 'js/portal_publico.js' %}"></script>
+
+</body>
+</html>

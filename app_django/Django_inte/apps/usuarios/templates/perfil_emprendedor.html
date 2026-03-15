@@ -1,0 +1,195 @@
+{% extends "portal_publico.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/perfil_emprendedor.css' %}">
+
+<section class="perfil-hero">
+    <div class="perfil-card">
+        <div class="perfil-avatar">{{ request.session.nombre|slice:":1"|upper }}</div>
+        <div>
+            <p class="eyebrow">Perfil</p>
+            <h2>{{ request.session.nombre }} {{ request.session.apellido_paterno }} {{ request.session.apellido_materno }}</h2>
+            <div class="meta-row">
+                <span class="pill">{{ request.session.rol }}</span>
+                <span class="pill soft">{{ request.session.correo }}</span>
+            </div>
+        </div>
+        <a href="{% url 'portal_publico' %}" class="ghost-link">Volver al inicio</a>
+    </div>
+</section>
+
+<section class="grid">
+    <article class="card estado-card">
+        <div class="header-row">
+            <div>
+                <p class="eyebrow">Proceso del proyecto</p>
+                <h3>Estado actual</h3>
+            </div>
+            <span class="pill tone-{{ estado_meta.tone }}">{{ estado_meta.estado }}</span>
+        </div>
+        <p class="desc">{{ estado_meta.mensaje }}</p>
+
+        <div class="estado-meta">
+            <div>
+                <small class="label">Última actualización</small>
+                <p>{{ ultima_actualizacion|default:"Sin registro" }}</p>
+            </div>
+            <div>
+                <small class="label">Motivo / nota</small>
+                <p>{{ motivo_baja|default:"—" }}</p>
+            </div>
+            <div>
+                <small class="label">Fecha de baja</small>
+                <p>{{ fecha_baja|default:"—" }}</p>
+            </div>
+        </div>
+
+        <div class="timeline">
+            {% for etapa in etapas %}
+            <div class="step {% if etapa.estado == 'Completado' %}active{% elif etapa.estado == 'En curso' %}doing{% endif %}">
+                <strong>{{ etapa.nombre }}</strong>
+                <small>{{ etapa.detalle }}</small>
+                {% if etapa.fecha %}<small class="muted">{{ etapa.fecha }}</small>{% endif %}
+                <span class="chip small {{ etapa.estado|lower }}">{{ etapa.estado }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="progress">
+            <div class="progress-bar" style="width: {{ progreso }}%"></div>
+        </div>
+    </article>
+
+    <article class="card proyecto-card">
+        {% if proyecto %}
+        <div class="header-row">
+            <div>
+                <p class="eyebrow">Proyecto asignado</p>
+                <h3>{{ proyecto.nombre_proyecto|default:"Proyecto en evaluación" }}</h3>
+            </div>
+            <span class="pill soft">ID {{ proyecto_id }}</span>
+        </div>
+
+        <!-- CALENDARIO INTEGRADO -->
+        <div class="calendar-section top-padded">
+            <h3 class="section-title"><i class="bi bi-calendar3"></i> Próximas Fechas Clave</h3>
+            <div id="gridCalendario" class="year-grid-mini"></div>
+            
+            <div class="events-list-simple">
+                {% for evento in eventos %}
+                <div class="event-item-mini">
+                    <span class="event-dot" style="background: {{ evento.color|default:'#1f3c88' }}"></span>
+                    <div class="event-info">
+                        <strong>{{ evento.titulo }}</strong>
+                        <small>{{ evento.fecha }} - {{ evento.categoria }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="muted-small">No hay fechas programadas próximamente.</p>
+                {% endfor %}
+            </div>
+
+            <div class="legend-mini">
+                <span class="dot-label"><span class="dot green"></span> Asesoría</span>
+                <span class="dot-label"><span class="dot orange"></span> Video</span>
+                <span class="dot-label"><span class="dot blue"></span> Proyecto</span>
+            </div>
+        </div>
+
+        {% if integrantes_lista %}
+        <div class="team-section top-padded">
+            <h3 class="section-title"><i class="bi bi-people-fill"></i> Integrantes del Equipo</h3>
+            <div class="table-container">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Carrera</th>
+                            <th>Correo</th>
+                            <th class="hide-mobile">Matrícula</th>
+                            <th class="hide-mobile">Académico</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in integrantes_lista %}
+                        <tr>
+                            <td class="bold">{{ i.nombre|default:"Integrante" }}</td>
+                            <td>{{ i.carrera|default:"-" }}</td>
+                            <td class="muted-small">{{ i.correo|default:"-" }}</td>
+                            <td class="hide-mobile">{{ i.matricula|default:"-" }}</td>
+                            <td class="hide-mobile">
+                                <span class="badge-outline">{{ i.nivel|default:"" }} - {{ i.cuatri|default:"" }}°</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty">
+            <p class="desc">Cuando tu solicitud sea aceptada verás aquí el estado y avances de tu proyecto.</p>
+            <a class="btn" href="{% url 'ver_convocatorias' %}">Ver convocatorias</a>
+        </div>
+        {% endif %}
+    </article>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function buildMiniCalendar() {
+    const resp = await fetch("{% url 'calendario_eventos' %}");
+    const data = await resp.json();
+    const eventos = data.eventos || [];
+    const grid = document.getElementById("gridCalendario");
+    if(!grid) return;
+    
+    // Solo mostramos los meses relevantes (actual + próximos 3)
+    const hoy = new Date();
+    const curYear = hoy.getFullYear();
+    const curMonth = hoy.getMonth();
+
+    for(let i=0; i<4; i++) {
+        let m = (curMonth + i) % 12;
+        let y = curYear + Math.floor((curMonth + i) / 12);
+        
+        const date = new Date(y, m, 1);
+        const monthName = date.toLocaleString('es-ES', { month:'short'});
+        const daysInMonth = new Date(y, m+1, 0).getDate();
+        const firstDay = new Date(y, m, 1).getDay();
+        
+        const monthDiv = document.createElement("div");
+        monthDiv.className = "mini-month";
+        monthDiv.innerHTML = `<div class="mini-month-header">${monthName} ${y}</div>`;
+        
+        const body = document.createElement("div");
+        body.className = "mini-month-days";
+        
+        const offset = (firstDay+6)%7;
+        for(let j=0; j<offset; j++) body.appendChild(document.createElement("div"));
+        
+        for(let d=1; d<=daysInMonth; d++) {
+            const cell = document.createElement("div");
+            cell.className = "mini-day";
+            cell.textContent = d;
+            
+            const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const evt = eventos.find(e => e.fecha === iso);
+            if(evt) {
+                cell.classList.add("has-event");
+                cell.style.borderColor = evt.color || "#1f3c88";
+                cell.title = evt.titulo;
+            }
+            body.appendChild(cell);
+        }
+        monthDiv.appendChild(body);
+        grid.appendChild(monthDiv);
+    }
+}
+document.addEventListener("DOMContentLoaded", buildMiniCalendar);
+</script>
+{% endblock %}

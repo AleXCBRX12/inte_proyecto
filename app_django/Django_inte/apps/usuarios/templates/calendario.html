@@ -1,0 +1,92 @@
+{% extends 'panel_admin.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/calendario.css' %}">
+
+<div class="cal-wrap">
+    <div class="cal-head">
+        <div>
+            <h2>Calendario de incubación</h2>
+            <p>Consulta fechas clave de asesorías, entregas y concursos.</p>
+        </div>
+        <div class="legend">
+            <span class="pill pill-green">Asesorías</span>
+            <span class="pill pill-orange">Entrega video</span>
+            <span class="pill pill-blue">Entrega proyectos</span>
+            <span class="pill pill-red">Concurso</span>
+        </div>
+    </div>
+
+    <div class="card calendar-scroll">
+        <h3 style="margin-top:0;">Calendario 2026</h3>
+        <div class="year-grid" id="gridCalendario"></div>
+    </div>
+</div>
+
+<script>
+function badge(cat){
+    switch(cat){
+        case "asesoria": return "pill pill-green";
+        case "video": return "pill pill-orange";
+        case "proyecto": return "pill pill-blue";
+        case "concurso": return "pill pill-red";
+    }
+    return "pill";
+}
+
+function buildMonths(eventos){
+    const grid = document.getElementById("gridCalendario");
+    grid.innerHTML = "";
+    const year = 2026;
+    for(let m=0; m<12; m++){
+        const date = new Date(year, m, 1);
+        const monthName = date.toLocaleString('es-ES', { month:'long'});
+        const firstDay = new Date(year, m, 1).getDay();
+        const daysInMonth = new Date(year, m+1, 0).getDate();
+        const monthDiv = document.createElement("div");
+        monthDiv.className = "month";
+        const header = document.createElement("div");
+        header.className = "month-header";
+        header.textContent = `${monthName.charAt(0).toUpperCase()+monthName.slice(1)} '${year.toString().slice(-2)}`;
+        const body = document.createElement("div");
+        body.className = "month-body";
+        const dayNames = document.createElement("div");
+        dayNames.className = "day-names";
+        ['L','M','M','J','V','S','D'].forEach(l=>{const s=document.createElement("span");s.textContent=l;dayNames.appendChild(s);});
+        const days = document.createElement("div");
+        days.className = "days";
+        const offset = (firstDay+6)%7;
+        for(let i=0;i<offset;i++){ days.appendChild(document.createElement("div")); }
+        for(let d=1; d<=daysInMonth; d++){
+            const cell=document.createElement("div");
+            cell.className="day";
+            cell.textContent=d;
+            const iso = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const evt = eventos.filter(e=>e.fecha===iso)[0];
+            if(evt){
+                cell.classList.add("event");
+                const color = {"asesoria":"#22c55e","video":"#f97316","proyecto":"#0ea5e9","concurso":"#ef4444"}[evt.categoria] || "#1f3c88";
+                cell.style.backgroundColor = color+"22";
+                cell.style.border=`1px solid ${color}`;
+                cell.style.color="#0f172a";
+                cell.title = evt.titulo;
+            }
+            days.appendChild(cell);
+        }
+        body.appendChild(dayNames);
+        body.appendChild(days);
+        monthDiv.appendChild(header);
+        monthDiv.appendChild(body);
+        grid.appendChild(monthDiv);
+    }
+}
+
+async function cargarEventos(){
+    const resp = await fetch("{% url 'calendario_eventos' %}");
+    const data = await resp.json();
+    buildMonths(data.eventos || []);
+}
+document.addEventListener("DOMContentLoaded", cargarEventos);
+</script>
+{% endblock %}

@@ -1,0 +1,311 @@
+{% extends 'panel_admin.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/calendario.css' %}?v=2">
+
+<style>
+/* Admin Calendar Layout: One container, side-by-side */
+.admin-cal-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+    width: 100%;
+    height: calc(100vh - 120px);
+    overflow: hidden;
+}
+
+.cal-main-area {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    overflow-y: auto;
+}
+
+.cal-side-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+.side-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* Year Grid Adjustments */
+.year-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.month {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+
+.month-header {
+    padding: 5px;
+    font-size: 0.9rem;
+}
+
+.day {
+    min-height: 25px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.day:hover {
+    background: #f1f5f9;
+}
+
+.day.event {
+    font-weight: bold;
+}
+
+/* Side controls styles */
+.event-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.event-form-group input, .event-form-group select, .event-form-group textarea {
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #1e293b;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 12px;
+}
+
+@media (max-width: 1100px) {
+    .admin-cal-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
+    }
+    .year-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+
+<div class="cal-wrap">
+    <div class="cal-head">
+        <h2>Panel de Calendario</h2>
+        <div class="legend-grid">
+            <span class="pill pill-green">Asesorías</span>
+            <span class="pill pill-orange">Video</span>
+            <span class="pill pill-blue">Proyecto</span>
+            <span class="pill pill-red">Concurso</span>
+        </div>
+    </div>
+
+    <div class="admin-cal-layout">
+        <div class="cal-main-area">
+            <h3 style="margin-top:0;">Calendario Proyectos 2026</h3>
+            <div class="year-grid" id="gridCalendario"></div>
+        </div>
+
+        <div class="cal-side-area">
+            <div class="side-card">
+                <button onclick="abrirModalNuevo()" class="btn-primary" style="width: 100%; margin-bottom: 10px;">+ Nuevo Evento</button>
+                <h3>Próximos Eventos</h3>
+                <div id="listaEventos" style="display:flex; flex-direction:column; gap:10px;">
+                    <!-- Cargados por JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Eventos -->
+<div id="modalEvento" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+    <div class="side-card" style="width:400px; max-width:90%;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 id="modalTitulo" style="margin:0;">Nuevo Evento</h3>
+            <button onclick="cerrarModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <form id="formEvento" onsubmit="guardarEvento(event)" class="event-form-group">
+            <input type="hidden" id="evtId">
+            <label style="font-size:12px; font-weight:600;">Título</label>
+            <input type="text" id="evtTitulo" placeholder="Título del evento" required>
+            <label style="font-size:12px; font-weight:600;">Fecha</label>
+            <input type="date" id="evtFecha" required>
+            <label style="font-size:12px; font-weight:600;">Categoría</label>
+            <select id="evtCategoria">
+                <option value="asesoria">Asesoría</option>
+                <option value="video">Entrega Video</option>
+                <option value="proyecto">Entrega Proyectos</option>
+                <option value="concurso">Concurso</option>
+            </select>
+            <label style="font-size:12px; font-weight:600;">Descripción</label>
+            <textarea id="evtDescripcion" rows="3" placeholder="Descripción opcional"></textarea>
+            <button type="submit" class="btn-primary" id="btnGuardar">Guardar Evento</button>
+        </form>
+    </div>
+</div>
+
+<script>
+async function cargarEventos(){
+    const resp = await fetch("{% url 'calendario_eventos' %}");
+    const data = await resp.json();
+    const eventos = data.eventos || [];
+    buildMonths(eventos);
+    renderLista(eventos);
+}
+
+function buildMonths(eventos){
+    const grid = document.getElementById("gridCalendario");
+    grid.innerHTML = "";
+    const year = 2026;
+    for(let m=0; m<12; m++){
+        const date = new Date(year, m, 1);
+        const monthName = date.toLocaleString('es-ES', { month:'long'});
+        const firstDay = new Date(year, m, 1).getDay();
+        const daysInMonth = new Date(year, m+1, 0).getDate();
+        
+        const monthDiv = document.createElement("div");
+        monthDiv.className = "month";
+        monthDiv.innerHTML = `<div class="month-header">${monthName} ${year}</div>`;
+        
+        const body = document.createElement("div");
+        body.className = "month-body";
+        
+        const days = document.createElement("div");
+        days.className = "days";
+        
+        const offset = (firstDay+6)%7;
+        for(let i=0;i<offset;i++){ days.appendChild(document.createElement("div")); }
+        
+        for(let d=1; d<=daysInMonth; d++){
+            const cell=document.createElement("div");
+            cell.className="day";
+            cell.textContent=d;
+            const iso = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            cell.onclick = () => abrirModalNuevo(iso);
+            
+            const evt = eventos.find(e=>e.fecha===iso);
+            if(evt){
+                cell.classList.add("event");
+                const color = {"asesoria":"#22c55e","video":"#f97316","proyecto":"#0ea5e9","concurso":"#ef4444"}[evt.categoria] || "#1f3c88";
+                cell.style.border=`1px solid ${color}`;
+                cell.style.background = color + "22";
+                cell.title = evt.titulo;
+                cell.onclick = (e) => {
+                    e.stopPropagation();
+                    prepararEdicion(evt);
+                };
+            }
+            days.appendChild(cell);
+        }
+        body.appendChild(days);
+        monthDiv.appendChild(body);
+        grid.appendChild(monthDiv);
+    }
+}
+
+let eventosCache = [];
+
+function renderLista(eventos){
+    eventosCache = eventos;
+    const container = document.getElementById("listaEventos");
+    container.innerHTML = "";
+    // Solo los próximos 5
+    eventos.slice(0, 10).forEach(e => {
+        const row = document.createElement("div");
+        row.style = "padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px;";
+        row.innerHTML = `
+            <div style="font-weight:700;">${e.titulo}</div>
+            <div style="color:#64748b; font-size:11px;">${e.fecha} &bull; ${e.categoria}</div>
+            <div style="margin-top:5px; display:flex; gap:10px;">
+                <button onclick="prepararEdicionById('${e.id}')" style="color:#0ea5e9; border:none; background:none; font-size:11px; padding:0; cursor:pointer;">Editar</button>
+                <button onclick="eliminarEvento('${e.id}')" style="color:#ef4444; border:none; background:none; font-size:11px; padding:0; cursor:pointer;">Eliminar</button>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+}
+
+function abrirModalNuevo(fecha = ""){
+    document.getElementById("modalTitulo").textContent = "Nuevo Evento";
+    document.getElementById("evtId").value = "";
+    document.getElementById("formEvento").reset();
+    if(fecha) document.getElementById("evtFecha").value = fecha;
+    document.getElementById("modalEvento").style.display = "flex";
+}
+
+function cerrarModal(){
+    document.getElementById("modalEvento").style.display = "none";
+}
+
+function prepararEdicionById(id){
+    const evt = eventosCache.find(e => e.id === id);
+    if(evt) prepararEdicion(evt);
+}
+
+function prepararEdicion(evt){
+    document.getElementById("modalTitulo").textContent = "Editar Evento";
+    document.getElementById("evtId").value = evt.id;
+    document.getElementById("evtTitulo").value = evt.titulo;
+    document.getElementById("evtFecha").value = evt.fecha;
+    document.getElementById("evtCategoria").value = evt.categoria;
+    document.getElementById("evtDescripcion").value = evt.descripcion || "";
+    document.getElementById("modalEvento").style.display = "flex";
+}
+
+async function guardarEvento(e){
+    e.preventDefault();
+    const id = document.getElementById("evtId").value;
+    const evt = {
+        titulo: document.getElementById("evtTitulo").value,
+        fecha: document.getElementById("evtFecha").value,
+        categoria: document.getElementById("evtCategoria").value,
+        descripcion: document.getElementById("evtDescripcion").value
+    };
+    
+    const url = id ? `/admin/calendario/api/eventos/${id}/` : "{% url 'calendario_eventos' %}";
+    const method = id ? 'PUT' : 'POST';
+
+    await fetch(url, {
+        method: method,
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(evt)
+    });
+    
+    cerrarModal();
+    cargarEventos();
+}
+
+async function eliminarEvento(id){
+    if(!confirm("¿Borrar evento?")) return;
+    await fetch(`/admin/calendario/api/eventos/${id}/`, { method: 'DELETE' });
+    cargarEventos();
+}
+
+document.addEventListener("DOMContentLoaded", cargarEventos);
+</script>
+{% endblock %}

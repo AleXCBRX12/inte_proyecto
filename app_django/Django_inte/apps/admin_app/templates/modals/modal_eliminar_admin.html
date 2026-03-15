@@ -1,0 +1,184 @@
+{% load static %}
+<style>
+/* ===== MODAL ELIMINACIÓN ===== */
+#modalEliminar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* ===== CONTENIDO MODAL ===== */
+#modalEliminar .modal-contenido {
+    background: #ffffff;
+    padding: 30px 25px;
+    width: 400px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    transform: scale(0.8);
+    opacity: 0;
+    animation: modalEntrada 0.35s ease forwards;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+    text-align: center;
+}
+
+/* TITULO */
+#modalEliminar h3 {
+    font-size: 22px;
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* TEXTO */
+#modalEliminar p {
+    font-size: 15px;
+    color: #374151;
+}
+
+/* BOTONES */
+#modalEliminar .modal-buttons {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+#modalEliminar .modal-buttons button {
+    flex: 1;
+    padding: 10px 0;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: none;
+
+    /* elevación y transición */
+    box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+#modalEliminar .modal-buttons button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+}
+
+/* REFLEJO SUAVE */
+#modalEliminar .modal-buttons button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: rgba(255,255,255,0.18);
+    transform: skewX(-25deg);
+    transition: left 0.7s;
+}
+
+#modalEliminar .modal-buttons button:hover::before {
+    left: 130%;
+}
+
+/* BOTON ELIMINAR */
+#modalEliminar .modal-buttons button.eliminar {
+    background: #dc2626;
+    color: #fff;
+}
+
+/* BOTON CANCELAR */
+#modalEliminar .modal-buttons button.cancelar {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+/* ANIMACION ENTRADA */
+@keyframes modalEntrada {
+    0% { transform: scale(0.8); opacity: 0; }
+    60% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+</style>
+
+<!-- Modal Confirmar Eliminación -->
+<div id="modalEliminar" class="modal">
+    <div class="modal-contenido">
+        <h3>Eliminar Administrador</h3>
+        <p>¿Deseas eliminar este administrador? Esta acción es irreversible.</p>
+        <div class="modal-buttons">
+            <button class="eliminar" onclick="confirmarEliminar()">Eliminar</button>
+            <button class="cancelar" onclick="cerrarModalEliminar()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let modalEliminarAbierto = false;
+let scrollTopEliminar = 0;
+
+// ABRIR MODAL ELIMINACIÓN
+function abrirModalEliminar(){
+    modalEliminarAbierto = true;
+    const modal = document.getElementById("modalEliminar");
+    modal.style.display = "flex";
+
+    // Ocultar navbar y menús
+    document.querySelectorAll("nav, header, .menu-acciones").forEach(el => el.style.display = 'none');
+
+    // BLOQUEO TOTAL DE SCROLL
+    scrollTopEliminar = window.scrollY || window.pageYOffset;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollTopEliminar}px`;
+    document.body.style.left = '0';
+    document.body.style.width = '100%';
+}
+
+// CERRAR MODAL ELIMINACIÓN
+function cerrarModalEliminar(){
+    modalEliminarAbierto = false;
+    const modal = document.getElementById("modalEliminar");
+    modal.style.display = "none";
+
+    // Mostrar navbar y menús nuevamente
+    document.querySelectorAll("nav, header, .menu-acciones").forEach(el => el.style.display = '');
+
+    // RESTAURAR SCROLL
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.width = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, scrollTopEliminar);
+}
+
+// CONFIRMAR ELIMINACIÓN
+function confirmarEliminar(){
+    console.log("Administrador eliminado");
+    cerrarModalEliminar();
+}
+
+// BLOQUEO DE MENÚ DESPLEGABLE MIENTRAS MODAL ESTÁ ABIERTO
+document.querySelectorAll(".acciones button").forEach(btn => {
+    btn.addEventListener("click", e => {
+        if(modalEliminarAbierto){
+            e.stopPropagation();
+            e.preventDefault();
+        }
+    });
+});
+</script>

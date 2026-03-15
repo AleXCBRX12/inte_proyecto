@@ -1,0 +1,80 @@
+<!-- CEDULA PDF -->
+<div id="cedulaPDF" style="width: 800px; padding: 50px; background: white; display: none; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; color: #1e293b; line-height: 1.5; border: 1px solid #e2e8f0;">
+    
+    <!-- Header with Institution Logo Placeholder -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 2px solid #1f3c88; padding-bottom: 20px;">
+        <div>
+            <h1 style="margin: 0; color: #1f3c88; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Incubadora de Empresas</h1>
+            <p style="margin: 5px 0 0 0; font-size: 14px; color: #64748b; font-weight: 500;">Cédula Oficial de Inscripción</p>
+        </div>
+        <div style="text-align: right;">
+            <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Folio de Registro</p>
+            <p style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">INC-2026-<span id="pdf_folio">001</span></p>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="margin: 0; font-size: 20px; font-weight: 700; color: #1e293b; text-transform: uppercase;">Constancia de Inscripción</h2>
+    </div>
+
+    <!-- Personal Information Section -->
+    <div style="margin-bottom: 30px;">
+        <h3 style="font-size: 14px; font-weight: 700; color: #1f3c88; text-transform: uppercase; border-left: 4px solid #1f3c88; padding-left: 10px; margin-bottom: 15px;">Información del Emprendedor</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px 0; width: 30%; font-weight: 600; color: #64748b;">Nombre Completo:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;"><span id="pdf_nombre" style="font-weight: 500;"></span></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; font-weight: 600; color: #64748b;">Correo Electrónico:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;"><span id="pdf_correo" style="font-weight: 500;"></span></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; font-weight: 600; color: #64748b;">Programa Académico:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;"><span id="pdf_carrera" style="font-weight: 500;"></span></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; font-weight: 600; color: #64748b;">Matrícula / ID:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;"><span id="pdf_matricula" style="font-weight: 500;"></span></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 0; font-weight: 600; color: #64748b;">Teléfono de Contacto:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;"><span id="pdf_telefono" style="font-weight: 500;"></span></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Project Information Section -->
+    <div style="margin-bottom: 40px;">
+        <h3 style="font-size: 14px; font-weight: 700; color: #1f3c88; text-transform: uppercase; border-left: 4px solid #1f3c88; padding-left: 10px; margin-bottom: 15px;">Información del Proyecto</h3>
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <p style="margin: 0 0 10px 0; font-weight: 700; color: #1e293b; font-size: 16px;">Proyecto: <span id="pdf_proyecto"></span></p>
+            <p style="margin: 0 0 5px 0; font-weight: 600; color: #64748b; font-size: 13px;">Descripción Ejecutiva:</p>
+            <p id="pdf_descripcion" style="margin: 0; font-size: 14px; text-align: justify; color: #334155;"></p>
+        </div>
+    </div>
+
+    <!-- Footer / Signatures -->
+    <div style="margin-top: 60px;">
+        <div style="display: flex; justify-content: space-around; text-align: center;">
+            <div style="width: 40%;">
+                <div style="border-bottom: 1px solid #1e293b; margin-bottom: 10px; padding-top: 40px;"></div>
+                <p style="margin: 0; font-size: 13px; font-weight: 700;">Firma del Emprendedor</p>
+                <p style="margin: 0; font-size: 11px; color: #64748b;">Acepto los términos y condiciones</p>
+            </div>
+            <div style="width: 40%;">
+                <div style="border-bottom: 1px solid #1e293b; margin-bottom: 10px; padding-top: 40px;"></div>
+                <p style="margin: 0; font-size: 13px; font-weight: 700;">Sello de Coordinación</p>
+                <p style="margin: 0; font-size: 11px; color: #64748b;">Incubadora de Empresas</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 50px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+            <p style="margin: 0; font-size: 12px; color: #94a3b8;">Documento generado el día <span id="pdf_fecha" style="font-weight: 600; color: #64748b;"></span></p>
+            <p style="margin: 5px 0 0 0; font-size: 11px; color: #cbd5e1;">Este documento es para fines administrativos y académicos.</p>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>

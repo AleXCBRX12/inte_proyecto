@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{% static 'css/loginn.css' %}">
+    <title>Recuperar contraseña</title>
+</head>
+<body>
+    <!-- Canvas de partículas (Sync con Login) -->
+    <canvas id="particles"></canvas>
+
+    <a href="{% url 'login' %}" class="btn_inicio_link">
+        <i class="bi bi-arrow-left-short"></i> 
+    </a>
+
+    {% if mensaje %}
+    <div class="error-container" style="background: rgba(16, 185, 129, 0.9) !important; box-shadow: 0 8px 20px rgba(0,0,0,0.25);">
+        <p class="error-message" style="background:transparent !important; color:white !important; box-shadow:none !important;">
+            <i class="bi bi-check-circle" style="font-size:1.2rem;"></i> {{ mensaje }}
+        </p>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="error-container">
+        <p class="error-message">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Tarjeta de Recuperación -->
+    <div class="login-card">
+        <h2>Recuperar</h2>
+        <p style="margin-bottom: 25px; font-size: 0.9rem; opacity: 0.9;">Ingresa tu correo para recibir un enlace de restablecimiento.</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <input type="email" name="email" placeholder="Correo electrónico" required>
+            <button type="submit">Enviar Enlace</button>
+            <a href="{% url 'login' %}">Volver al inicio de sesión</a>
+        </form>
+    </div>
+
+    <script src="{% static 'js/login_listo.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<div class="muro-container">
+    <div class="{% if layout == 'grid' %}publications-grid{% else %}publications-list{% endif %}">
+        {% if muro %}
+            {% for item in muro %}
+                {% include "ver_convocatorias_item.html" with item=item %}
+            {% endfor %}
+        {% else %}
+            <div class="no-posts">Por el momento no hay convocatorias disponibles.</div>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - UT Acapulco</title>
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}">
+    <style>
+        :root {
+            --azul: #1f3c88;
+            --azul-accent: #2563eb;
+            --white: #ffffff;
+            --slate-100: #f1f5f9;
+        }
+
+        body {
+            background-color: var(--slate-100);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding-top: 80px; /* Space for navbar */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto; /* Reducido de 40px */
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            flex: 1;
+        }
+
+        h1 {
+            color: var(--azul);
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .contact-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid var(--azul-accent);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            transition: transform 0.3s ease;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .contact-card h3 {
+            color: var(--azul);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .contact-card p {
+            color: #475569;
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+
+        .contact-card a {
+            color: var(--azul-accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .contact-card a:hover {
+            text-decoration: underline;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: var(--azul);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'apartados_visitante/navbar_visitante.html' %}
+
+    <div class="container">
+        <a href="javascript:history.back()" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Volver
+        </a>
+
+        <h1>Contacto Institucional</h1>
+
+        <div class="contact-grid">
+            <div class="contact-card">
+                <h3>Ubicación</h3>
+                <p>Av. Comandante Bouganville Manzana L-05, Fracc Lomas de Costa Azul, Código Postal 39830 Acapulco de Juárez, Gro.</p>
+                <a href="https://maps.google.com/?q=Universidad+Tecnológica+de+Acapulco" target="_blank">Ver en Mapa</a>
+            </div>
+
+            <div class="contact-card">
+                <h3>Correo Electrónico</h3>
+                <p>Oficina de Rectoría:</p>
+                <a href="mailto:universidad@utacapulco.edu.mx">universidad@utacapulco.edu.mx</a>
+            </div>
+
+            <div class="contact-card">
+                <h3>Teléfonos</h3>
+                <p><strong>Rectoría:</strong> <a href="tel:7446886416">744 688 6416</a></p>
+                <p><strong>Servicios Escolares:</strong> <a href="tel:7446886415">744 688 6415</a></p>
+                <p><strong>Administración:</strong> <a href="tel:7446886413">744 688 6413</a></p>
+            </div>
+        </div>
+    </div>
+
+    {% include 'common/shared_footer.html' %}
+</body>
+</html>

@@ -1,0 +1,15 @@
+{% load static %}
+<footer class="unique-shared-footer">
+    <div class="footer-content">
+        <div class="footer-copyright">
+            © 2026 Programa de Incubación Empresarial
+        </div>
+        <div class="footer-links">
+            <a href="{% url 'portal_contacto' %}">Contacto</a>
+            <a href="{% url 'portal_desarrolladores' %}">Desarrolladores</a>
+            <a href="{% url 'aviso_privacidad' %}">Política de privacidad</a>
+        </div>
+    </div>
+</footer>
+
+<link rel="stylesheet" href="{% static 'css/shared_footer.css' %}?v=60">
