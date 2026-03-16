@@ -696,39 +696,29 @@ def actualizar_estado(request, id):
 
         _asegurar_proyecto_activo(solicitud, usuario_lider_id)
 
-        # 3. Enviar correos de aceptación en segundo plano (Bulk/Integrantes)
-        # Enviar correos individuales (lider + integrantes) en segundo plano.
-        def process_bulk_emails(dest_list, req):
-            from apps.utils import email_service
-            ok = 0
-            fail = 0
-            for d in dest_list:
-                try:
-                    sent = email_service.enviar_confirmacion_registro(
-                        destinatario=d["correo"],
-                        nombre=d["nombre"],
-                        password=d["password"],
-                        request=req,
-                    )
-                    if sent:
-                        ok += 1
-                    else:
-                        fail += 1
-                except Exception as e:
-                    fail += 1
-                    logger.error(f"Error enviando bienvenida a {d.get('correo')}: {str(e)}")
-
-            logger.info(f"[ACEPTAR] Emails enviados ok={ok} fail={fail}")
-
-        threading.Thread(
-            target=process_bulk_emails,
-            args=(credenciales_equipo, request),
-            daemon=True,
-        ).start()
-
+        # 3. Enviar correos de aceptación (Individual por integrante)
+        # Nota: se envía en la misma solicitud para garantizar el envío y poder reportar ok/fail al panel admin.
+        from apps.utils import email_service
         mail_ok = 0
         mail_fail = 0
-        mail_enviado = True
+        for d in credenciales_equipo:
+            try:
+                logger.info(f"[ACEPTAR] Enviando credenciales a {d.get('correo')}")
+                sent = email_service.enviar_confirmacion_registro(
+                    destinatario=d["correo"],
+                    nombre=d["nombre"],
+                    password=d["password"],
+                    request=request,
+                )
+                if sent:
+                    mail_ok += 1
+                else:
+                    mail_fail += 1
+            except Exception as e:
+                mail_fail += 1
+                logger.error(f"Error enviando bienvenida a {d.get('correo')}: {str(e)}", exc_info=True)
+
+        mail_enviado = (mail_fail == 0 and mail_ok > 0)
 
     else:
         mail_ok = 0
@@ -752,8 +742,6 @@ def actualizar_estado(request, id):
     db.solicitudes.delete_one({"_id": solicitud["_id"]})
 
     payload = {"success": True, "mail_enviado": mail_enviado, "mail_ok": mail_ok, "mail_fail": mail_fail}
-    if nuevo_estado == "Aceptado":
-        payload["status"] = "Correos en proceso de envío."
     return JsonResponse(payload)
 
 from django.shortcuts import render
