@@ -11,14 +11,14 @@
 
 <style>
 :root {
-    --azul-deep: #1e293b;
-    --azul-accent: #3b82f6;
-    --azul-glow: rgba(59, 130, 246, 0.5);
-    --glass: rgba(255, 255, 255, 0.95);
-    --glass-border: rgba(255, 255, 255, 0.3);
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --bg-gradient: radial-gradient(circle at top right, #e0e7ff, #f8fafc);
+    --azul-deep: #1e3a8a;
+    --azul-accent: #2563eb;
+    --azul-glow: rgba(37, 99, 235, 0.5);
+    --glass: rgba(255, 255, 255, 0.98);
+    --glass-border: rgba(37, 99, 235, 0.1);
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
 }
 
 * {
@@ -61,7 +61,7 @@ body {
 }
 
 .card-header {
-    background: linear-gradient(135deg, #1e293b, #334155);
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
     color: white;
     padding: 35px 20px;
     text-align: center;
@@ -119,19 +119,19 @@ h5 i {
 
 /* Buttons */
 .btn-primary {
-    background: #1e293b;
+    background: var(--azul-deep);
     border: none;
     border-radius: 14px;
     padding: 14px 30px;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
 }
 
 .btn-primary:hover {
-    background: #0f172a;
+    background: #172554;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(30, 41, 59, 0.3);
+    box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
 }
 
 .btn-outline-primary {
@@ -395,24 +395,19 @@ h5 i {
                   </div>
                 </div>
 
-                <!-- Modal Exito Solicitud -->
-                <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-primary text-white">
-                                <h5 class="modal-title" id="successModalLabel">
-                                    <i class="bi bi-check-circle-fill me-2"></i>Solicitud enviada con exito
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p class="mb-2">Tu solicitud quedo en <strong>proceso de revision</strong>.</p>
-                                <p class="mb-0">Enviamos un correo de confirmacion a: <strong id="successCorreo"></strong> (incluye tu cedula de inscripcion en PDF).</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-primary" onclick="generarPDF()">Descargar cedula ahora</button>
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Finalizar</button>
-                            </div>
+                <!-- Sección de éxito (reemplaza al modal) -->
+                <div id="successNotification" style="display: none; text-align: center; padding: 40px 20px; animation: fadeIn 0.5s ease-out;">
+                    <div style="background: #dcfce7; color: #166534; padding: 30px; border-radius: 20px; border: 1px solid #bbf7d0;">
+                        <i class="bi bi-check-circle-fill" style="font-size: 3.5rem; display: block; margin-bottom: 15px;"></i>
+                        <h4 style="font-weight: 800; margin-bottom: 10px;">¡Solicitud enviada con éxito!</h4>
+                        <p style="font-size: 1.1rem; margin-bottom: 25px;">Te hemos enviado un correo de confirmación con tu <strong>Cédula de Inscripción</strong> adjunta en formato PDF.</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <button type="button" class="btn btn-primary" onclick="generarPDF()">
+                                <i class="bi bi-file-earmark-pdf-fill me-2"></i>Descargar Cédula
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="location.reload()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Nueva Solicitud
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -625,22 +620,14 @@ form.addEventListener("submit", async function (e) {
         });
 
         if (response.ok) {
-            shouldResetAfterSuccess = true;
-
-            if (successCorreoEl) {
-                successCorreoEl.textContent = (data.correo || correoInput.value || "").trim();
+            // Ocultar formulario y mostrar notificación
+            form.style.display = "none";
+            document.querySelector(".card-header").style.display = "none";
+            const successNotif = document.getElementById("successNotification");
+            if (successNotif) {
+                successNotif.style.display = "block";
+                successNotif.scrollIntoView({ behavior: 'smooth' });
             }
-
-            if (successModal) {
-                successModal.show();
-                return;
-            }
-            showAlert("✅ Solicitud enviada con éxito. Revisa tu correo.", "success");
-            form.reset();
-            membersBody.innerHTML = "";
-            membersBody.appendChild(createMemberRow());
-            correoInput.classList.remove("is-invalid");
-            correoError.style.display = "none";
         } else {
             const errData = await response.json();
             showAlert("❌ Error: " + (errData.error || "Ocurrió un problema"), "danger");

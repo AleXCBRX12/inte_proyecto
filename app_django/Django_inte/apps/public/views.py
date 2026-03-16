@@ -376,8 +376,8 @@ def portal_publico(request):
 
 
 def portal_visitante(request):
-    # Visitantes ven convocatorias y anuncios públicos
-    return render(request, "portal_visitante.html", {"muro": _obtener_muro_unificado_public(es_visitante=True)})
+    # Visitantes VEN ÚNICAMENTE convocatorias (según petición del usuario)
+    return render(request, "portal_visitante.html", {"muro": _obtener_muro_unificado_public(es_visitante=True, solo_convocatorias=True)})
 
 
 def aviso_privacidad(request):

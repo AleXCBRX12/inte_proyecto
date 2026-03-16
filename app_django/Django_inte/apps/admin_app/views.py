@@ -186,8 +186,11 @@ def eliminar_anuncio(request, id):
             return JsonResponse({"success": False, "error": "ID invalido"}, status=400)
         return redirect('panel_publicaciones_admin')
 
-    result = db.anuncios.delete_one({'_id': anuncio_id})
-    ok = bool(getattr(result, "deleted_count", 0))
+    # Intentamos borrar en ambas colecciones
+    res_anuncios = db.anuncios.delete_one({'_id': anuncio_id})
+    res_publicaciones = db.publicaciones.delete_one({'_id': anuncio_id})
+    
+    ok = bool(getattr(res_anuncios, "deleted_count", 0) or getattr(res_publicaciones, "deleted_count", 0))
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax'):
         return JsonResponse({"success": ok})
