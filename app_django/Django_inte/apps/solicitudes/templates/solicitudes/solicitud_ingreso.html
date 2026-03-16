@@ -560,7 +560,41 @@ form.addEventListener("submit", async function (e) {
         if (!form.checkValidity()) {
             isSubmitting = false;
             submitBtn.disabled = false;
-            showAlert("❌ Por favor completa todos los campos requeridos.", "danger");
+            // Mostrar mensajes nativos (si el navegador lo soporta) y guiar al primer campo inválido.
+            try { form.classList.add("was-validated"); } catch (e) {}
+
+            const firstInvalid = form.querySelector(":invalid");
+            if (firstInvalid) {
+                try { firstInvalid.classList.add("is-invalid"); } catch (e) {}
+
+                // Mensajes más claros para errores comunes
+                let msg = "❌ Revisa los campos marcados en rojo.";
+                try {
+                    if (
+                        firstInvalid.classList &&
+                        firstInvalid.classList.contains("member-correo") &&
+                        firstInvalid.validity &&
+                        firstInvalid.validity.typeMismatch
+                    ) {
+                        msg = "❌ El correo de un integrante no es válido (ej: nombre@dominio.com).";
+                    } else if (firstInvalid.validity && firstInvalid.validity.valueMissing) {
+                        msg = "❌ Faltan campos obligatorios por completar.";
+                    } else if (firstInvalid.validity && firstInvalid.validity.typeMismatch) {
+                        msg = "❌ Hay un campo con formato inválido.";
+                    }
+                } catch (e) {}
+
+                showAlert(msg, "danger");
+
+                // Llevar al usuario al campo con problema
+                try { firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+                try { firstInvalid.focus({ preventScroll: true }); } catch (e) {}
+            } else {
+                showAlert("❌ Por favor completa todos los campos requeridos.", "danger");
+            }
+
+            // Forzar al navegador a mostrar el mensaje exacto del campo (burbuja)
+            try { form.reportValidity(); } catch (e) {}
             return;
         }
     } catch (err) {
