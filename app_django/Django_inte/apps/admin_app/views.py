@@ -664,7 +664,7 @@ def actualizar_estado(request, id):
         logger.info(f"[ACEPTAR] Integrantes procesados: {len(integrantes)} → {[i.get('correo') for i in integrantes]}")
 
         # Lista para envío masivo en segundo plano
-        destinatarios_bulk = [{"correo": correo, "nombre": nombre, "password": password}]
+        credenciales_equipo = [{"correo": correo, "nombre": nombre, "password": password}]
 
         for integrante in integrantes:
             i_correo = (integrante.get("correo") or "").strip().lower()
@@ -692,29 +692,38 @@ def actualizar_estado(request, id):
                 db.usuarios.insert_one({**datos_integra, "fecha_creacion": datetime.utcnow()})
             
             # Agregamos a la lista de envíos background
-            destinatarios_bulk.append({"correo": i_correo, "nombre": i_nombre, "password": i_password})
+            credenciales_equipo.append({"correo": i_correo, "nombre": i_nombre, "password": i_password})
 
         _asegurar_proyecto_activo(solicitud, usuario_lider_id)
 
         # 3. Enviar correos de aceptación en segundo plano (Bulk/Integrantes)
         from apps.utils import email_service
-        for d in destinatarios_bulk:
-            try:
-                sent = email_service.enviar_confirmacion_registro(
-                    destinatario=d["correo"],
-                    nombre=d["nombre"],
-                    password=d["password"],
-                    request=request,
-                )
-                if sent:
-                    mail_ok += 1
-                else:
-                    mail_fail += 1
-            except Exception as e:
-                mail_fail += 1
-                logger.error(f"Error enviando bienvenida a {d.get('correo')}: {str(e)}")
 
-        mail_enviado = (mail_fail == 0 and mail_ok > 0)
+        # Opcion actual: solo enviamos al lider las credenciales de TODO el equipo (por limitaciones de proveedor/dominio).
+        try:
+            sent = email_service.enviar_credenciales_equipo_lider(
+                destinatario_lider=correo,
+                nombre_lider=nombre,
+                credenciales_equipo=credenciales_equipo,
+                request=request,
+            )
+            mail_ok = 1 if sent else 0
+            mail_fail = 0 if sent else 1
+            mail_enviado = bool(sent)
+        except Exception as e:
+            mail_ok = 0
+            mail_fail = 1
+            mail_enviado = False
+            logger.error(f"Error enviando credenciales al lider {correo}: {str(e)}")
+
+        # FUTURO: envios individuales por integrante (re-activar cuando se pueda enviar a otros correos)
+        # for d in credenciales_equipo:
+        #     email_service.enviar_confirmacion_registro(
+        #         destinatario=d["correo"],
+        #         nombre=d["nombre"],
+        #         password=d["password"],
+        #         request=request,
+        #     )
 
     else:
         mail_ok = 0

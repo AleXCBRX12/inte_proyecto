@@ -367,6 +367,80 @@ def enviar_confirmacion_registro(destinatario, nombre, password, request=None):
     """
     return send_email(subject=subject, text_body="Tu solicitud ha sido aceptada.", html_body=html, to=[destinatario])
 
+
+def enviar_credenciales_equipo_lider(destinatario_lider, nombre_lider, credenciales_equipo, request=None):
+    """
+    Envia al lider un correo con todas las credenciales del equipo.
+
+    credenciales_equipo: lista de dicts [{nombre, correo, password}]
+    """
+    portal_url = request.build_absolute_uri('/login/') if request else os.getenv("PORTAL_URL", "https://incubadora-ut.onrender.com/login/")
+
+    subject = "✅ Credenciales del equipo - Incubadora de Empresas"
+
+    rows = ""
+    for c in (credenciales_equipo or []):
+        n = (c.get("nombre") or "Integrante")
+        e = (c.get("correo") or "")
+        p = (c.get("password") or "—")
+        rows += f"""
+            <tr>
+                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">{n}</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;">{e}</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #e2e8f0;"><code style="background:#ffffff; padding:2px 6px; border-radius:4px; border:1px solid #d1d5db;">{p}</code></td>
+            </tr>
+        """
+
+    html = f"""
+    <html>
+    <body style="margin:0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
+        <div style="max-width: 680px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);">
+            <div style="background: linear-gradient(135deg, #1f3c88 0%, #2f5fcb 100%); padding: 36px 20px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 26px;">Credenciales del Equipo</h1>
+                <p style="color:#e0e7ff; margin:10px 0 0;">Incubadora de Empresas</p>
+            </div>
+            <div style="padding: 34px 28px;">
+                <p style="font-size: 16px; margin-top: 0;">Hola <strong>{nombre_lider}</strong>,</p>
+                <p style="line-height: 1.6; font-size: 15px;">
+                    Tu solicitud fue <strong>ACEPTADA</strong>. A continuacion te compartimos las credenciales de acceso del lider y del equipo.
+                </p>
+                <div style="background-color:#f1f5f9; border-radius: 12px; padding: 18px; border: 1px solid #e2e8f0; overflow:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+                        <thead>
+                            <tr>
+                                <th align="left" style="padding:10px 12px; border-bottom:2px solid #cbd5e1; color:#1f3c88;">Nombre</th>
+                                <th align="left" style="padding:10px 12px; border-bottom:2px solid #cbd5e1; color:#1f3c88;">Correo</th>
+                                <th align="left" style="padding:10px 12px; border-bottom:2px solid #cbd5e1; color:#1f3c88;">Contraseña temporal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows}
+                        </tbody>
+                    </table>
+                </div>
+
+                <p style="margin-top:18px; line-height:1.6; font-size: 14px; color:#475569;">
+                    Recomendacion: una vez dentro, cambien su contraseña por seguridad.
+                </p>
+
+                <div style="text-align: center; margin-top: 26px;">
+                    <a href="{portal_url}" style="display: inline-block; background-color: #1f3c88; color: #ffffff; padding: 12px 22px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(31, 60, 136, 0.3);">Acceder al Portal</a>
+                </div>
+
+                <p style="margin-top: 26px; font-size: 12px; text-align: center; color: #94a3b8;">Este es un mensaje automatico, por favor no respondas a este correo.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    return send_email(
+        subject=subject,
+        text_body="Tu solicitud fue aceptada. Revisa las credenciales del equipo en este correo.",
+        html_body=html,
+        to=[destinatario_lider],
+    )
+
 def enviar_correo_reset(destinatario, token, request):
     """
     Correo para restablecer contraseña con enlace dinámico.
