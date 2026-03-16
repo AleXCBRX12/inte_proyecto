@@ -3,9 +3,8 @@ from django.shortcuts import render, redirect
 from datetime import datetime, timezone, timedelta
 from bson.objectid import ObjectId
 import uuid
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import uuid
+from apps.utils import email_service
 
 from config.database.mongo import mongo_instance, db
 from apps.utils.access_logic import check_team_contract_accepted
@@ -153,114 +152,6 @@ def _bloquear_emprendedor_sin_contrato(request):
     return None
 
 
-def _enviar_correo_reset(destinatario, token, request):
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-    sender_email = os.getenv("EMAIL_HOST_USER")
-    sender_password = os.getenv("EMAIL_HOST_PASSWORD")
-    if not sender_email or not sender_password or not destinatario:
-        return False
-
-    link = request.build_absolute_uri(f"/login/reset/{token}/")
-    mensaje = MIMEMultipart("alternative")
-    mensaje["From"] = sender_email
-    mensaje["To"] = destinatario
-    mensaje["Subject"] = "Recuperación de contraseña - Incubadora de Empresas"
-
-    html = f"""
-    <html>
-    <body style="margin:0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
-        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);">
-            <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 40px 20px; text-align: center;">
-                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Restablecer Contraseña</h1>
-            </div>
-            <div style="padding: 40px 30px;">
-                <p style="font-size: 18px; margin-top: 0;">Hola,</p>
-                <p style="line-height: 1.6; font-size: 16px;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en la <strong>Incubadora de Empresas</strong>.</p>
-                
-                <p style="line-height: 1.6; font-size: 16px;">Para continuar con el proceso, por favor haz clic en el siguiente botón:</p>
-
-                <div style="text-align: center; margin: 35px 0;">
-                    <a href="{link}" style="display: inline-block; background-color: #1f3c88; color: #ffffff; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(31, 60, 136, 0.3);">Restablecer mi contraseña</a>
-                </div>
-
-                <p style="line-height: 1.6; font-size: 16px; color: #64748b;">Si tú no solicitaste este cambio, puedes ignorar este correo de forma segura. Tu contraseña actual no cambiará.</p>
-                
-                <p style="margin-top: 40px; font-size: 14px; text-align: center; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 20px;">Este enlace expirará en 24 horas por motivos de seguridad.</p>
-            </div>
-            <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
-                <p style="margin: 0; font-size: 12px; color: #94a3b8;">&copy; 2026 Incubadora de Empresas. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    mensaje.attach(MIMEText(html, "html"))
-
-    try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(mensaje)
-        server.quit()
-        return True
-    except Exception:
-        return False
-
-
-def _enviar_correo_confirmacion(destinatario, nombre, request):
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-    sender_email = os.getenv("EMAIL_HOST_USER")
-    sender_password = os.getenv("EMAIL_HOST_PASSWORD")
-    if not sender_email or not sender_password or not destinatario:
-        return False
-
-    mensaje = MIMEMultipart("alternative")
-    mensaje["From"] = sender_email
-    mensaje["To"] = destinatario
-    mensaje["Subject"] = "Contraseña actualizada con éxito - Incubadora de Empresas"
-
-    html = f"""
-    <html>
-    <body style="margin:0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
-        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);">
-            <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px 20px; text-align: center;">
-                <div style="background: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
-                    <span style="color: #10b981; font-size: 30px; font-weight: bold;">✓</span>
-                </div>
-                <h1 style="color: #ffffff; margin: 0; font-size: 24px;">¡Todo listo, {nombre}!</h1>
-            </div>
-            <div style="padding: 40px 30px;">
-                <p style="font-size: 18px; margin-top: 0;">Tu contraseña ha sido actualizada.</p>
-                <p style="line-height: 1.6; font-size: 16px;">Te confirmamos que el cambio de contraseña para tu cuenta en la <strong>Incubadora de Empresas</strong> se ha realizado correctamente.</p>
-                
-                <p style="line-height: 1.6; font-size: 16px;">Ya puedes volver a iniciar sesión de forma segura.</p>
-
-                <div style="text-align: center; margin: 35px 0;">
-                    <a href="{request.build_absolute_uri('/login/')}" style="display: inline-block; background-color: #1f3c88; color: #ffffff; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 16px;">Ir al Login</a>
-                </div>
-
-                <p style="line-height: 1.6; font-size: 14px; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 20px;">Si no realizaste este cambio, por favor contacta de inmediato con soporte técnico.</p>
-            </div>
-            <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
-                <p style="margin: 0; font-size: 12px; color: #94a3b8;">&copy; 2026 Incubadora de Empresas. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    mensaje.attach(MIMEText(html, "html"))
-
-    try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(mensaje)
-        server.quit()
-        return True
-    except Exception:
-        return False
 
 
 def login_view(request):
@@ -316,7 +207,7 @@ def solicitar_reset(request):
                 "expira": datetime.now(timezone.utc) + timedelta(hours=1),
                 "usado": False
             })
-            enviado = _enviar_correo_reset(correo, token, request)
+            enviado = email_service.enviar_correo_reset(correo, token, request)
             mensaje = "Te enviamos un enlace a tu correo." if enviado else "No pudimos enviar el correo, intenta mas tarde."
     return render(request, "reset_request.html", {"mensaje": mensaje, "error": error})
 
@@ -350,7 +241,7 @@ def reset_password(request, token):
             # Enviar correo de confirmación
             usuario = db.usuarios.find_one({"_id": ObjectId(registro["usuario_id"])})
             if usuario:
-                _enviar_correo_confirmacion(usuario.get("correo"), usuario.get("nombre"), request)
+                email_service.enviar_confirmacion_password(usuario.get("correo"), usuario.get("nombre"), request)
 
             mensaje = "Contraseña actualizada. Ya puedes iniciar sesión."
             token_valido = False

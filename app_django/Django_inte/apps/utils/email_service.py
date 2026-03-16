@@ -329,3 +329,120 @@ def _background_enviar_certificado(destinatario, nombre, proyecto_nombre, archiv
             "mime_type": "application/pdf",
         }],
     )
+def enviar_confirmacion_registro(destinatario, nombre, password, request=None):
+    """
+    Correo de bienvenida con credenciales (Bulk/Individual).
+    """
+    portal_url = request.build_absolute_uri('/login/') if request else os.getenv("PORTAL_URL", "https://incubadora-ut.onrender.com/login/")
+    
+    subject = "🚀 ¡Felicidades! Tu proyecto ha sido aceptado"
+    html = f"""
+    <html>
+    <body style="margin:0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
+        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);">
+            <div style="background: linear-gradient(135deg, #1f3c88 0%, #2f5fcb 100%); padding: 40px 20px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">¡Grandes noticias!</h1>
+            </div>
+            <div style="padding: 40px 30px;">
+                <p style="font-size: 18px; margin-top: 0;">Hola <strong>{nombre}</strong>,</p>
+                <p style="line-height: 1.6; font-size: 16px;">Nos complace informarte que tu solicitud para formar parte de la <strong>Incubadora de Empresas</strong> ha sido <strong>ACEPTADA</strong>.</p>
+                <div style="background-color: #f1f5f9; border-radius: 12px; padding: 25px; margin: 30px 0; border: 1px solid #e2e8f0;">
+                    <p style="margin-top: 0; font-weight: 600; color: #1f3c88;">Tus credenciales de acceso:</p>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 10px;">📧 <strong>Correo:</strong> {destinatario}</li>
+                        <li>🔑 <strong>Contraseña temporal:</strong> <code style="background: #ffffff; padding: 2px 6px; border-radius: 4px; border: 1px solid #d1d5db;">{password or '—'}</code></li>
+                    </ul>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="{portal_url}" style="display: inline-block; background-color: #1f3c88; color: #ffffff; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(31, 60, 136, 0.3);">Acceder al Portal</a>
+                </div>
+                <p style="margin-top: 40px; font-size: 14px; text-align: center; color: #64748b;">Este es un mensaje automático, por favor no respondas a este correo.</p>
+            </div>
+            <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="margin: 0; font-size: 12px; color: #94a3b8;">&copy; 2026 Incubadora de Empresas. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return send_email(subject=subject, text_body="Tu solicitud ha sido aceptada.", html_body=html, to=[destinatario])
+
+def enviar_correo_reset(destinatario, token, request):
+    """
+    Correo para restablecer contraseña con enlace dinámico.
+    """
+    link = request.build_absolute_uri(f"/login/reset/{token}/")
+    subject = "Recuperación de contraseña - Incubadora de Empresas"
+    html = f"""
+    <html>
+    <body style="margin:0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
+        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);">
+            <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 40px 20px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Restablecer Contraseña</h1>
+            </div>
+            <div style="padding: 40px 30px;">
+                <p style="font-size: 18px; margin-top: 0;">Hola,</p>
+                <p style="line-height: 1.6; font-size: 16px;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en la <strong>Incubadora de Empresas</strong>.</p>
+                <p style="line-height: 1.6; font-size: 16px;">Para continuar con el proceso, por favor haz clic en el siguiente botón:</p>
+                <div style="text-align: center; margin: 35px 0;">
+                    <a href="{link}" style="display: inline-block; background-color: #1f3c88; color: #ffffff; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(31, 60, 136, 0.3);">Restablecer mi contraseña</a>
+                </div>
+                <p style="line-height: 1.6; font-size: 16px; color: #64748b;">Si tú no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
+                <p style="margin-top: 40px; font-size: 14px; text-align: center; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 20px;">Este enlace expirará pronto por motivos de seguridad.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return send_email(subject=subject, text_body="Solicitud de reset de contraseña.", html_body=html, to=[destinatario])
+
+def enviar_confirmacion_password(destinatario, nombre, request):
+    """
+    Correo de confirmación de cambio exitoso de contraseña.
+    """
+    login_url = request.build_absolute_uri('/login/')
+    subject = "Contraseña actualizada con éxito - Incubadora de Empresas"
+    html = f"""
+    <html>
+    <body style="margin:0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
+        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);">
+            <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px 20px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 24px;">¡Todo listo, {nombre}!</h1>
+            </div>
+            <div style="padding: 40px 30px;">
+                <p style="font-size: 18px; margin-top: 0;">Tu contraseña ha sido actualizada.</p>
+                <div style="text-align: center; margin: 35px 0;">
+                    <a href="{login_url}" style="display: inline-block; background-color: #1f3c88; color: #ffffff; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 16px;">Ir al Login</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return send_email(subject=subject, text_body="Tu contraseña ha sido actualizada.", html_body=html, to=[destinatario])
+
+def enviar_rechazo_solicitud(destinatario, nombre, motivo):
+    """
+    Correo informativo cuando se declina una solicitud.
+    """
+    subject = "Información sobre tu solicitud - Incubadora de Empresas"
+    html = f"""
+    <html>
+    <body style="margin:0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
+        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);">
+            <div style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); padding: 40px 20px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Actualización de Solicitud</h1>
+            </div>
+            <div style="padding: 40px 30px;">
+                <p style="font-size: 18px; margin-top: 0;">Hola <strong>{nombre}</strong>,</p>
+                <p style="line-height: 1.6; font-size: 16px;">Lamentamos informarte que en esta ocasión tu solicitud ha sido <strong>declinada</strong>.</p>
+                <div style="background-color: #fff1f2; border-left: 4px solid #f43f5e; padding: 20px; margin: 30px 0; border-radius: 4px;">
+                    <p style="margin-top: 0; font-weight: 700; color: #be123c;">Motivo:</p>
+                    <p style="margin-bottom: 0; color: #9f1239; font-style: italic;">"{motivo or 'No se proporcionó un motivo específico.'}"</p>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return send_email(subject=subject, text_body="Actualización de tu solicitud.", html_body=html, to=[destinatario])

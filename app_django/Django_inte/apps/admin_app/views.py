@@ -671,18 +671,32 @@ def actualizar_estado(request, id):
 
         _asegurar_proyecto_activo(solicitud, usuario_lider_id)
 
-        # Enviar correos de aceptación en segundo plano (Bulk)
+        # 3. Enviar correos de aceptación en segundo plano (Bulk/Integrantes)
+        def process_bulk_emails(dest_list, pwd, req):
+            from apps.utils import email_service
+            for d in dest_list:
+                try:
+                    email_service.enviar_confirmacion_registro(
+                        destinatario=d["correo"],
+                        nombre=d["nombre"],
+                        password=pwd,
+                        request=req
+                    )
+                except Exception as e:
+                    logger.error(f"Error enviando bienvenida a {d['correo']}: {str(e)}")
+
         threading.Thread(
-            target=_background_enviar_correos_bulk,
-            args=(destinatarios_bulk, nuevo_estado, password, None)
+            target=process_bulk_emails,
+            args=(destinatarios_bulk, password, request)
         ).start()
         mail_enviado = True
 
     else:
         # Caso Rechazado: Enviar correo informativo en segundo plano
+        from apps.utils import email_service
         threading.Thread(
-            target=enviar_correo_estado_solicitud,
-            args=(correo, nombre, nuevo_estado, None, motivo)
+            target=email_service.enviar_rechazo_solicitud,
+            args=(correo, nombre, motivo)
         ).start()
         mail_enviado = True
 

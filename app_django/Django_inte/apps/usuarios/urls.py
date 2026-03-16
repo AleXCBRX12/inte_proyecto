@@ -23,4 +23,5 @@ urlpatterns = [
     path("chat/api/archivo/<str:mensaje_id>/", views.chat_usuario_archivo, name="chat_usuario_archivo"),
     path("convocatorias/reaccionar/", views.toggle_reaccion_convocatoria, name="reaccionar_convocatoria"),
     path("convocatorias/comentar/", views.agregar_comentario_convocatoria, name="comentar_convocatoria"),
+    path("cambiar-contrasena/", views.cambiar_contrasena_perfil, name="cambiar_contrasena_perfil"),
 ]

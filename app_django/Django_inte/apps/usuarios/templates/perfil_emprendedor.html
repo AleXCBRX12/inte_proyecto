@@ -15,7 +15,17 @@
                 <span class="pill soft">{{ request.session.correo }}</span>
             </div>
         </div>
-        <a href="{% url 'portal_publico' %}" class="ghost-link">Volver al inicio</a>
+        <div class="actions">
+            <div class="header-actions">
+            <a href="{% url 'portal_publico' %}" class="ghost-link">Volver al inicio</a>
+            <button class="btn btn-sm btn-outline-primary ms-2" data-bs-toggle="modal" data-bs-target="#modalPassword" style="border-radius: 8px; border-color: rgba(31,60,136,0.3); color: #1f3c88;">
+                <i class="bi bi-key-fill"></i> Cambiar Contraseña
+            </button>
+        </div>
+            <button class="btn btn-sm btn-outline-primary ms-2" data-bs-toggle="modal" data-bs-target="#modalPassword">
+                <i class="bi bi-key-fill"></i> Cambiar Contraseña
+            </button>
+        </div>
     </div>
 </section>
 
@@ -189,6 +199,48 @@ async function buildMiniCalendar() {
         monthDiv.appendChild(body);
         grid.appendChild(monthDiv);
     }
+
+    // Lógica para cambio de contraseña
+    const formPass = document.getElementById("formChangePass");
+    const passError = document.getElementById("passError");
+
+    formPass.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        passError.style.display = "none";
+        
+        const p1 = document.getElementById("newPass").value;
+        const p2 = document.getElementById("confirmPass").value;
+
+        if(p1.length < 8) {
+            passError.innerText = "❌ Mínimo 8 caracteres";
+            passError.style.display = "block";
+            return;
+        }
+        if(p1 !== p2) {
+            passError.innerText = "❌ Las contraseñas no coinciden";
+            passError.style.display = "block";
+            return;
+        }
+
+        try {
+            const resp = await fetch("{% url 'cambiar_contrasena_perfil' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: p1, confirm_password: p2 })
+            });
+            const data = await resp.json();
+            if(data.status === "success") {
+                alert("✅ Contraseña actualizada correctamente");
+                location.reload();
+            } else {
+                passError.innerText = "⚠️ " + (data.message || "Error al cambiar contraseña");
+                passError.style.display = "block";
+            }
+        } catch (err) {
+            passError.innerText = "🚨 Error de conexión";
+            passError.style.display = "block";
+        }
+    });
 }
 document.addEventListener("DOMContentLoaded", buildMiniCalendar);
 </script>

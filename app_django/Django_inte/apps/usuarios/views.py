@@ -1213,3 +1213,36 @@ def agregar_comentario_convocatoria(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
+@csrf_exempt
+def cambiar_contrasena_perfil(request):
+    """
+    Permite al usuario logueado cambiar su propia contraseña.
+    """
+    if request.method != "POST":
+        return JsonResponse({"status": "error", "message": "Método no permitido"}, status=405)
+
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        return JsonResponse({"status": "error", "message": "No autorizado"}, status=403)
+
+    try:
+        data = json.loads(request.body)
+        nueva_pass = (data.get("password") or "").strip()
+        confirm_pass = (data.get("confirm_password") or "").strip()
+    except Exception:
+        return JsonResponse({"status": "error", "message": "Datos inválidos"}, status=400)
+
+    if not nueva_pass or len(nueva_pass) < 8:
+        return JsonResponse({"status": "error", "message": "La contraseña debe tener al menos 8 caracteres"}, status=400)
+    
+    if nueva_pass != confirm_pass:
+        return JsonResponse({"status": "error", "message": "Las contraseñas no coinciden"}, status=400)
+
+    try:
+        db.usuarios.update_one(
+            {"_id": ObjectId(usuario_id)},
+            {"$set": {"contrasena": nueva_pass}}
+        )
+        return JsonResponse({"status": "success", "message": "Contraseña actualizada correctamente"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
