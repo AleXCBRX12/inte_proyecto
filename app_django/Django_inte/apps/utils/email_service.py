@@ -142,22 +142,66 @@ def enviar_correo(destinatario, datos):
     buffer.close()
 
     # ======================================================
-    #  Mensaje HTML
+    #  Mensaje HTML - Diseño Premium (Match Screenshot)
     # ======================================================
     html = f"""
     <!DOCTYPE html>
     <html lang="es">
-    <body style="margin:0; padding:0; font-family:sans-serif; background:#0b1021;">
-        <table align="center" width="600" cellpadding="0" cellspacing="0" style="background:#1e293b; border-radius:18px; overflow:hidden; color:#ffffff; margin-top:40px;">
-            <tr><td style="padding:26px; text-align:center; background:#1f3c88;">Solicitud en Revision 🚀</td></tr>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{ font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #0b1021; }}
+        </style>
+    </head>
+    <body>
+        <table align="center" width="100%" cellpadding="0" cellspacing="0" style="background-color: #0b1021; padding: 40px 0;">
             <tr>
-                <td style="padding:30px;">
-                    <p>Hola <strong>{datos.get('nombre_completo', '')}</strong>,</p>
-                    <p>Recibimos tu solicitud y ya se encuentra <strong>en proceso de revision</strong>.</p>
-                    <p>Adjuntamos tu cedula de inscripcion en PDF para tu registro.</p>
-                    <p style="background:#fbbf24; color:#111827; padding:10px; border-radius:8px; text-align:center; font-weight:bold;">
-                        Documento adjunto disponible
-                    </p>
+                <td>
+                    <table align="center" width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); color: #ffffff;">
+                        <!-- Header -->
+                        <tr>
+                            <td style="padding: 40px 20px; text-align: center;">
+                                <div style="font-size: 40px; margin-bottom: 10px;">🚀</div>
+                                <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #fff;">Incubadora de Proyectos</h1>
+                                <p style="margin: 5px 0 0 0; font-size: 16px; opacity: 0.9;">Universidad Tecnológica de Acapulco</p>
+                            </td>
+                        </tr>
+                        <!-- Divider -->
+                        <tr>
+                            <td style="padding: 0 40px;">
+                                <div style="height: 1px; background: rgba(255,255,255,0.15);"></div>
+                            </td>
+                        </tr>
+                        <!-- Body -->
+                        <tr>
+                            <td style="padding: 40px;">
+                                <h2 style="margin: 0 0 20px 0; font-size: 24px; color: #fff;">Hola {datos.get('nombre_completo', 'Emprendedor')} ✨</h2>
+                                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px; color: #fff;">
+                                    Recibimos tu solicitud de ingreso a la incubadora. En las próximas 48 horas revisaremos tu información y te contactaremos con los siguientes pasos.
+                                </p>
+                                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #fff;">
+                                    Adjuntamos tu cédula de inscripción en PDF para que la conserves y la compartas con tu equipo. 📄
+                                </p>
+                                
+                                <!-- Badge/Button -->
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td>
+                                            <div style="background: #fbbf24; border-radius: 12px; padding: 15px 25px; display: inline-block; color: #111827; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.15);">
+                                                📎 Cédula de inscripción (PDF adjunto)
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <!-- Footer -->
+                        <tr>
+                            <td style="padding: 0 40px 40px 40px; color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.5; text-align: left;">
+                                <p style="margin: 0;">Responde a este correo y con gusto te ayudaremos. ¡Estamos listos para despegar contigo!</p>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         </table>
@@ -166,7 +210,7 @@ def enviar_correo(destinatario, datos):
     """
 
     ok = send_email(
-        subject="Confirmacion de solicitud - Incubadora de Empresas",
+        subject="Confirmacion de solicitud a la incubadora",
         text_body="Recibimos tu solicitud. Revisa el documento adjunto.",
         html_body=html,
         to=[destinatario],

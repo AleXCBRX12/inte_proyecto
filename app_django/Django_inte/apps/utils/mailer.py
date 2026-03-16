@@ -29,7 +29,8 @@ def _send_via_smtp(
     try:
         mensaje.send()
         return True
-    except Exception:
+    except Exception as e:
+        print(f"SMTP Error: {str(e)}")
         return False
 
 
