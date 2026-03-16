@@ -601,6 +601,9 @@ def documentacion_view(request):
     if not usuario_id:
         return redirect("login")
 
+    contrato_vigente = _obtener_contrato_vigente()
+    vigente_id = contrato_vigente.get("_id") if contrato_vigente else None
+
     estado, ultimo_contrato = get_team_contract_status(usuario_id)
     if estado == "Aceptado":
         return redirect("portal_publico")
@@ -667,7 +670,6 @@ def documentacion_view(request):
         else:
             error = "Accion no valida."
 
-    contrato_vigente = _obtener_contrato_vigente()
     contrato_vigente_es_pdf = (contrato_vigente.get("tipo_archivo") or "").lower() == "application/pdf" if contrato_vigente else False
     
     # Solo el líder (o el primero que subió) puede ver el formulario, pero todos ven el estado
