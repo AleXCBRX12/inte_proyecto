@@ -864,11 +864,17 @@ def descargar_documento_expediente(request, documento_id):
         return bloqueo
 
     usuario_id = request.session.get("usuario_id")
+    correo_sesion = (request.session.get("correo") or "").strip().lower()
+    proyecto = _obtener_proyecto_usuario(usuario_id, correo_sesion)
+    proyecto_id = str(proyecto.get("_id")) if proyecto and proyecto.get("_id") else None
+
     try:
-        documento = db.expediente_documentos.find_one({
-            "_id": ObjectId(documento_id),
-            "usuario_id": usuario_id,
-        })
+        query = {"_id": ObjectId(documento_id)}
+        if proyecto_id:
+            query["$or"] = [{"proyecto_id": proyecto_id}, {"usuario_id": usuario_id}]
+        else:
+            query["usuario_id"] = usuario_id
+        documento = db.expediente_documentos.find_one(query)
     except Exception:
         documento = None
 
@@ -879,6 +885,39 @@ def descargar_documento_expediente(request, documento_id):
     tipo = documento.get("tipo_archivo") or "application/octet-stream"
     response = HttpResponse(documento.get("archivo"), content_type=tipo)
     response["Content-Disposition"] = f'attachment; filename="{nombre}"'
+    return response
+
+
+def ver_documento_expediente(request, documento_id):
+    bloqueo = _bloqueo_por_contrato(request)
+    if bloqueo:
+        return bloqueo
+
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        return redirect("login")
+
+    correo_sesion = (request.session.get("correo") or "").strip().lower()
+    proyecto = _obtener_proyecto_usuario(usuario_id, correo_sesion)
+    proyecto_id = str(proyecto.get("_id")) if proyecto and proyecto.get("_id") else None
+
+    try:
+        query = {"_id": ObjectId(documento_id)}
+        if proyecto_id:
+            query["$or"] = [{"proyecto_id": proyecto_id}, {"usuario_id": usuario_id}]
+        else:
+            query["usuario_id"] = usuario_id
+        documento = db.expediente_documentos.find_one(query)
+    except Exception:
+        documento = None
+
+    if not documento or not documento.get("archivo"):
+        raise Http404("Documento no encontrado.")
+
+    nombre = documento.get("nombre_archivo") or "documento"
+    tipo = documento.get("tipo_archivo") or "application/pdf"
+    response = HttpResponse(documento.get("archivo"), content_type=tipo)
+    response["Content-Disposition"] = f'inline; filename="{nombre}"'
     return response
 
 def perfil_emprendedor(request):

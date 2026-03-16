@@ -12,6 +12,7 @@ urlpatterns = [
     path('documentacion/contrato-vigente/descargar/', views.descargar_contrato_vigente_usuario, name='descargar_contrato_vigente_usuario'),
     path('documentacion/contrato/<str:contrato_id>/', views.ver_contrato_usuario, name='ver_contrato_usuario'),
     path('expediente/', views.expediente_usuario, name='expediente_usuario'),
+    path('expediente/ver/<str:documento_id>/', views.ver_documento_expediente, name='ver_documento_expediente'),
     path('expediente/descargar/<str:documento_id>/', views.descargar_documento_expediente, name='descargar_documento_expediente'),
     path("perfil-emprendedor/", views.perfil_emprendedor, name="perfil_emprendedor"),
     path("calendario/", views.calendario_emprendedor, name="calendario_emprendedor"),

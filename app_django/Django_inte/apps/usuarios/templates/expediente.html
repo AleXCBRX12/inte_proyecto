@@ -83,6 +83,7 @@
                             <div class="version-side">
                                 <span>{{ version.fecha_subida }}</span>
                                 <span>{{ version.tamano_archivo }}</span>
+                                <a href="{% url 'ver_documento_expediente' version.id %}" target="_blank" rel="noopener">Ver</a>
                                 <a href="{% url 'descargar_documento_expediente' version.id %}">Descargar</a>
                             </div>
                         </div>
