@@ -630,14 +630,30 @@ def actualizar_estado(request, id):
             usuario_lider_id = res_lider.inserted_id
 
         # 2. Procesar Integrantes adicionales
-        integrantes = solicitud.get("integrantes") or []
-        
-        # Robustez: si integrantes es un string (JSON), lo parseamos
-        if isinstance(integrantes, str):
+        integrantes_raw = solicitud.get("integrantes") or []
+        logger.info(f"[ACEPTAR] Integrantes RAW tipo={type(integrantes_raw)} valor={integrantes_raw}")
+
+        # Soporte para múltiples formatos de almacenamiento
+        if isinstance(integrantes_raw, str):
             try:
-                integrantes = json.loads(integrantes)
+                integrantes_raw = json.loads(integrantes_raw)
             except Exception:
-                integrantes = []
+                integrantes_raw = []
+        
+        # Si llegó como lista de strings en lugar de lista de dicts
+        integrantes = []
+        for item in (integrantes_raw if isinstance(integrantes_raw, list) else []):
+            if isinstance(item, dict):
+                integrantes.append(item)
+            elif isinstance(item, str):
+                try:
+                    parsed = json.loads(item)
+                    if isinstance(parsed, dict):
+                        integrantes.append(parsed)
+                except Exception:
+                    pass
+
+        logger.info(f"[ACEPTAR] Integrantes procesados: {len(integrantes)} → {[i.get('correo') for i in integrantes]}")
 
         # Lista para envío masivo en segundo plano
         destinatarios_bulk = [{"correo": correo, "nombre": nombre}]
