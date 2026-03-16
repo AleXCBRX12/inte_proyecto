@@ -2,9 +2,12 @@ import base64
 import os
 from typing import Iterable, Optional
 
+import logging
 import requests
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+
+logger = logging.getLogger(__name__)
 
 
 def _send_via_smtp(
@@ -28,9 +31,10 @@ def _send_via_smtp(
         mensaje.attach(att["filename"], att["content_bytes"], att["mime_type"])
     try:
         mensaje.send()
+        logger.info(f"Correo enviado exitosamente vía SMTP a {to}")
         return True
     except Exception as e:
-        print(f"SMTP Error: {str(e)}")
+        logger.error(f"Error crítico en SMTP: {str(e)}", exc_info=True)
         return False
 
 
@@ -99,19 +103,19 @@ def send_email(
     si no, se usa SMTP (Django EmailMultiAlternatives).
     """
     to_list = [e for e in list(to) if e]
-    print(f"[Mailer] Intentando enviar correo a: {to_list}")
+    logger.info(f"Iniciando proceso de envío de correo a: {to_list}")
     if not to_list:
-        print("[Mailer] Error: Lista de destinatarios vacía.")
+        logger.warning("Intento de envío fallido: Lista de destinatarios vacía.")
         return False
 
     provider = (os.getenv("EMAIL_PROVIDER") or "").strip().lower()
     sendgrid_key = (os.getenv("SENDGRID_API_KEY") or "").strip()
     
     if provider in ("sendgrid",) or sendgrid_key:
-        print(f"[Mailer] Usando proveedor: SendGrid (Key: {'***' if sendgrid_key else 'Missing'})")
+        logger.info(f"Usando proveedor: SendGrid (API Key configurada)")
         from_addr = (os.getenv("SENDGRID_FROM_EMAIL") or from_email or settings.DEFAULT_FROM_EMAIL or "").strip()
         if not sendgrid_key or not from_addr:
-            print(f"[Mailer] Error: SendGrid requiere API_KEY y FROM_EMAIL. (From: {from_addr})")
+            logger.error(f"Error de configuración SendGrid: Faltan llaves o correo de origen (From: {from_addr})")
             return False
         return _send_via_sendgrid(
             subject=subject,
@@ -123,9 +127,9 @@ def send_email(
             attachments=attachments,
         )
 
-    print(f"[Mailer] Usando proveedor: SMTP (Host: {settings.EMAIL_HOST}, User: {settings.EMAIL_HOST_USER})")
+    logger.info(f"Usando proveedor: SMTP (Host: {settings.EMAIL_HOST}, User: {settings.EMAIL_HOST_USER})")
     if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
-        print("[Mailer] Error: Faltan credenciales SMTP (EMAIL_HOST_USER/PASSWORD).")
+        logger.error("Error de configuración SMTP: Faltan EMAIL_HOST_USER o EMAIL_HOST_PASSWORD en el entorno.")
 
     return _send_via_smtp(
         subject=subject,

@@ -3,6 +3,9 @@ from io import BytesIO
 from datetime import datetime
 import threading
 import gridfs
+import logging
+
+logger = logging.getLogger(__name__)
 
 from django.conf import settings
 
@@ -222,10 +225,10 @@ def enviar_correo(destinatario, datos):
     )
 
     if ok:
-        print(f"Correo enviado a {destinatario}")
+        logger.info(f"Confirmación de solicitud enviada exitosamente a {destinatario}")
         return True
 
-    print(f"Error enviando correo a {destinatario}")
+    logger.error(f"Fallo el envío de confirmación de solicitud a {destinatario}")
     return False
 
 def enviar_correo_async(destinatario, datos):
