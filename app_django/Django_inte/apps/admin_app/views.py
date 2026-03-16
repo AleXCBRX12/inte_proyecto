@@ -3,7 +3,6 @@ import re
 import json
 import mimetypes
 import base64
-import smtplib
 import tempfile
 import shutil
 import subprocess
@@ -18,8 +17,6 @@ from config.database.mongo import db
 from django.views.decorators.http import require_POST
 from config.database.mongo import mongo_instance, db
 from django.utils import timezone
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from django.conf import settings
 from bson import ObjectId
 from docx2pdf import convert
@@ -368,22 +365,14 @@ def solicitudes_panel(request):
 
 logger = logging.getLogger(__name__)
 
-def enviar_correo_estado_solicitud(destinatario, nombre, estado, password=None, motivo=None, smtp_server_conn=None):
-    smtp_host = "smtp.gmail.com"
-    smtp_port = 587
-    sender_email = os.getenv("EMAIL_HOST_USER")
-    sender_password = os.getenv("EMAIL_HOST_PASSWORD")
-    portal_url = os.getenv("PORTAL_URL", "https://incubadora.local/login/")
+def enviar_correo_estado_solicitud(destinatario, nombre, estado, password=None, motivo=None):
+    portal_url = os.getenv("PORTAL_URL", "https://incubadora-ut.onrender.com/login/")
 
-    if not sender_email or not sender_password or not destinatario:
+    if not destinatario:
         return False
 
-    mensaje = MIMEMultipart("alternative")
-    mensaje["From"] = sender_email
-    mensaje["To"] = destinatario
-
     if estado.lower() == "aceptado":
-        mensaje["Subject"] = "🚀 ¡Felicidades! Tu proyecto ha sido aceptado"
+        subject = "🚀 ¡Felicidades! Tu proyecto ha sido aceptado"
         html = f"""
         <html>
         <body style="margin:0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
@@ -414,7 +403,7 @@ def enviar_correo_estado_solicitud(destinatario, nombre, estado, password=None, 
         </html>
         """
     else:
-        mensaje["Subject"] = "Información sobre tu solicitud - Incubadora de Empresas"
+        subject = "Información sobre tu solicitud - Incubadora de Empresas"
         html = f"""
         <html>
         <body style="margin:0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
@@ -426,14 +415,11 @@ def enviar_correo_estado_solicitud(destinatario, nombre, estado, password=None, 
                     <p style="font-size: 18px; margin-top: 0;">Hola <strong>{nombre}</strong>,</p>
                     <p style="line-height: 1.6; font-size: 16px;">Agradecemos sinceramente tu interés en la <strong>Incubadora de Empresas</strong> y el tiempo dedicado a tu solicitud.</p>
                     <p style="line-height: 1.6; font-size: 16px;">Tras una revisión detallada de tu propuesta, lamentamos informarte que en esta ocasión tu solicitud ha sido <strong>declinada</strong>.</p>
-                    
                     <div style="background-color: #fff1f2; border-left: 4px solid #f43f5e; padding: 20px; margin: 30px 0; border-radius: 4px;">
                         <p style="margin-top: 0; font-weight: 700; color: #be123c;">Motivo de la decisión:</p>
                         <p style="margin-bottom: 0; color: #9f1239; font-style: italic;">"{motivo or 'No se proporcionó un motivo específico.'}"</p>
                     </div>
-
                     <p style="line-height: 1.6; font-size: 16px;">Valoramos mucho tu espíritu emprendedor y te animamos a seguir trabajando en tu proyecto. Te invitamos a participar en futuras convocatorias una vez que hayas realizado los ajustes necesarios.</p>
-                    
                     <p style="margin-top: 40px; font-size: 14px; text-align: center; color: #64748b;">Si deseas recibir más orientación, puedes contactarnos directamente.</p>
                 </div>
                 <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
@@ -445,28 +431,23 @@ def enviar_correo_estado_solicitud(destinatario, nombre, estado, password=None, 
         """
 
     mensaje = EmailMultiAlternatives(
-        subject=mensaje_subject,
-        body="", # Texto plano vacío, usamos HTML
+        subject=subject,
+        body="Tu solicitud ha sido actualizada.",
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[destinatario]
     )
-    mensaje.attach_alternative(html, "html")
+    mensaje.attach_alternative(html, "text/html")
 
     try:
-        mensaje.send(fail_silently=False)
+        mensaje.send()
         return True
     except Exception as e:
         logger.error(f"Error enviando correo a {destinatario}: {str(e)}")
         return False
 
 def _background_enviar_correos_bulk(destinatarios_list, estado, password=None, motivo=None):
-    """ Envia correos a múltiples destinatarios usando una sola conexión SMTP. """
-    smtp_host = "smtp.gmail.com"
-    smtp_port = 587
-    sender_email = os.getenv("EMAIL_HOST_USER")
-    sender_password = os.getenv("EMAIL_HOST_PASSWORD")
-
-    if not sender_email or not sender_password or not destinatarios_list:
+    """ Envia correos a múltiples destinatarios. """
+    if not destinatarios_list:
         return
 
     try:
@@ -483,19 +464,10 @@ def _background_enviar_correos_bulk(destinatarios_list, estado, password=None, m
 
 
 def enviar_correo_rechazo_contrato(destinatario, nombre, motivo):
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-    sender_email = os.getenv("EMAIL_HOST_USER")
-    sender_password = os.getenv("EMAIL_HOST_PASSWORD")
-
-    if not sender_email or not sender_password or not destinatario:
+    if not destinatario:
         return False
 
-    mensaje = MIMEMultipart("alternative")
-    mensaje["From"] = sender_email
-    mensaje["To"] = destinatario
-    mensaje["Subject"] = "⚠️ Revisa tu contrato y vuelve a enviarlo"
-
+    subject = "⚠️ Revisa tu contrato y vuelve a enviarlo"
     motivo_txt = motivo or "Tu contrato requiere ajustes. Sube nuevamente el archivo corregido."
     html = f"""
     <html>
@@ -524,16 +496,20 @@ def enviar_correo_rechazo_contrato(destinatario, nombre, motivo):
     </body>
     </html>
     """
-    mensaje.attach(MIMEText(html, "html"))
+    
+    mensaje = EmailMultiAlternatives(
+        subject=subject,
+        body=motivo_txt,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[destinatario]
+    )
+    mensaje.attach_alternative(html, "text/html")
 
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(mensaje)
-        server.quit()
+        mensaje.send()
         return True
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error enviando correo de rechazo contrato a {destinatario}: {str(e)}")
         return False
 
 @csrf_exempt
