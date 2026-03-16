@@ -178,9 +178,19 @@ def eliminar_anuncio(request, id):
     guard = _require_admin(request)
     if guard:
         return guard
-    db.anuncios.delete_one({'_id': ObjectId(id)})
+
+    try:
+        anuncio_id = ObjectId(str(id))
+    except Exception:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax'):
+            return JsonResponse({"success": False, "error": "ID invalido"}, status=400)
+        return redirect('panel_publicaciones_admin')
+
+    result = db.anuncios.delete_one({'_id': anuncio_id})
+    ok = bool(getattr(result, "deleted_count", 0))
+
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax'):
-        return JsonResponse({"success": True})
+        return JsonResponse({"success": ok})
     return redirect('panel_publicaciones_admin')
 
 def editar_anuncio(request, id):

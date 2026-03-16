@@ -402,11 +402,17 @@
         openConfirmModal(async () => {
             try {
                 const response = await fetch(`/admin/anuncios/eliminar/${id}/`, {
-                    method: 'POST',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}' }
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
-                const data = await response.json();
-                if (data.success) {
+
+                if (!response.ok) {
+                    showToast('Error', 'No se pudo eliminar.', 'error');
+                    return;
+                }
+
+                const data = await response.json().catch(() => ({}));
+                if (data && data.success) {
                     showToast('Eliminado', 'La publicación ha sido removida.');
                     const card = document.querySelector(`.card-item[data-id="${id}"]`);
                     if (card) {
@@ -414,6 +420,8 @@
                         card.style.transform = 'scale(0.9)';
                         setTimeout(() => card.remove(), 400);
                     }
+                } else {
+                    showToast('Error', 'No se pudo eliminar.', 'error');
                 }
             } catch (error) {
                 showToast('Error', 'No se pudo eliminar.', 'error');
