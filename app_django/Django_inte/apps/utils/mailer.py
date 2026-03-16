@@ -167,6 +167,7 @@ def send_email(
     sendgrid_key = (os.getenv("SENDGRID_API_KEY") or "").strip()
 
     allow_smtp = (os.getenv("ALLOW_SMTP_FALLBACK") or "").strip().lower() in ("1", "true", "yes") or bool(getattr(settings, "DEBUG", False))
+    allow_fallbacks = (os.getenv("EMAIL_ALLOW_FALLBACKS") or "").strip().lower() in ("1", "true", "yes")
 
     def _try_resend() -> bool:
         if not resend_key:
@@ -216,9 +217,11 @@ def send_email(
     providers_to_try = []
     if provider:
         providers_to_try.append(provider)
-        for p in ("resend", "sendgrid", "smtp"):
-            if p not in providers_to_try:
-                providers_to_try.append(p)
+        # Si el proveedor está configurado explícitamente, por defecto NO probamos otros (evita confusiones y 403/timeout).
+        if allow_fallbacks:
+            for p in ("resend", "sendgrid", "smtp"):
+                if p not in providers_to_try:
+                    providers_to_try.append(p)
     else:
         if resend_key:
             providers_to_try.append("resend")
