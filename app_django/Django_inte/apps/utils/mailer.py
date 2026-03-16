@@ -89,6 +89,54 @@ def _send_via_sendgrid(
         return False
 
 
+def _send_via_resend(
+    *,
+    subject: str,
+    text_body: str,
+    html_body: Optional[str],
+    to: Iterable[str],
+    from_email: str,
+    api_key: str,
+    attachments: Optional[list[dict]] = None,
+) -> bool:
+    payload: dict = {
+        "from": from_email,
+        "to": list(to),
+        "subject": subject,
+        "text": text_body or "",
+        "html": html_body or "",
+    }
+
+    if attachments:
+        payload["attachments"] = [
+            {
+                "content": base64.b64encode(att["content_bytes"]).decode("ascii"),
+                "filename": att["filename"],
+            }
+            for att in attachments
+        ]
+
+    try:
+        resp = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=15,
+        )
+        if resp.status_code in (200, 201):
+            logger.info(f"Resend: Correo enviado correctamente a {to}")
+            return True
+        else:
+            logger.error(f"Resend Error ({resp.status_code}): {resp.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Error crítico en Resend API: {str(e)}", exc_info=True)
+        return False
+
+
 def send_email(
     *,
     subject: str,
@@ -99,8 +147,7 @@ def send_email(
     from_email: Optional[str] = None,
 ) -> bool:
     """
-    Envia correo. Si existe SENDGRID_API_KEY se usa SendGrid (HTTPS),
-    si no, se usa SMTP (Django EmailMultiAlternatives).
+    Envia correo. Soporta Resend (Recomendado), SendGrid o SMTP.
     """
     to_list = [e for e in list(to) if e]
     logger.info(f"Iniciando proceso de envío de correo a: {to_list}")
@@ -109,13 +156,32 @@ def send_email(
         return False
 
     provider = (os.getenv("EMAIL_PROVIDER") or "").strip().lower()
+    resend_key = (os.getenv("RESEND_API_KEY") or "").strip()
     sendgrid_key = (os.getenv("SENDGRID_API_KEY") or "").strip()
-    
-    if provider in ("sendgrid",) or sendgrid_key:
-        logger.info(f"Usando proveedor: SendGrid (API Key configurada)")
+
+    # 1. Prioridad: Resend
+    if provider == "resend" or (resend_key and not provider):
+        logger.info("Usando proveedor: Resend API")
+        from_addr = (os.getenv("RESEND_FROM_EMAIL") or from_email or settings.DEFAULT_FROM_EMAIL or "onboarding@resend.dev").strip()
+        if not resend_key:
+            logger.error("Error: Se requiere RESEND_API_KEY")
+            return False
+        return _send_via_resend(
+            subject=subject,
+            text_body=text_body,
+            html_body=html_body,
+            to=to_list,
+            from_email=from_addr,
+            api_key=resend_key,
+            attachments=attachments,
+        )
+
+    # 2. Alternativa: SendGrid
+    if provider == "sendgrid" or (sendgrid_key and not provider):
+        logger.info("Usando proveedor: SendGrid API")
         from_addr = (os.getenv("SENDGRID_FROM_EMAIL") or from_email or settings.DEFAULT_FROM_EMAIL or "").strip()
         if not sendgrid_key or not from_addr:
-            logger.error(f"Error de configuración SendGrid: Faltan llaves o correo de origen (From: {from_addr})")
+            logger.error(f"Error de configuración SendGrid: Faltan llaves (From: {from_addr})")
             return False
         return _send_via_sendgrid(
             subject=subject,
@@ -127,10 +193,8 @@ def send_email(
             attachments=attachments,
         )
 
-    logger.info(f"Usando proveedor: SMTP (Host: {settings.EMAIL_HOST}, User: {settings.EMAIL_HOST_USER})")
-    if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
-        logger.error("Error de configuración SMTP: Faltan EMAIL_HOST_USER o EMAIL_HOST_PASSWORD en el entorno.")
-
+    # 3. Fallback: SMTP
+    logger.info(f"Usando proveedor: SMTP (Host: {settings.EMAIL_HOST})")
     return _send_via_smtp(
         subject=subject,
         text_body=text_body,
