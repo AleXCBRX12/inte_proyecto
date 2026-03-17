@@ -139,6 +139,7 @@
 
     .menu-toggle{
         display:flex;
+        margin-right:10px; /* ← Ajuste: mueve el botón hamburguesa a la izquierda */
     }
 
     .nav-menu{

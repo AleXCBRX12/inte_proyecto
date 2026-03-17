@@ -1,4 +1,4 @@
-:root{
+        :root{
     --azul: #1f3c88;
     --azul-accent: #2563eb;
     --azul-vibrant: #3b82f6;
@@ -311,3 +311,48 @@ body{
         padding:22px;
     }
 }
+/* Evitar scroll horizontal */
+html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+.hero, .slide, .slide img {
+    max-width: 100vw;
+}
+
+.section {
+    box-sizing: border-box;
+}
+   .section-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding: 0 10px;
+    }
+    .section-header-flex h3 {
+        margin-bottom: 0 !important;
+    }
+    .btn-ver-todo {
+        padding: 8px 16px;
+        background: var(--azul, #3b82f6);
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    .btn-ver-todo:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    #convocatorias .btn-ver-todo {
+        background: #eab308;
+    }
+
+
+/* --------- /*
+
+    

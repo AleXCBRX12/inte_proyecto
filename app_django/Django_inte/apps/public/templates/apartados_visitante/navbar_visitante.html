@@ -1,4 +1,5 @@
-{% load static %}<link rel="stylesheet" href="{% static 'css/navbar_publico.css' %}?v=30">
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/navbar_publico.css' %}?v=60">
 <header class="main-header">
     <div class="logo-container">
         <div class="logo-circle">
@@ -18,7 +19,7 @@
     <nav class="nav-menu" id="navMenu">
         <a href="{% url 'portal_visitante' %}">Inicio</a>
         <a href="{% url 'portal_visitante' %}#programa">Programa</a>
-        <a href="{% url 'portal_visitante' %}#convocatorias">Convocatorias</a>
+        <a href="{% url 'portal_visitante' %}#muro">Convocatorias</a>
         <a href="{% url 'login' %}">Acceder</a>
     </nav>
 </header>
