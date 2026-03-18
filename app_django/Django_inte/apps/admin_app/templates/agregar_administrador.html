@@ -117,7 +117,8 @@
     background:white;
     border-radius:12px;
     box-shadow:0 8px 20px rgba(0,0,0,0.08);
-    overflow:visible;
+    overflow-x:auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 table{
@@ -212,6 +213,26 @@ tbody td:last-child{
 
 .estado-bloqueado{
     background:#dc2626; /* rojo */
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px){
+    .header-container{
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .btn-crear{
+        width: 100%;
+    }
+    thead th, tbody td{
+        padding: 12px;
+        font-size: 13px;
+    }
+    .btn-opciones{
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>
 

@@ -1,13 +1,43 @@
 const avatarMenu = document.getElementById("avatarMenu");
 
-avatarMenu.addEventListener("click", () => {
-    avatarMenu.classList.toggle("active");
-});
+if (avatarMenu) {
+    avatarMenu.addEventListener("click", () => {
+        avatarMenu.classList.toggle("active");
+    });
+}
 
 window.addEventListener("click", function(e){
-    if(!avatarMenu.contains(e.target)){
+    if(avatarMenu && !avatarMenu.contains(e.target)){
         avatarMenu.classList.remove("active");
     }
+});
+
+function closeSidebarIfOpen() {
+    const sidebar = document.querySelector(".sidebar");
+    const overlay = document.querySelector(".sidebar-overlay");
+    if (!sidebar || !overlay) return;
+
+    if (sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
+        overlay.classList.remove("active");
+        document.body.style.overflow = "";
+    }
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeSidebarIfOpen();
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const sidebar = document.querySelector(".sidebar");
+    if (!sidebar) return;
+
+    // En móvil, cerrar el sidebar al navegar (mejora UX).
+    sidebar.querySelectorAll("a").forEach((a) => {
+        a.addEventListener("click", () => {
+            if (window.innerWidth <= 900) closeSidebarIfOpen();
+        });
+    });
 });
 // ===== AUTO CERRAR MENSAJES =====
 document.addEventListener("DOMContentLoaded", function(){

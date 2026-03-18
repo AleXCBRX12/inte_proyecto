@@ -17,10 +17,17 @@
 }
 
 html, body {
-    height: 100vh !important;
-    overflow: hidden !important;
+    height: 100%;
+    min-height: 100vh;
+    overflow: hidden;
     margin: 0;
     padding: 0;
+}
+
+@supports (height: 100dvh) {
+    html, body {
+        min-height: 100dvh;
+    }
 }
 
 /* ===== RESET ===== */
@@ -37,6 +44,7 @@ body{
     flex-direction:column;
     color:var(--texto);
     width: 100%;
+    overflow-x: hidden;
 }
 
 /* ===== LAYOUT ===== */
@@ -126,12 +134,29 @@ body{
     background:white;
     padding:30px;
     height: 100%;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 .main h2{
     font-size:48px;
     font-weight:600;
     color:var(--azul);
+}
+
+/* Contenedores comunes que en móvil deben permitir scroll horizontal */
+.table-wrapper,
+.table-responsive,
+.table-container{
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper table,
+.table-responsive table,
+.table-container table{
+    width: 100%;
 }
 
 /* ===== SECCIONES ===== */
@@ -211,6 +236,39 @@ body{
         text-align: center;
         width: 100%;
         margin-bottom: 20px;
+    }
+
+    .sidebar{
+        padding:18px 14px;
+    }
+
+    .sidebar a{
+        padding:12px 12px;
+        margin-bottom:10px;
+        font-size:14px;
+    }
+
+    .sidebar a svg{
+        width:22px;
+        height:22px;
+    }
+
+    /* Toasts y mensajes no deben tapar la topbar */
+    #toastContainer{
+        top: 78px;
+        right: 12px;
+        left: 12px;
+        align-items: stretch;
+    }
+    .toast-item{
+        max-width: none;
+        width: 100%;
+    }
+    .mensajes-globales{
+        top: 78px;
+        right: 12px;
+        left: 12px;
+        max-width: none;
     }
 }
 
