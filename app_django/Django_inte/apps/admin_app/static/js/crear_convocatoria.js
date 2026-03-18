@@ -15,8 +15,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             document.getElementById("editId").value = this.dataset.id;
             document.getElementById("editTitulo").value = this.dataset.titulo;
-            const docsEl = document.getElementById("editDocs");
-            if (docsEl) docsEl.value = (this.dataset.docs || "");
 
             let fecha = this.dataset.fecha;
             if (fecha && !fecha.includes("T")) {

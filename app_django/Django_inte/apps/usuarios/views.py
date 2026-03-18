@@ -26,10 +26,7 @@ def portal_visitante(request):
 
 
 def portal_publico(request):
-    from apps.public.views import _obtener_muro_unificado_public
-    # Mostramos solo convocatorias por petición del usuario
-    muro = _obtener_muro_unificado_public(request, es_visitante=False, solo_convocatorias=True)
-    return render(request, 'portal_publico.html', {"muro": muro})
+    return render(request, 'portal_publico.html')
 
 def lista_anuncios(request):
     bloqueo = _bloqueo_por_contrato(request)
@@ -54,83 +51,6 @@ def panel_admin(request):
 # ==============================
 # Vistas
 # ==============================
-def ver_convocatorias(request):
-    """Vista que muestra las convocatorias (página independiente)"""
-    bloqueo = _bloqueo_por_contrato(request)
-    if bloqueo:
-        return bloqueo
-
-    from apps.public.views import _obtener_muro_unificado_public
-    # Solo convocatorias para esta ruta específica
-    muro = _obtener_muro_unificado_public(request, solo_convocatorias=True)
-    return render(request, "ver_convocatorias.html", {"muro": muro, "layout": "grid"})
-
-
-
-# ==============================
-# Notificaciones (Emprendedor)
-# ==============================
-def notificaciones_view(request):
-    bloqueo = _bloqueo_por_contrato(request)
-    if bloqueo:
-        return bloqueo
-
-    usuario_id = request.session.get("usuario_id")
-    if not usuario_id:
-        return redirect("login")
-
-    return render(request, "notificaciones.html")
-
-
-def notificaciones_api(request):
-    usuario_id = request.session.get("usuario_id")
-    if not usuario_id:
-        return JsonResponse({"error": "No autorizado"}, status=403)
-
-    from apps.utils.notifications import list_notifications, unread_count
-    items = list_notifications(str(usuario_id), limit=30)
-    return JsonResponse({
-        "notificaciones": [n.__dict__ for n in items],
-        "unread": unread_count(str(usuario_id)),
-    })
-
-
-def notificaciones_unread_count_api(request):
-    usuario_id = request.session.get("usuario_id")
-    if not usuario_id:
-        return JsonResponse({"unread": 0})
-
-    from apps.utils.notifications import unread_count
-    return JsonResponse({"unread": unread_count(str(usuario_id))})
-
-
-@csrf_exempt
-def notificaciones_read_one_api(request, notif_id):
-    if request.method != "POST":
-        return JsonResponse({"error": "Metodo no permitido"}, status=405)
-    usuario_id = request.session.get("usuario_id")
-    if not usuario_id:
-        return JsonResponse({"error": "No autorizado"}, status=403)
-
-    from apps.utils.notifications import mark_read
-    ok = mark_read(str(usuario_id), str(notif_id))
-    return JsonResponse({"success": bool(ok)})
-
-
-@csrf_exempt
-def notificaciones_read_all_api(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Metodo no permitido"}, status=405)
-    usuario_id = request.session.get("usuario_id")
-    if not usuario_id:
-        return JsonResponse({"error": "No autorizado"}, status=403)
-
-    from apps.utils.notifications import mark_all_read
-    n = mark_all_read(str(usuario_id))
-    return JsonResponse({"success": True, "modified": int(n)})
-
-
-
 # ==============================
 # Biblioteca / Recursos
 # ==============================

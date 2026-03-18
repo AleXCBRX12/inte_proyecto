@@ -251,9 +251,6 @@ def crear_convocatoria_admin(request):
         fecha_fin_str = request.POST.get("fecha_fin")
         banner = request.FILES.get("banner")
 
-        docs_raw = request.POST.get("docs_requeridos") or ""
-        docs_requeridos = [d.strip() for d in docs_raw.split(",") if d.strip()]
-
         # Convertimos string HTML datetime-local a datetime real
         fecha_fin = None
         if fecha_fin_str:
@@ -270,7 +267,6 @@ def crear_convocatoria_admin(request):
             "titulo": titulo,
             "fecha_fin": fecha_fin,
             "banner_file_id": file_id_banner,
-            "docs_requeridos": docs_requeridos,
         })
 
         return JsonResponse({"success": True})
@@ -300,7 +296,6 @@ def crear_convocatoria_admin(request):
             "titulo": c.get("titulo"),
             "fecha_fin": fecha_formateada,
             "banner": banner_base64,
-            "docs_requeridos": ", ".join(c.get("docs_requeridos") or []),
         })
 
     return render(request, "crear_convocatoria.html", {
@@ -316,8 +311,6 @@ def editar_convocatoria(request):
     titulo = request.POST.get("titulo")
     fecha_fin_str = request.POST.get("fecha_fin")
     banner = request.FILES.get("banner")
-    docs_raw = request.POST.get("docs_requeridos") or ""
-    docs_requeridos = [d.strip() for d in docs_raw.split(",") if d.strip()]
 
     if not id_conv:
         return JsonResponse({"error": "ID no recibido"}, status=400)
@@ -333,7 +326,6 @@ def editar_convocatoria(request):
     update_data = {
         "titulo": titulo,
         "fecha_fin": fecha_fin,
-        "docs_requeridos": docs_requeridos,
     }
 
     if banner:
@@ -729,26 +721,6 @@ def actualizar_estado(request, id):
                 logger.error(f"Error enviando bienvenida a {d.get('correo')}: {str(e)}", exc_info=True)
 
         mail_enviado = (mail_fail == 0 and mail_ok > 0)
-        # Notificacion in-app (si el usuario ya existe)
-        try:
-            from apps.utils.notifications import create_notification
-            for d in credenciales_equipo:
-                correo_n = (d.get("correo") or "").strip()
-                if not correo_n:
-                    continue
-                usr = db.usuarios.find_one({"correo": correo_n})
-                if not usr:
-                    continue
-                create_notification(
-                    usuario_id=str(usr.get("_id")),
-                    tipo="ok",
-                    titulo="Registro aceptado",
-                    mensaje="Tu registro fue aceptado. Revisa tu correo para tus credenciales.",
-                    url="/login/",
-                    clave=f"registro_aceptado:{str(solicitud.get('_id'))}:{str(usr.get('_id'))}"
-                )
-        except Exception:
-            pass
 
     else:
         mail_ok = 0
@@ -1208,41 +1180,6 @@ def confirmar_contrato(request, id):
             # Notificar a todo el equipo
             from apps.utils.email_service import notificar_equipo_contrato
             notificar_equipo_contrato(contrato_obj_id, "aceptado")
-            # Notificacion in-app (sin romper si falla)
-            try:
-                from apps.utils.notifications import create_notification
-                emails_equipo = []
-                if proyecto:
-                    correo_p = (proyecto.get("correo_usuario") or "").strip().lower()
-                    if correo_p:
-                        emails_equipo.append(correo_p)
-                    for m in (proyecto.get("integrantes") or []):
-                        if isinstance(m, dict) and m.get("correo"):
-                            emails_equipo.append(str(m.get("correo")).strip().lower())
-                        elif isinstance(m, str):
-                            emails_equipo.append(m.strip().lower())
-                emails_equipo = [e for e in set(emails_equipo) if e]
-                if emails_equipo:
-                    for usr in db.usuarios.find({"correo": {"$in": emails_equipo}}, {"_id": 1}):
-                        create_notification(
-                            usuario_id=str(usr.get("_id")),
-                            tipo="ok",
-                            titulo="Contrato aceptado",
-                            mensaje="Tu contrato fue aceptado. Ya tienes acceso total a la plataforma.",
-                            url="/usuarios/portal_publico/",
-                            clave=f"contrato_aceptado:{str(contrato_obj_id)}:{str(usr.get('_id'))}"
-                        )
-                else:
-                    create_notification(
-                        usuario_id=str(usuario_id),
-                        tipo="ok",
-                        titulo="Contrato aceptado",
-                        mensaje="Tu contrato fue aceptado. Ya tienes acceso total a la plataforma.",
-                        url="/usuarios/portal_publico/",
-                        clave=f"contrato_aceptado:{str(contrato_obj_id)}:{str(usuario_id)}"
-                    )
-            except Exception:
-                pass
 
             messages.success(request, "El contrato fue aceptado y todo el equipo ha sido activado.")
         else:
@@ -1268,47 +1205,6 @@ def confirmar_contrato(request, id):
                     if correo:
                         from apps.utils.email_service import notificar_equipo_contrato
                         notificar_equipo_contrato(contrato_obj_id, "rechazado", motivo_rechazo)
-                        # Notificacion in-app (sin romper si falla)
-                        try:
-                            from apps.utils.notifications import create_notification
-                            msg = "Tu contrato fue rechazado. Revisa las observaciones y vuelve a subirlo."
-                            if motivo_rechazo:
-                                msg = msg + f" Observaciones: {motivo_rechazo}"
-                            # Notificamos a todos los usuarios del proyecto (si existe)
-                            correo_u = (contrato.get("usuario_correo") or "").strip().lower()
-                            proyecto_n = db.proyectos.find_one({"$or": [{"usuario_id": str(usuario_id)}, {"correo_usuario": correo_u}, {"resumen.correo": correo_u}]})
-                            emails = []
-                            if proyecto_n:
-                                c0 = (proyecto_n.get("correo_usuario") or "").strip().lower()
-                                if c0:
-                                    emails.append(c0)
-                                for m in (proyecto_n.get("integrantes") or []):
-                                    if isinstance(m, dict) and m.get("correo"):
-                                        emails.append(str(m.get("correo")).strip().lower())
-                                    elif isinstance(m, str):
-                                        emails.append(m.strip().lower())
-                            emails = [e for e in set(emails) if e]
-                            if emails:
-                                for usr in db.usuarios.find({"correo": {"$in": emails}}, {"_id": 1}):
-                                    create_notification(
-                                        usuario_id=str(usr.get("_id")),
-                                        tipo="warn",
-                                        titulo="Observaciones en tu contrato",
-                                        mensaje=msg,
-                                        url="/usuarios/documentacion/",
-                                        clave=f"contrato_rechazado:{str(contrato_obj_id)}:{str(usr.get('_id'))}"
-                                    )
-                            else:
-                                create_notification(
-                                    usuario_id=str(usuario_id),
-                                    tipo="warn",
-                                    titulo="Observaciones en tu contrato",
-                                    mensaje=msg,
-                                    url="/usuarios/documentacion/",
-                                    clave=f"contrato_rechazado:{str(contrato_obj_id)}:{str(usuario_id)}"
-                                )
-                        except Exception:
-                            pass
             messages.success(request, "Contrato rechazado y eliminado. El usuario debe subir uno nuevo sin firma.")
 
     except Exception as e:
