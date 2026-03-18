@@ -288,19 +288,22 @@ body{
 @media (max-width:600px){
 
     .hero{
-        height:50vh;
+        height:60vh;
+        min-height: 350px;
     }
 
     .caption h2{
-        font-size:22px;
+        font-size: clamp(20px, 6vw, 26px);
+        margin-bottom: 12px;
     }
 
     .caption p{
         font-size:14px;
+        line-height: 1.4;
     }
 
     .section{
-        margin:50px auto;
+        margin:40px auto;
     }
 
     .section h3{
@@ -309,6 +312,20 @@ body{
 
     .card{
         padding:22px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        height: 50vh;
+    }
+    .caption {
+        width: 90%;
+    }
+    .prev, .next {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
     }
 }
 /* Evitar scroll horizontal */

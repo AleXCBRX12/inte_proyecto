@@ -85,9 +85,22 @@
 @media (max-width: 768px) {
     .card-main-content {
         flex-direction: column;
+        gap: 15px;
     }
     .card-image {
         width: 100%;
+        height: 180px;
+    }
+    .card-title {
+        font-size: 1.15rem;
+    }
+    .card-actions-row {
+        justify-content: stretch;
+    }
+    .btn-portal-action {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
     }
 }
 

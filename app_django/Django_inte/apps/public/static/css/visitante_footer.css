@@ -68,6 +68,22 @@
     }
 }
 
+@media (max-width: 480px) {
+    .unique-shared-footer .footer-content {
+        padding: 0 15px;
+    }
+    .unique-shared-footer .footer-links {
+        gap: 15px;
+    }
+    .unique-shared-footer .footer-links a {
+        font-size: 0.8rem;
+    }
+    .unique-shared-footer .footer-copyright {
+        font-size: 0.8rem;
+        white-space: normal;
+    }
+}
+
 .portal-modal,
 .lightbox-modal {
     display: none !important;

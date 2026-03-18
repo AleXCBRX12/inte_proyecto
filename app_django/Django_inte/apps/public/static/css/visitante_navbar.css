@@ -179,6 +179,30 @@
 
 }
 
+/* Móviles muy pequeños */
+@media (max-width: 480px) {
+    .logo-title {
+        font-size: 1.1rem;
+    }
+    .logo-circle {
+        width: 40px;
+        height: 40px;
+        padding: 6px;
+    }
+    .main-header {
+        padding: 0 4%;
+    }
+}
+
+@media (max-width: 360px) {
+    .logo-title {
+        font-size: 0.95rem;
+    }
+    .logo-container {
+        gap: 8px;
+    }
+}
+
 @keyframes slideDown{
     from{
         opacity:0;

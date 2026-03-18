@@ -218,9 +218,48 @@ body{
 }
 
 @media(max-width:640px){
-    .perfil-hero{margin-top:90px;}
+    .perfil-hero{margin-top:90px; padding: 0 4% 5px;}
     .perfil-card, .card{
-        padding:12px;
+        padding:15px;
+    }
+    .perfil-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    .grid {
+        gap: 12px;
+        padding-bottom: 20px;
+    }
+    .timeline {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .step {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        text-align: left;
+    }
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+    .premium-table {
+        min-width: 450px;
+    }
+}
+
+@media (max-width: 480px) {
+    .premium-table {
+        min-width: 400px;
+    }
+    .mini-month-days {
+        gap: 2px;
+    }
+    .mini-day {
+        font-size: 10px;
     }
 }
 
