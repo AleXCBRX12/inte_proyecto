@@ -1,3 +1,5 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/emprendedor_muro.css' %}">
 <div class="muro-container">
     <div class="{% if layout == 'grid' %}publications-grid{% else %}publications-list{% endif %}">
         {% if muro %}
