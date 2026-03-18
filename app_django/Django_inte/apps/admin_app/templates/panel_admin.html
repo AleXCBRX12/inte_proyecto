@@ -43,6 +43,11 @@
                 <path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5" stroke="currentColor"/>
             </svg>Expedientes</a>
 
+        <a href="{% url 'recursos_admin' %}" class="{% if request.resolver_match.url_name == 'recursos_admin' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 4h16v16H4zM7 7h10M7 11h10M7 15h7" stroke="currentColor"/>
+            </svg>Biblioteca</a>
+
         <a href="{% url 'proyectos_activos' %}" class="{% if request.resolver_match.url_name == 'proyectos_activos' %}active{% endif %}">
             <svg viewBox="0 0 24 24" fill="none">
                 <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" stroke="currentColor"/>
@@ -99,181 +104,10 @@
     {% endif %}
 
     {% block content %}
-    <div class="dashboard-header">
-        <h2>Centro de Control Administrativo</h2>
-        <p class="text-muted">Resumen estratégico del ecosistema emprendedor</p>
-    </div>
 
-    <!-- TARJETAS DE ESTADÍSTICAS -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: #e0f2fe; color: #0369a1;">
-                <i class="bi bi-file-earmark-text"></i>
-            </div>
-            <div class="stat-info">
-                <span class="stat-label">Solicitudes Pendientes</span>
-                <h3 class="stat-value">{{ stats.solicitudes_pendientes }}</h3>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background: #dcfce7; color: #15803d;">
-                <i class="bi bi-rocket-takeoff"></i>
-            </div>
-            <div class="stat-info">
-                <span class="stat-label">Proyectos Activos</span>
-                <h3 class="stat-value">{{ stats.proyectos_activos }}</h3>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background: #fef9c3; color: #a16207;">
-                <i class="bi bi-person-check"></i>
-            </div>
-            <div class="stat-info">
-                <span class="stat-label">Usuarios Totales</span>
-                <h3 class="stat-value">{{ stats.total_usuarios }}</h3>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="background: #f3e8ff; color: #7e22ce;">
-                <i class="bi bi-megaphone"></i>
-            </div>
-            <div class="stat-info">
-                <span class="stat-label">Convocatorias</span>
-                <h3 class="stat-value">{{ stats.convocatorias_abiertas }}</h3>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECCIÓN DE GRÁFICAS -->
-    <div class="charts-row">
-        <div class="chart-container">
-            <h3>Distribución por Carrera</h3>
-            <canvas id="chartCarreras"></canvas>
-        </div>
-        <div class="welcome-container">
-            <h3>Acciones rápidas</h3>
-            <div class="quick-links">
-                <a href="{% url 'solicitudes_panel' %}" class="btn-quick">
-                    <i class="bi bi-plus-circle"></i> Gestionar Solicitudes
-                </a>
-                <a href="{% url 'panel_publicaciones_admin' %}" class="btn-quick">
-                    <i class="bi bi-megaphone"></i> Crear Aviso
-                </a>
-                <a href="{% url 'expedientes_admin' %}" class="btn-quick">
-                    <i class="bi bi-folder2-open"></i> Ver Expedientes
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Estilos específicos para el Dashboard (Scoped) -->
-    <style>
-        .dashboard-header { margin-bottom: 30px; }
-        .stats-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 20px; 
-            margin-bottom: 30px; 
-        }
-        .stat-card {
-            background: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: 1px solid #f1f5f9;
-        }
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-        .stat-label { font-size: 0.85rem; color: #64748b; font-weight: 500; }
-        .stat-value { font-size: 1.5rem; margin: 0; color: #1e293b; }
-        
-        .charts-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 25px;
-        }
-        .chart-container, .welcome-container {
-            background: #fff;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: 1px solid #f1f5f9;
-        }
-        .chart-container h3, .welcome-container h3 {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            color: #1e293b;
-        }
-        
-        .quick-links { display: flex; flex-direction: column; gap: 12px; }
-        .btn-quick {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 15px;
-            background: #f8fafc;
-            border-radius: 10px;
-            text-decoration: none;
-            color: #475569;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .btn-quick:hover { background: #e2e8f0; color: #1e293b; transform: translateX(5px); }
-
-        @media (max-width: 992px) {
-            .charts-row { grid-template-columns: 1fr; }
-        }
-    </style>
-
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('chartCarreras').getContext('2d');
-            const rawData = JSON.parse('{{ carreras_chart_json|safe }}');
-            
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: rawData.labels,
-                    datasets: [{
-                        label: 'Proyectos por Carrera',
-                        data: rawData.data,
-                        backgroundColor: [
-                            'rgba(31, 60, 136, 0.7)',
-                            'rgba(59, 130, 246, 0.7)',
-                            'rgba(147, 51, 234, 0.7)',
-                            'rgba(16, 185, 129, 0.7)',
-                            'rgba(245, 158, 11, 0.7)'
-                        ],
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: false } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        });
-    </script>
-    {% endblock %}
+    <h2>Panel de Administraci?n</h2>
+    <p>Selecciona una opci?n del men? lateral para comenzar.</p>
+{% endblock %}
 </div>
 </div>
 

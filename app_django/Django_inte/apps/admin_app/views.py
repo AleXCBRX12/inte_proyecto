@@ -110,39 +110,8 @@ def panel_admin(request):
     if guard:
         return guard
 
-    # Estadísticas para el Dashboard
-    stats = {
-        "solicitudes_pendientes": db.solicitudes.count_documents({
-            "$or": [
-                {"estado": {"$regex": "^EN PROCESO$", "$options": "i"}},
-                {"estado": {"$exists": False}}
-            ]
-        }),
-        "proyectos_activos": db.proyectos.count_documents({"estado": "Activo"}),
-        "total_usuarios": db.usuarios.count_documents({}),
-        "convocatorias_abiertas": db.convocatorias.count_documents({}),
-        "contratos_revision": db.contrato_proyecto.count_documents({"estado": "enviado"})
-    }
+    return render(request, "panel_admin.html")
 
-    # Datos para gráficas: Proyectos por carrera
-    proyectos = list(db.proyectos.find({}, {"resumen.carrera": 1}))
-    carreras_count = {}
-    for p in proyectos:
-        resumen = p.get("resumen") or {}
-        carrera = resumen.get("carrera")
-        if not carrera: carrera = "Sin especificar"
-        carreras_count[carrera] = carreras_count.get(carrera, 0) + 1
-    
-    # Preparar datos para Chart.js
-    carreras_chart = {
-        "labels": list(carreras_count.keys()),
-        "data": list(carreras_count.values())
-    }
-
-    return render(request, "panel_admin.html", {
-        "stats": stats,
-        "carreras_chart_json": json.dumps(carreras_chart)
-    })
 
 def lista_anuncios(request):
     guard = _require_admin(request)
@@ -282,6 +251,9 @@ def crear_convocatoria_admin(request):
         fecha_fin_str = request.POST.get("fecha_fin")
         banner = request.FILES.get("banner")
 
+        docs_raw = request.POST.get("docs_requeridos") or ""
+        docs_requeridos = [d.strip() for d in docs_raw.split(",") if d.strip()]
+
         # Convertimos string HTML datetime-local a datetime real
         fecha_fin = None
         if fecha_fin_str:
@@ -297,7 +269,8 @@ def crear_convocatoria_admin(request):
         db.convocatorias.insert_one({
             "titulo": titulo,
             "fecha_fin": fecha_fin,
-            "banner_file_id": file_id_banner
+            "banner_file_id": file_id_banner,
+            "docs_requeridos": docs_requeridos,
         })
 
         return JsonResponse({"success": True})
@@ -326,7 +299,8 @@ def crear_convocatoria_admin(request):
             "id": str(c["_id"]),
             "titulo": c.get("titulo"),
             "fecha_fin": fecha_formateada,
-            "banner": banner_base64
+            "banner": banner_base64,
+            "docs_requeridos": ", ".join(c.get("docs_requeridos") or []),
         })
 
     return render(request, "crear_convocatoria.html", {
@@ -342,6 +316,8 @@ def editar_convocatoria(request):
     titulo = request.POST.get("titulo")
     fecha_fin_str = request.POST.get("fecha_fin")
     banner = request.FILES.get("banner")
+    docs_raw = request.POST.get("docs_requeridos") or ""
+    docs_requeridos = [d.strip() for d in docs_raw.split(",") if d.strip()]
 
     if not id_conv:
         return JsonResponse({"error": "ID no recibido"}, status=400)
@@ -356,7 +332,8 @@ def editar_convocatoria(request):
 
     update_data = {
         "titulo": titulo,
-        "fecha_fin": fecha_fin
+        "fecha_fin": fecha_fin,
+        "docs_requeridos": docs_requeridos,
     }
 
     if banner:
@@ -752,6 +729,26 @@ def actualizar_estado(request, id):
                 logger.error(f"Error enviando bienvenida a {d.get('correo')}: {str(e)}", exc_info=True)
 
         mail_enviado = (mail_fail == 0 and mail_ok > 0)
+        # Notificacion in-app (si el usuario ya existe)
+        try:
+            from apps.utils.notifications import create_notification
+            for d in credenciales_equipo:
+                correo_n = (d.get("correo") or "").strip()
+                if not correo_n:
+                    continue
+                usr = db.usuarios.find_one({"correo": correo_n})
+                if not usr:
+                    continue
+                create_notification(
+                    usuario_id=str(usr.get("_id")),
+                    tipo="ok",
+                    titulo="Registro aceptado",
+                    mensaje="Tu registro fue aceptado. Revisa tu correo para tus credenciales.",
+                    url="/login/",
+                    clave=f"registro_aceptado:{str(solicitud.get('_id'))}:{str(usr.get('_id'))}"
+                )
+        except Exception:
+            pass
 
     else:
         mail_ok = 0
@@ -1211,6 +1208,41 @@ def confirmar_contrato(request, id):
             # Notificar a todo el equipo
             from apps.utils.email_service import notificar_equipo_contrato
             notificar_equipo_contrato(contrato_obj_id, "aceptado")
+            # Notificacion in-app (sin romper si falla)
+            try:
+                from apps.utils.notifications import create_notification
+                emails_equipo = []
+                if proyecto:
+                    correo_p = (proyecto.get("correo_usuario") or "").strip().lower()
+                    if correo_p:
+                        emails_equipo.append(correo_p)
+                    for m in (proyecto.get("integrantes") or []):
+                        if isinstance(m, dict) and m.get("correo"):
+                            emails_equipo.append(str(m.get("correo")).strip().lower())
+                        elif isinstance(m, str):
+                            emails_equipo.append(m.strip().lower())
+                emails_equipo = [e for e in set(emails_equipo) if e]
+                if emails_equipo:
+                    for usr in db.usuarios.find({"correo": {"$in": emails_equipo}}, {"_id": 1}):
+                        create_notification(
+                            usuario_id=str(usr.get("_id")),
+                            tipo="ok",
+                            titulo="Contrato aceptado",
+                            mensaje="Tu contrato fue aceptado. Ya tienes acceso total a la plataforma.",
+                            url="/usuarios/portal_publico/",
+                            clave=f"contrato_aceptado:{str(contrato_obj_id)}:{str(usr.get('_id'))}"
+                        )
+                else:
+                    create_notification(
+                        usuario_id=str(usuario_id),
+                        tipo="ok",
+                        titulo="Contrato aceptado",
+                        mensaje="Tu contrato fue aceptado. Ya tienes acceso total a la plataforma.",
+                        url="/usuarios/portal_publico/",
+                        clave=f"contrato_aceptado:{str(contrato_obj_id)}:{str(usuario_id)}"
+                    )
+            except Exception:
+                pass
 
             messages.success(request, "El contrato fue aceptado y todo el equipo ha sido activado.")
         else:
@@ -1236,6 +1268,47 @@ def confirmar_contrato(request, id):
                     if correo:
                         from apps.utils.email_service import notificar_equipo_contrato
                         notificar_equipo_contrato(contrato_obj_id, "rechazado", motivo_rechazo)
+                        # Notificacion in-app (sin romper si falla)
+                        try:
+                            from apps.utils.notifications import create_notification
+                            msg = "Tu contrato fue rechazado. Revisa las observaciones y vuelve a subirlo."
+                            if motivo_rechazo:
+                                msg = msg + f" Observaciones: {motivo_rechazo}"
+                            # Notificamos a todos los usuarios del proyecto (si existe)
+                            correo_u = (contrato.get("usuario_correo") or "").strip().lower()
+                            proyecto_n = db.proyectos.find_one({"$or": [{"usuario_id": str(usuario_id)}, {"correo_usuario": correo_u}, {"resumen.correo": correo_u}]})
+                            emails = []
+                            if proyecto_n:
+                                c0 = (proyecto_n.get("correo_usuario") or "").strip().lower()
+                                if c0:
+                                    emails.append(c0)
+                                for m in (proyecto_n.get("integrantes") or []):
+                                    if isinstance(m, dict) and m.get("correo"):
+                                        emails.append(str(m.get("correo")).strip().lower())
+                                    elif isinstance(m, str):
+                                        emails.append(m.strip().lower())
+                            emails = [e for e in set(emails) if e]
+                            if emails:
+                                for usr in db.usuarios.find({"correo": {"$in": emails}}, {"_id": 1}):
+                                    create_notification(
+                                        usuario_id=str(usr.get("_id")),
+                                        tipo="warn",
+                                        titulo="Observaciones en tu contrato",
+                                        mensaje=msg,
+                                        url="/usuarios/documentacion/",
+                                        clave=f"contrato_rechazado:{str(contrato_obj_id)}:{str(usr.get('_id'))}"
+                                    )
+                            else:
+                                create_notification(
+                                    usuario_id=str(usuario_id),
+                                    tipo="warn",
+                                    titulo="Observaciones en tu contrato",
+                                    mensaje=msg,
+                                    url="/usuarios/documentacion/",
+                                    clave=f"contrato_rechazado:{str(contrato_obj_id)}:{str(usuario_id)}"
+                                )
+                        except Exception:
+                            pass
             messages.success(request, "Contrato rechazado y eliminado. El usuario debe subir uno nuevo sin firma.")
 
     except Exception as e:
@@ -1985,6 +2058,146 @@ def proyectos_activos(request):
     return render(request, "proyectos_activos.html")
 
 
+
+
+def exportar_ficha_proyecto(request, id):
+    guard = _require_admin(request)
+    if guard:
+        return guard
+
+    try:
+        proyecto_id = ObjectId(id)
+    except Exception:
+        raise Http404("ID invalido")
+
+    proyecto = db.proyectos.find_one({"_id": proyecto_id})
+    if not proyecto:
+        raise Http404("Proyecto no encontrado")
+
+    # Datos base
+    nombre = (proyecto.get("nombre_proyecto") or proyecto.get("nombre") or "Proyecto").strip()
+    estado = (proyecto.get("estado") or "Activo").strip()
+    resumen = proyecto.get("resumen") or {}
+
+    # Equipo (emails) para mostrar nombres si existen
+    emails = []
+    correo_lider = (proyecto.get("correo_usuario") or resumen.get("correo") or "").strip().lower()
+    if correo_lider:
+        emails.append(correo_lider)
+    for m in (proyecto.get("integrantes") or []):
+        if isinstance(m, dict) and m.get("correo"):
+            emails.append(str(m.get("correo")).strip().lower())
+        elif isinstance(m, str):
+            emails.append(m.strip().lower())
+    emails = [e for e in dict.fromkeys([e for e in emails if e])]  # unique, keep order
+
+    usuarios = list(db.usuarios.find({"correo": {"$in": emails}}, {"nombre": 1, "correo": 1})) if emails else []
+    usuarios_map = {(u.get("correo") or "").strip().lower(): u for u in usuarios}
+
+    # Documentos (ultima version por nombre)
+    try:
+        expedientes = _exp_historial_proyecto_admin(str(proyecto_id))
+    except Exception:
+        expedientes = []
+
+    # Generar PDF
+    import io
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+
+    buff = io.BytesIO()
+    c = canvas.Canvas(buff, pagesize=letter)
+    width, height = letter
+
+    y = height - 54
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(54, y, "Ficha de Proyecto")
+
+    y -= 24
+    c.setFont("Helvetica", 11)
+    c.drawString(54, y, f"Proyecto: {nombre}")
+    y -= 16
+    c.drawString(54, y, f"Estado: {estado}")
+
+    y -= 22
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(54, y, "Resumen")
+    y -= 16
+    c.setFont("Helvetica", 10)
+    desc = (resumen.get("descripcion") or "Sin descripcion").strip()
+    for line in _wrap_text(desc, 90):
+        c.drawString(54, y, line)
+        y -= 12
+        if y < 80:
+            c.showPage(); y = height - 54
+
+    # Equipo
+    y -= 12
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(54, y, "Equipo")
+    y -= 16
+    c.setFont("Helvetica", 10)
+    if not emails:
+        c.drawString(54, y, "Sin integrantes registrados")
+        y -= 12
+    else:
+        for e in emails:
+            u = usuarios_map.get(e) or {}
+            nombre_u = (u.get("nombre") or "Integrante").strip()
+            c.drawString(54, y, f"- {nombre_u} <{e}>")
+            y -= 12
+            if y < 80:
+                c.showPage(); y = height - 54
+
+    # Documentos
+    y -= 12
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(54, y, "Documentos (ultima version)")
+    y -= 16
+    c.setFont("Helvetica", 10)
+    if not expedientes:
+        c.drawString(54, y, "Sin documentos en expediente")
+        y -= 12
+    else:
+        for exp in expedientes:
+            nombre_doc = (exp.get("nombre_documento") or "Documento").strip()
+            uv = exp.get("ultima_version_label") or ""
+            uf = exp.get("ultima_fecha") or ""
+            c.drawString(54, y, f"- {nombre_doc} {uv} ({uf})")
+            y -= 12
+            if y < 80:
+                c.showPage(); y = height - 54
+
+    c.showPage()
+    c.save()
+    pdf = buff.getvalue()
+    buff.close()
+
+    filename = f"ficha_{proyecto_id}.pdf"
+    resp = HttpResponse(pdf, content_type="application/pdf")
+    resp["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return resp
+
+
+def _wrap_text(texto, max_chars):
+    if not texto:
+        return [""]
+    words = str(texto).split()
+    lines = []
+    cur = []
+    cur_len = 0
+    for w in words:
+        add = len(w) + (1 if cur else 0)
+        if cur_len + add > int(max_chars):
+            lines.append(" ".join(cur))
+            cur = [w]
+            cur_len = len(w)
+        else:
+            cur.append(w)
+            cur_len += add
+    if cur:
+        lines.append(" ".join(cur))
+    return lines
 def proyectos_api(request):
     guard = _require_admin(request)
     if guard:
@@ -2473,6 +2686,96 @@ def _serializar_evento(evt):
     }
 
 
+
+
+# =========================
+# RECURSOS / BIBLIOTECA
+# =========================
+def recursos_admin(request):
+    guard = _require_admin(request)
+    if guard:
+        return guard
+
+    if request.method == "POST" and (request.POST.get("accion") or "") == "subir_recurso":
+        titulo = (request.POST.get("titulo") or "").strip()
+        descripcion = (request.POST.get("descripcion") or "").strip()
+        categoria = (request.POST.get("categoria") or "").strip()
+        archivo = request.FILES.get("archivo")
+
+        if not titulo or not archivo:
+            messages.error(request, "Debes indicar titulo y seleccionar un archivo.")
+            return redirect("recursos_admin")
+
+        try:
+            file_id = mongo_instance.fs.put(
+                archivo.read(),
+                filename=getattr(archivo, "name", "recurso"),
+                content_type=getattr(archivo, "content_type", "application/octet-stream"),
+            )
+        except Exception:
+            messages.error(request, "No se pudo guardar el archivo en la biblioteca.")
+            return redirect("recursos_admin")
+
+        db.recursos.insert_one({
+            "titulo": titulo,
+            "descripcion": descripcion,
+            "categoria": categoria,
+            "file_id": str(file_id),
+            "filename": getattr(archivo, "name", "recurso"),
+            "content_type": getattr(archivo, "content_type", "application/octet-stream"),
+            "uploaded_at": datetime.now(timezone.utc),
+            "uploaded_by": str(request.session.get("usuario_id") or "admin"),
+        })
+        messages.success(request, "Recurso subido correctamente.")
+        return redirect("recursos_admin")
+
+    recursos = []
+    for r in db.recursos.find().sort("uploaded_at", -1):
+        fecha = r.get("uploaded_at")
+        fecha_str = ""
+        if isinstance(fecha, datetime):
+            try:
+                fecha_str = fecha.astimezone(timezone.utc).strftime("%d/%m/%Y %H:%M")
+            except Exception:
+                fecha_str = fecha.strftime("%d/%m/%Y %H:%M")
+        recursos.append({
+            "id": str(r.get("_id")),
+            "titulo": r.get("titulo") or "Recurso",
+            "descripcion": r.get("descripcion") or "",
+            "categoria": r.get("categoria") or "",
+            "fecha": fecha_str,
+        })
+
+    return render(request, "recursos_admin.html", {"recursos": recursos})
+
+
+def recurso_descargar_admin(request, id):
+    guard = _require_admin(request)
+    if guard:
+        return guard
+
+    try:
+        rec = db.recursos.find_one({"_id": ObjectId(id)})
+    except Exception:
+        rec = None
+    if not rec:
+        raise Http404("Recurso no encontrado")
+
+    file_id = rec.get("file_id")
+    if not file_id:
+        raise Http404("Archivo no disponible")
+
+    try:
+        grid = mongo_instance.fs.get(ObjectId(str(file_id)))
+        blob = grid.read()
+    except Exception:
+        raise Http404("No se pudo leer el archivo")
+
+    nombre = rec.get("filename") or getattr(grid, "filename", None) or "recurso"
+    tipo = rec.get("content_type") or getattr(grid, "content_type", None) or "application/octet-stream"
+    resp = HttpResponse(blob, content_type=tipo)
+    resp["Content-Disposition"] = 'attachment; filename="%s"' % nombre
+    return resp
 def calendario_admin(request):
     guard = _require_admin(request)
     if guard:

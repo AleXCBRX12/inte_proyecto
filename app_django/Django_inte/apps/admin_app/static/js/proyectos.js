@@ -6,6 +6,7 @@
   const btnRecargar = document.getElementById("btnRecargar");
   const btnBaja = document.getElementById("btnBaja");
   const btnEliminar = document.getElementById("btnEliminar");
+  const btnFichaPdf = document.getElementById("btnFichaPdf");
   const detalle = {
     nombre: document.getElementById("detalleNombre"),
     estado: document.getElementById("detalleEstado"),
@@ -140,6 +141,10 @@
     btnBaja.disabled = false;
     btnFinalizar.disabled = (proyecto.estado || "").toLowerCase() === "finalizado";
     btnEliminar.disabled = false;
+    if (btnFichaPdf) {
+      btnFichaPdf.disabled = false;
+      btnFichaPdf.onclick = () => window.open(`/admin/proyectos/${seleccionado}/ficha.pdf`, "_blank", "noopener");
+    }
   }
 
   // ========== Modal BAJA ==========

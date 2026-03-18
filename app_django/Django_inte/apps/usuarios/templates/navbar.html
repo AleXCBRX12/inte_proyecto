@@ -27,12 +27,20 @@
 <a href="{% url 'portal_publico' %}">Inicio</a>
 <a href="{% url 'perfil_emprendedor' %}">Mi proyecto</a>
 <a href="{% url 'expediente_usuario' %}">Expediente</a>
+<a href="{% url 'recursos_usuario' %}">Biblioteca</a>
 <a href="{% url 'chat_usuario' %}">Chat con admin</a>
 <a href="{% url 'lista_anuncios' %}">Anuncios</a>
 
 </nav>
 
 
+
+<a href="{% url 'notificaciones' %}" class="notif-bell" id="notifBell" aria-label="Notificaciones">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5L4 18v1h16v-1l-2-2z"/>
+  </svg>
+  <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+</a>
 <div class="avatar-container" id="avatarMenu">
 
 <div class="avatar">
@@ -48,6 +56,13 @@
 Ver perfil
 </a>
 
+
+<a href="{% url 'notificaciones' %}">
+<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5L4 18v1h16v-1l-2-2z"/>
+</svg>
+Notificaciones
+</a>
 <a href="#" onclick="abrirModalLogout(); return false;">
 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
 <path d="M16 17l5-5-5-5v3H9v4h7v3z"/>
@@ -65,3 +80,4 @@ Cerrar sesión
 {% include "modals/modal_cerrar_sesion.html" %}
 
 <script src="{% static 'js/navbar.js' %}"></script>
+<script src="{% static 'js/notificaciones_badge.js' %}?v=1"></script>

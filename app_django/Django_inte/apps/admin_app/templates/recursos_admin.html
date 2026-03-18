@@ -1,0 +1,59 @@
+{% extends "panel_admin.html" %}
+{% load static %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h2 style="margin: 0 0 8px;">Biblioteca / Recursos</h2>
+    <p style="margin: 0 0 18px; color:#64748b;">Sube plantillas y guías para emprendedores (PDF, DOCX, XLSX, etc.).</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alerta {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 18px; align-items:start;">
+        <form method="POST" enctype="multipart/form-data" style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:16px;">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="subir_recurso">
+
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Título</label>
+            <input name="titulo" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; margin-bottom:12px;">
+
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Descripción (opcional)</label>
+            <textarea name="descripcion" rows="3" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; margin-bottom:12px;"></textarea>
+
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Categoría (opcional)</label>
+            <input name="categoria" placeholder="Ej: Finanzas, Modelo de Negocio" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; margin-bottom:12px;">
+
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Archivo</label>
+            <input type="file" name="archivo" required style="width:100%; margin-bottom:14px;">
+
+            <button type="submit" class="btn" style="padding:10px 14px;">Subir recurso</button>
+        </form>
+
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:16px;">
+            <h3 style="margin: 0 0 10px;">Recursos publicados</h3>
+            {% if recursos %}
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    {% for r in recursos %}
+                        <div style="border:1px solid #e2e8f0; border-radius:12px; padding:12px;">
+                            <div style="display:flex; justify-content:space-between; gap:10px;">
+                                <div style="font-weight:800;">{{ r.titulo }}</div>
+                                <div style="font-size:12px; color:#94a3b8;">{{ r.fecha|default:"" }}</div>
+                            </div>
+                            {% if r.descripcion %}<div style="margin-top:6px; color:#475569;">{{ r.descripcion }}</div>{% endif %}
+                            <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+                                {% if r.categoria %}<span style="font-size:12px; background:#f1f5f9; padding:4px 8px; border-radius:999px;">{{ r.categoria }}</span>{% endif %}
+                                <a href="{% url 'recurso_descargar_admin' r.id %}" target="_blank" rel="noopener" style="font-weight:800; color:#1f3c88; text-decoration:none;">Descargar</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="color:#64748b;">Aún no hay recursos.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

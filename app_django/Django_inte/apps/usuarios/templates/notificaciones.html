@@ -1,0 +1,28 @@
+{% extends "portal_publico.html" %}
+{% load static %}
+
+{% block title %}Notificaciones{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/usuarios.css' %}">
+
+<div style="max-width: 980px; margin: 110px auto 40px; padding: 0 18px;">
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom: 18px;">
+        <div>
+            <h2 style="margin:0;">Notificaciones</h2>
+            <p style="margin:6px 0 0; color:#64748b;">Avisos del sistema y seguimiento automático.</p>
+        </div>
+        <button id="btnMarcarTodoLeido" style="border:1px solid #e2e8f0; background:white; border-radius:10px; padding:10px 12px; cursor:pointer; font-weight:600;">
+            Marcar todo como leído
+        </button>
+    </div>
+
+    <div id="notifEmpty" style="display:none; padding: 18px; background:#fff; border:1px solid #e2e8f0; border-radius:14px; color:#475569;">
+        No tienes notificaciones por ahora.
+    </div>
+
+    <div id="notifList" style="display:flex; flex-direction:column; gap:12px;"></div>
+</div>
+
+<script src="{% static 'js/notificaciones.js' %}?v=1"></script>
+{% endblock %}

@@ -66,6 +66,137 @@ def ver_convocatorias(request):
     return render(request, "ver_convocatorias.html", {"muro": muro, "layout": "grid"})
 
 
+
+# ==============================
+# Notificaciones (Emprendedor)
+# ==============================
+def notificaciones_view(request):
+    bloqueo = _bloqueo_por_contrato(request)
+    if bloqueo:
+        return bloqueo
+
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        return redirect("login")
+
+    return render(request, "notificaciones.html")
+
+
+def notificaciones_api(request):
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        return JsonResponse({"error": "No autorizado"}, status=403)
+
+    from apps.utils.notifications import list_notifications, unread_count
+    items = list_notifications(str(usuario_id), limit=30)
+    return JsonResponse({
+        "notificaciones": [n.__dict__ for n in items],
+        "unread": unread_count(str(usuario_id)),
+    })
+
+
+def notificaciones_unread_count_api(request):
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        return JsonResponse({"unread": 0})
+
+    from apps.utils.notifications import unread_count
+    return JsonResponse({"unread": unread_count(str(usuario_id))})
+
+
+@csrf_exempt
+def notificaciones_read_one_api(request, notif_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Metodo no permitido"}, status=405)
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        return JsonResponse({"error": "No autorizado"}, status=403)
+
+    from apps.utils.notifications import mark_read
+    ok = mark_read(str(usuario_id), str(notif_id))
+    return JsonResponse({"success": bool(ok)})
+
+
+@csrf_exempt
+def notificaciones_read_all_api(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Metodo no permitido"}, status=405)
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        return JsonResponse({"error": "No autorizado"}, status=403)
+
+    from apps.utils.notifications import mark_all_read
+    n = mark_all_read(str(usuario_id))
+    return JsonResponse({"success": True, "modified": int(n)})
+
+
+
+# ==============================
+# Biblioteca / Recursos
+# ==============================
+def recursos_usuario(request):
+    bloqueo = _bloqueo_por_contrato(request)
+    if bloqueo:
+        return bloqueo
+
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        return redirect("login")
+
+    recursos = []
+    cursor = db.recursos.find().sort("uploaded_at", -1)
+    for r in cursor:
+        fecha = r.get("uploaded_at")
+        fecha_str = None
+        if isinstance(fecha, datetime):
+            try:
+                fecha_str = fecha.astimezone(timezone.utc).strftime("%d/%m/%Y %H:%M")
+            except Exception:
+                fecha_str = fecha.strftime("%d/%m/%Y %H:%M")
+        recursos.append({
+            "id": str(r.get("_id")),
+            "titulo": r.get("titulo") or "Recurso",
+            "descripcion": r.get("descripcion") or "",
+            "categoria": r.get("categoria") or "",
+            "fecha": fecha_str,
+        })
+
+    return render(request, "recursos.html", {"recursos": recursos})
+
+
+def recurso_descargar_usuario(request, id):
+    bloqueo = _bloqueo_por_contrato(request)
+    if bloqueo:
+        return bloqueo
+
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        return redirect("login")
+
+    try:
+        rec = db.recursos.find_one({"_id": ObjectId(id)})
+    except Exception:
+        rec = None
+    if not rec:
+        raise Http404("Recurso no encontrado")
+
+    file_id = rec.get("file_id")
+    if not file_id:
+        raise Http404("Archivo no disponible")
+
+    try:
+        grid = mongo_instance.fs.get(ObjectId(str(file_id)))
+        blob = grid.read()
+    except Exception:
+        raise Http404("No se pudo leer el archivo")
+
+    nombre = rec.get("filename") or getattr(grid, "filename", None) or "recurso"
+    tipo = rec.get("content_type") or getattr(grid, "content_type", None) or "application/octet-stream"
+    resp = HttpResponse(blob, content_type=tipo)
+    resp["Content-Disposition"] = 'attachment; filename="%s"' % nombre
+    return resp
+
+
 def calendario_emprendedor(request):
     bloqueo = _bloqueo_por_contrato(request)
     if bloqueo:
