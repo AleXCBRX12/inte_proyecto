@@ -1,5 +1,5 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/shared_footer.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/shared_footer.css' %}?v=60">
 <footer class="unique-shared-footer">
     <div class="footer-content">
         <div class="footer-copyright">
@@ -29,7 +29,7 @@ function showAlert(message, type = "success", timeout = 5000) {
         min-width: 300px;
         padding: 16px 20px;
         border-radius: 16px;
-        background: white;
+        background: white;hrh
         box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         display: flex;
         align-items: center;
@@ -52,7 +52,7 @@ function showAlert(message, type = "success", timeout = 5000) {
     if (type === "warning") icon = "bi-exclamation-circle-fill";
 
     alert.innerHTML = `<i class="bi ${icon}" style="font-size: 1.2rem; color: ${alert.style.borderLeftColor}"></i><span>${message}</span>`;
-
+    
     placeholder.appendChild(alert);
 
     setTimeout(() => {
@@ -62,17 +62,13 @@ function showAlert(message, type = "success", timeout = 5000) {
     }, timeout);
 }
 
-// Keyframes for animation (avoid duplicate injection)
-if (!document.getElementById('toast-animation-styles')) {
-    const style = document.createElement('style');
-    style.id = 'toast-animation-styles';
-    style.innerHTML = `
-    @keyframes toastSlideIn {
-        from { opacity: 0; transform: translateX(50px); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-    `;
-    document.head.appendChild(style);
+// Keyframes for animation
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateX(50px); }
+    to { opacity: 1; transform: translateX(0); }
 }
+`;
+document.head.appendChild(style);
 </script>
-
