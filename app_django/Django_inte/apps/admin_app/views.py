@@ -109,7 +109,40 @@ def panel_admin(request):
     guard = _require_admin(request)
     if guard:
         return guard
-    return render(request, "panel_admin.html")
+
+    # Estadísticas para el Dashboard
+    stats = {
+        "solicitudes_pendientes": db.solicitudes.count_documents({
+            "$or": [
+                {"estado": {"$regex": "^EN PROCESO$", "$options": "i"}},
+                {"estado": {"$exists": False}}
+            ]
+        }),
+        "proyectos_activos": db.proyectos.count_documents({"estado": "Activo"}),
+        "total_usuarios": db.usuarios.count_documents({}),
+        "convocatorias_abiertas": db.convocatorias.count_documents({}),
+        "contratos_revision": db.contrato_proyecto.count_documents({"estado": "enviado"})
+    }
+
+    # Datos para gráficas: Proyectos por carrera
+    proyectos = list(db.proyectos.find({}, {"resumen.carrera": 1}))
+    carreras_count = {}
+    for p in proyectos:
+        resumen = p.get("resumen") or {}
+        carrera = resumen.get("carrera")
+        if not carrera: carrera = "Sin especificar"
+        carreras_count[carrera] = carreras_count.get(carrera, 0) + 1
+    
+    # Preparar datos para Chart.js
+    carreras_chart = {
+        "labels": list(carreras_count.keys()),
+        "data": list(carreras_count.values())
+    }
+
+    return render(request, "panel_admin.html", {
+        "stats": stats,
+        "carreras_chart_json": json.dumps(carreras_chart)
+    })
 
 def lista_anuncios(request):
     guard = _require_admin(request)
