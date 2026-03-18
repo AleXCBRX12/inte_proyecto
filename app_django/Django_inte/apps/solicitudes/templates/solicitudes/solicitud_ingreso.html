@@ -279,15 +279,18 @@ h5 i {
                         <div class="col-md-6">
                         <input class="form-control" type="email" name="correo" placeholder="Correo electrónico" required pattern="^[a-zA-Z0-9._%+\-]+@utacapulco\.edu\.mx$" title="El correo debe terminar en @utacapulco.edu.mx"></div>
                         <div class="col-md-2"><input class="form-control" type="number" name="edad" placeholder="Edad" required min="1" max="100"></div>
-                        <div class="col-md-3"><input class="form-control" type="number" name="matricula" placeholder="Matrícula" required></div>
-                        <div class="col-md-3"><input class="form-control" type="number" name="telefono" placeholder="Teléfono" required></div>
-                        <div class="col-md-4"><input class="form-control" name="nivel" placeholder="Nivel" required></div>
-                        <div class="col-md-4"><input class="form-control" type="number" name="integrantes_equipo" placeholder="Integrantes en equipo" required min="1" max="100"></div>
-                        <div class="col-md-8">
-                            <div class="input-group">
-                                <input class="form-control" name="carrera" id="carreraLeader" placeholder="Selecciona tu carrera" required readonly>
-                                <button class="btn btn-outline-primary" type="button" onclick="openCareerModal('carreraLeader')">Seleccionar</button>
-                            </div>
+                        <div class="col-md-3"><input class="form-control" name="matricula" placeholder="Matrícula" required></div>
+                        <div class="col-md-3"><input class="form-control" name="telefono" placeholder="Teléfono" required></div>
+                        <div class="col-md-4"><input class="form-control" name="nivel" placeholder="Nivel educativo" required></div>
+                        <div class="col-md-6">
+                        <select class="form-control" name="carrera" required>
+                            <option value="">Selecciona tu carrera</option>
+                            <option value="Desarrollo de Software Multiplataforma">Desarrollo de Software Multiplataforma</option>
+                            <option value="Mantenimiento Industrial">Mantenimiento Industrial</option>
+                            <option value="Área Instalaciones">Área Instalaciones</option>
+                            <option value="Gastronomía">Gastronomía</option>
+                            <option value="Mercadotecnia">Mercadotecnia</option>
+                        </select>
                         </div>
                         <div class="col-md-6"><input class="form-control" name="asesor_academico" placeholder="Asesor académico" required></div>
                         <div class="col-md-6"><input class="form-control" name="tutor" placeholder="Tutor" required></div>
@@ -479,8 +482,8 @@ function createMemberRow() {
     const uniqueId = "carrera_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
     tr.innerHTML = `
         <td><input type="text" class="form-control form-control-sm member-nombre" placeholder="Nombre" required></td>
-        <td><input type="number" class="form-control form-control-sm member-matricula" placeholder="Matrícula" required></td>
-        <td><input type="number" class="form-control form-control-sm member-telefono" placeholder="Teléfono" required></td>
+        <td><input class="form-control form-control-sm member-matricula" placeholder="Matrícula" required></td>
+        <td><input class="form-control form-control-sm member-telefono" placeholder="Teléfono" required></td>
         <td><input type="email" class="form-control form-control-sm member-correo" placeholder="Correo" required></td>
         <td>
             <div class="input-group input-group-sm">
