@@ -19,6 +19,8 @@ load_dotenv()
 
 
 def portal_visitante(request):
+    if request.session.get("usuario_id"):
+        return redirect("portal_publico")
     from apps.public.views import _obtener_muro_unificado_public
     # Mostramos solo convocatorias por petición del usuario
     muro = _obtener_muro_unificado_public(request, es_visitante=True, solo_convocatorias=True)
