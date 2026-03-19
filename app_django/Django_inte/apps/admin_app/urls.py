@@ -52,4 +52,6 @@ urlpatterns = [
     path('perfil-admin/', views.perfil_admin, name='perfil_admin'),
     path('admin/password/<str:id>/', views.actualizar_password_admin, name='actualizar_password_admin'),
     path('admin/eliminar/<str:id>/', views.eliminar_admin, name='eliminar_admin'),
+    path('recursos/editar/<str:id>/', views.recurso_editar_admin, name='recurso_editar_admin'),
+    path('recursos/eliminar/<str:id>/', views.recurso_eliminar_admin, name='recurso_eliminar_admin'),
 ]

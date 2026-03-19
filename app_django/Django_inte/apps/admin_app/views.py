@@ -1460,13 +1460,9 @@ def expedientes_admin(request):
     total_documentos = 0
     total_versiones = 0
 
-    def carrera_resumen(desde_integrantes):
-        carreras = {c for c in desde_integrantes if c and c != "Sin carrera"}
-        if not carreras:
-            return "Sin carrera"
-        if len(carreras) == 1:
-            return next(iter(carreras))
-        return "Mixto"
+    def carrera_resumen(proyecto):
+        # El lider es el que determina la carrera para el seccionamiento
+        return proyecto.get("resumen", {}).get("carrera") or "Sin carrera"
 
     for proyecto in proyectos_cursor:
         integrantes_p = []
@@ -1520,7 +1516,7 @@ def expedientes_admin(request):
         proyectos_data.append({
             "nombre_proyecto": nombre_proyecto or "Proyecto sin nombre",
             "integrantes": integrantes_p,
-            "carrera_resumen": carrera_resumen([i.get("carrera") for i in integrantes_p]),
+            "carrera_resumen": carrera_resumen(proyecto),
             "id_proyecto": proyecto_id_str,
             "expedientes": expedientes_proyecto,
             "total_documentos": docs_count,
@@ -1651,23 +1647,8 @@ def chat_admin_conversaciones_data():
     ultimo_mensaje = {}
 
     def carrera_resumen(proyecto):
-        carreras = set()
-        for m in (proyecto.get("integrantes") or []):
-            if isinstance(m, dict):
-                c = (m.get("carrera") or "").strip()
-                if c:
-                    carreras.add(c)
-        for m in (proyecto.get("resumen") or {}).get("integrantes") or []:
-            if isinstance(m, dict):
-                c = (m.get("carrera") or "").strip()
-                if c:
-                    carreras.add(c)
-        if not carreras:
-            c0 = (proyecto.get("carrera") or (proyecto.get("resumen") or {}).get("carrera") or "").strip()
-            return c0 or "Sin carrera"
-        if len(carreras) == 1:
-            return next(iter(carreras))
-        return "Mixto"
+        # Carrera del lider (almacenada en resumen.carrera)
+        return (proyecto.get("resumen") or {}).get("carrera") or "Sin carrera"
 
     # Obtenemos el último mensaje de cada proyecto
     for msg in db.chat_mensajes.find({"proyecto_id": {"$exists": True, "$ne": ""}}).sort("creado_en", -1):
@@ -2679,6 +2660,7 @@ def recursos_admin(request):
         titulo = (request.POST.get("titulo") or "").strip()
         descripcion = (request.POST.get("descripcion") or "").strip()
         categoria = (request.POST.get("categoria") or "").strip()
+        carreras = request.POST.getlist("carreras")  # Nueva lista de carreras
         archivo = request.FILES.get("archivo")
 
         if not titulo or not archivo:
@@ -2699,6 +2681,7 @@ def recursos_admin(request):
             "titulo": titulo,
             "descripcion": descripcion,
             "categoria": categoria,
+            "carreras": carreras,  # Guardamos la lista
             "file_id": str(file_id),
             "filename": getattr(archivo, "name", "recurso"),
             "content_type": getattr(archivo, "content_type", "application/octet-stream"),
@@ -2717,15 +2700,92 @@ def recursos_admin(request):
                 fecha_str = fecha.astimezone(timezone.utc).strftime("%d/%m/%Y %H:%M")
             except Exception:
                 fecha_str = fecha.strftime("%d/%m/%Y %H:%M")
+        
+        carreras_r = r.get("carreras") or []
+        carreras_label = ", ".join(carreras_r) if carreras_r else "Todas"
+
         recursos.append({
             "id": str(r.get("_id")),
             "titulo": r.get("titulo") or "Recurso",
             "descripcion": r.get("descripcion") or "",
             "categoria": r.get("categoria") or "",
+            "carreras": carreras_r,
+            "carreras_label": carreras_label,
             "fecha": fecha_str,
         })
 
-    return render(request, "recursos_admin.html", {"recursos": recursos})
+    # Lista de carreras para el formulario (podría venir de la BD)
+    carreras_list = [
+        "Desarrollo de Software Multiplataforma",
+        "Mantenimiento Industrial",
+        "Área Instalaciones",
+        "Gastronomía",
+        "Mercadotecnia"
+    ]
+
+    return render(request, "recursos_admin.html", {
+        "recursos": recursos,
+        "carreras_disponibles": carreras_list
+    })
+
+
+@csrf_exempt
+def recurso_editar_admin(request, id):
+    guard = _require_admin(request)
+    if guard: return guard
+    
+    if request.method != "POST":
+        return JsonResponse({"error": "Metodo no permitido"}, status=405)
+    
+    try:
+        data = json.loads(request.body or "{}")
+        titulo = (data.get("titulo") or "").strip()
+        descripcion = (data.get("descripcion") or "").strip()
+        categoria = (data.get("categoria") or "").strip()
+        carreras = data.get("carreras") or []
+
+        if not titulo:
+            return JsonResponse({"error": "Titulo requerido"}, status=400)
+
+        db.recursos.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {
+                "titulo": titulo,
+                "descripcion": descripcion,
+                "categoria": categoria,
+                "carreras": carreras
+            }}
+        )
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+@csrf_exempt
+def recurso_eliminar_admin(request, id):
+    guard = _require_admin(request)
+    if guard: return guard
+    
+    if request.method != "POST":
+        return JsonResponse({"error": "Metodo no permitido"}, status=405)
+
+    try:
+        rec = db.recursos.find_one({"_id": ObjectId(id)})
+        if not rec:
+            return JsonResponse({"error": "Recurso no encontrado"}, status=404)
+
+        # Borrar archivo de GridFS
+        file_id = rec.get("file_id")
+        if file_id:
+            try:
+                mongo_instance.fs.delete(ObjectId(str(file_id)))
+            except:
+                pass
+
+        db.recursos.delete_one({"_id": ObjectId(id)})
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
 
 
 def recurso_descargar_admin(request, id):

@@ -65,8 +65,20 @@ def recursos_usuario(request):
     if not usuario_id:
         return redirect("login")
 
+    usuario = db.usuarios.find_one({"_id": ObjectId(usuario_id)})
+    carrera_usuario = (usuario.get("carrera") or "").strip()
+
     recursos = []
-    cursor = db.recursos.find().sort("uploaded_at", -1)
+    # Filtrar recursos por carrera: o que sea para la carrera del usuario, o que no tenga carreras (para todos)
+    filtro = {
+        "$or": [
+            {"carreras": {"$exists": False}},
+            {"carreras": {"$size": 0}},
+            {"carreras": carrera_usuario},
+            {"carreras": "Todas"}
+        ]
+    }
+    cursor = db.recursos.find(filtro).sort("uploaded_at", -1)
     for r in cursor:
         fecha = r.get("uploaded_at")
         fecha_str = None
