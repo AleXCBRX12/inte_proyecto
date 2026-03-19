@@ -1014,15 +1014,6 @@ def perfil_emprendedor(request):
         if isinstance(resumen.get("equipo"), list):
             resumen["equipo"] = f"Equipo de {resumen.get('lider', 'Emprendedor')}"
     
-    # Obtener eventos del calendario para el perfil
-    ahora_dt = datetime.now(timezone.utc)
-    eventos_cursor = db.calendario_eventos.find({
-        "fecha": {"$gte": ahora_dt.strftime("%Y-%m-%d")}
-    }).sort("fecha", 1).limit(4)
-    eventos = list(eventos_cursor)
-    for ev in eventos:
-        ev["id"] = str(ev["_id"])
-        
     from apps.public.views import _obtener_muro_unificado_public
     muro = _obtener_muro_unificado_public(es_visitante=False)
     
@@ -1037,7 +1028,6 @@ def perfil_emprendedor(request):
         "proyecto_id": proyecto_id,
         "etapas": etapas,
         "progreso": progreso,
-        "eventos": eventos,
         "muro": muro,
     }
     return render(request, "perfil_emprendedor.html", contexto)

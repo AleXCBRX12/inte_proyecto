@@ -74,32 +74,6 @@
             <span class="pill soft">ID {{ proyecto_id }}</span>
         </div>
 
-        <!-- CALENDARIO INTEGRADO -->
-        <div class="calendar-section top-padded">
-            <h3 class="section-title"><i class="bi bi-calendar3"></i> Próximas Fechas Clave</h3>
-            <div id="gridCalendario" class="year-grid-mini"></div>
-            
-            <div class="events-list-simple">
-                {% for evento in eventos %}
-                <div class="event-item-mini">
-                    <span class="event-dot" style="background: {{ evento.color|default:'#1f3c88' }}"></span>
-                    <div class="event-info">
-                        <strong>{{ evento.titulo }}</strong>
-                        <small>{{ evento.fecha }} - {{ evento.categoria }}</small>
-                    </div>
-                </div>
-                {% empty %}
-                <p class="muted-small">No hay fechas programadas próximamente.</p>
-                {% endfor %}
-            </div>
-
-            <div class="legend-mini">
-                <span class="dot-label"><span class="dot green"></span> Asesoría</span>
-                <span class="dot-label"><span class="dot orange"></span> Video</span>
-                <span class="dot-label"><span class="dot blue"></span> Proyecto</span>
-            </div>
-        </div>
-
         {% if integrantes_lista %}
         <div class="team-section top-padded">
             <h3 class="section-title"><i class="bi bi-people-fill"></i> Integrantes del Equipo</h3>
@@ -144,97 +118,48 @@
 
 {% block scripts %}
 <script>
-async function buildMiniCalendar() {
-    const resp = await fetch("{% url 'calendario_eventos' %}");
-    const data = await resp.json();
-    const eventos = data.eventos || [];
-    const grid = document.getElementById("gridCalendario");
-    if(!grid) return;
-    
-    // Solo mostramos los meses relevantes (actual + próximos 3)
-    const hoy = new Date();
-    const curYear = hoy.getFullYear();
-    const curMonth = hoy.getMonth();
-
-    for(let i=0; i<4; i++) {
-        let m = (curMonth + i) % 12;
-        let y = curYear + Math.floor((curMonth + i) / 12);
-        
-        const date = new Date(y, m, 1);
-        const monthName = date.toLocaleString('es-ES', { month:'short'});
-        const daysInMonth = new Date(y, m+1, 0).getDate();
-        const firstDay = new Date(y, m, 1).getDay();
-        
-        const monthDiv = document.createElement("div");
-        monthDiv.className = "mini-month";
-        monthDiv.innerHTML = `<div class="mini-month-header">${monthName} ${y}</div>`;
-        
-        const body = document.createElement("div");
-        body.className = "mini-month-days";
-        
-        const offset = (firstDay+6)%7;
-        for(let j=0; j<offset; j++) body.appendChild(document.createElement("div"));
-        
-        for(let d=1; d<=daysInMonth; d++) {
-            const cell = document.createElement("div");
-            cell.className = "mini-day";
-            cell.textContent = d;
-            
-            const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const evt = eventos.find(e => e.fecha === iso);
-            if(evt) {
-                cell.classList.add("has-event");
-                cell.style.borderColor = evt.color || "#1f3c88";
-                cell.title = evt.titulo;
-            }
-            body.appendChild(cell);
-        }
-        monthDiv.appendChild(body);
-        grid.appendChild(monthDiv);
-    }
-
     // Lógica para cambio de contraseña
     const formPass = document.getElementById("formChangePass");
-    const passError = document.getElementById("passError");
+    if (formPass) {
+        const passError = document.getElementById("passError");
 
-    formPass.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        passError.style.display = "none";
-        
-        const p1 = document.getElementById("newPass").value;
-        const p2 = document.getElementById("confirmPass").value;
+        formPass.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            passError.style.display = "none";
+            
+            const p1 = document.getElementById("newPass").value;
+            const p2 = document.getElementById("confirmPass").value;
 
-        if(p1.length < 8) {
-            passError.innerText = "❌ Mínimo 8 caracteres";
-            passError.style.display = "block";
-            return;
-        }
-        if(p1 !== p2) {
-            passError.innerText = "❌ Las contraseñas no coinciden";
-            passError.style.display = "block";
-            return;
-        }
+            if(p1.length < 8) {
+                passError.innerText = "❌ Mínimo 8 caracteres";
+                passError.style.display = "block";
+                return;
+            }
+            if(p1 !== p2) {
+                passError.innerText = "❌ Las contraseñas no coinciden";
+                passError.style.display = "block";
+                return;
+            }
 
-        try {
-            const resp = await fetch("{% url 'cambiar_contrasena_perfil' %}", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ password: p1, confirm_password: p2 })
-            });
-            const data = await resp.json();
-            if(data.status === "success") {
-                alert("✅ Contraseña actualizada correctamente");
-                location.reload();
-            } else {
-                passError.innerText = "⚠️ " + (data.message || "Error al cambiar contraseña");
+            try {
+                const resp = await fetch("{% url 'cambiar_contrasena_perfil' %}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password: p1, confirm_password: p2 })
+                });
+                const data = await resp.json();
+                if(data.status === "success") {
+                    alert("✅ Contraseña actualizada correctamente");
+                    location.reload();
+                } else {
+                    passError.innerText = "⚠️ " + (data.message || "Error al cambiar contraseña");
+                    passError.style.display = "block";
+                }
+            } catch (err) {
+                passError.innerText = "🚨 Error de conexión";
                 passError.style.display = "block";
             }
-        } catch (err) {
-            passError.innerText = "🚨 Error de conexión";
-            passError.style.display = "block";
-        }
-    });
-}
-document.addEventListener("DOMContentLoaded", buildMiniCalendar);
+        });
+    }
 </script>
 {% endblock %}
