@@ -15,18 +15,26 @@
     data-initial-user="{{ usuario_inicial }}"
 >
     <aside class="chat-admin-conversations">
-        <div class="chat-admin-title">Proyectos</div>
+        <div class="chat-admin-title-row">
+            <div class="chat-admin-title">Proyectos</div>
+            <select id="filtroCarreraChats" class="chat-admin-filter" aria-label="Filtrar chats por carrera">
+                <option value="todas">Todas</option>
+            </select>
+        </div>
         <div id="conversationList" class="conversation-list">
             {% for conv in conversaciones %}
             <button
                 type="button"
                 class="conversation-item"
-                data-user-id="{{ conv.proyecto_id }}"
+                data-project-id="{{ conv.proyecto_id }}"
                 data-user-name="{{ conv.proyecto_nombre }}"
+                data-leader="{{ conv.lider }}"
+                data-carrera="{{ conv.carrera|default:'Sin carrera' }}"
             >
                 <div class="conversation-main">
                     <span class="conversation-name">{{ conv.proyecto_nombre }}</span>
-                    <span class="conversation-mail">{{ conv.lider }}</span>
+                    <span class="conversation-chip">{{ conv.carrera|default:"Sin carrera" }}</span>
+                    <span class="conversation-mail">Líder: {{ conv.lider }}</span>
                 </div>
                 <div class="conversation-preview">
                     <span>{{ conv.ultimo_mensaje|default:"Sin mensajes" }}</span>
@@ -39,8 +47,13 @@
         </div>
     </aside>
 
+    <div id="chatConvOverlay" class="chat-conv-overlay" hidden></div>
+
     <section class="chat-admin-panel">
         <header class="chat-header">
+            <button type="button" class="chat-open-conversations" id="chatOpenConversations" aria-label="Ver proyectos">
+                <i class="bi bi-list"></i>
+            </button>
             <h3>Centro de Mensajería por Proyecto</h3>
             <div class="chat-context-info">
                 <p>Proyecto: <strong id="chatWithName">Selecciona un proyecto</strong></p>

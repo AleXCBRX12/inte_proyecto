@@ -12,6 +12,10 @@
     const previewEl = document.getElementById("chatAdminPreview");
     const emojiBtn = document.getElementById("emojiAdminBtn");
     const emojiPicker = document.getElementById("emojiAdminPicker");
+    const carreraFilter = document.getElementById("filtroCarreraChats");
+    const openConvsBtn = document.getElementById("chatOpenConversations");
+    const convOverlay = document.getElementById("chatConvOverlay");
+    const convAside = document.querySelector(".chat-admin-conversations");
 
     const convoUrl = app.dataset.conversationsUrl;
     const msgUrlTemplate = app.dataset.messagesUrlTemplate;
@@ -23,6 +27,7 @@
     let currentProjectName = "";
     let currentLeaderName = "";
     let lastSerialized = "";
+    let carreraSeleccionada = (carreraFilter?.value || "todas").toLowerCase();
 
     function buildUrl(template, id) {
         return template.replace("USER_ID", id).replace("MSG_ID", id);
@@ -47,8 +52,56 @@
                 chatEl.innerHTML = '<p class="chat-placeholder">Cargando mensajes...</p>';
                 updateConversationSelection();
                 loadMessages();
+                closeConversationsDrawer();
             };
         });
+    }
+
+    function openConversationsDrawer() {
+        if (!convAside || !convOverlay) return;
+        convAside.classList.add("open");
+        convOverlay.hidden = false;
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeConversationsDrawer() {
+        if (!convAside || !convOverlay) return;
+        convAside.classList.remove("open");
+        convOverlay.hidden = true;
+        document.body.style.overflow = "";
+    }
+
+    function populateCarreraOptions(conversaciones) {
+        if (!carreraFilter) return;
+        const prev = (carreraFilter.value || "todas").toLowerCase();
+        const carreras = Array.from(new Set((conversaciones || []).map((c) => (c.carrera || "Sin carrera").toString().trim() || "Sin carrera")))
+            .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+
+        carreraFilter.innerHTML = `<option value="todas">Todas</option>` + carreras
+            .map((c) => `<option value="${escapeHtml(c.toLowerCase())}">${escapeHtml(c)}</option>`)
+            .join("");
+
+        carreraFilter.value = Array.from(carreraFilter.options).some((o) => o.value === prev) ? prev : "todas";
+        carreraSeleccionada = (carreraFilter.value || "todas").toLowerCase();
+    }
+
+    function applyCarreraFilter() {
+        if (!carreraFilter) return;
+        const sel = (carreraFilter.value || "todas").toLowerCase();
+        carreraSeleccionada = sel;
+
+        const items = Array.from(listEl.querySelectorAll(".conversation-item"));
+        items.forEach((btn) => {
+            const carrera = (btn.dataset.carrera || "sin carrera").toLowerCase();
+            btn.hidden = !(sel === "todas" || carrera === sel);
+        });
+
+        const visibles = items.filter((btn) => !btn.hidden);
+        if (visibles.length && !visibles.some((btn) => btn.dataset.projectId === currentProjectId)) {
+            visibles[0].click();
+        } else {
+            updateConversationSelection();
+        }
     }
 
     function updateConversationSelection() {
@@ -224,14 +277,18 @@
         const data = await res.json();
         const conversaciones = data.conversaciones || [];
 
+        populateCarreraOptions(conversaciones);
+
         listEl.innerHTML = conversaciones.length ? conversaciones.map((c) => `
             <button type="button" class="conversation-item" 
                 data-project-id="${escapeHtml(c.id)}" 
                 data-user-name="${escapeHtml(c.proyecto_nombre)}"
                 data-leader="${escapeHtml(c.lider)}"
+                data-carrera="${escapeHtml((c.carrera || "Sin carrera").toString())}"
             >
                 <div class="conversation-main">
                     <span class="conversation-name">${escapeHtml(c.proyecto_nombre)}</span>
+                    <span class="conversation-chip">${escapeHtml(c.carrera || "Sin carrera")}</span>
                     <span class="conversation-mail">Líder: ${escapeHtml(c.lider || "Sin líder")}</span>
                 </div>
                 <div class="conversation-preview">
@@ -242,6 +299,10 @@
         `).join("") : '<p class="conversation-empty">No hay proyectos activos.</p>';
 
         bindConversationButtons();
+        if (carreraFilter) {
+            carreraFilter.value = carreraSeleccionada;
+            applyCarreraFilter();
+        }
         if (!conversaciones.length) {
             currentProjectId = "";
             currentProjectName = "";
@@ -259,6 +320,18 @@
             currentLeaderName = actual ? actual.lider : currentLeaderName;
         }
         updateConversationSelection();
+    }
+
+    if (carreraFilter) {
+        carreraFilter.addEventListener("change", applyCarreraFilter);
+    }
+
+    if (openConvsBtn && convOverlay && convAside) {
+        openConvsBtn.addEventListener("click", openConversationsDrawer);
+        convOverlay.addEventListener("click", closeConversationsDrawer);
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeConversationsDrawer();
+        });
     }
 
     emojiBtn.addEventListener("click", () => {

@@ -12,13 +12,20 @@ document.addEventListener("DOMContentLoaded", function () {
     cargarSolicitudes();
     const filtroEstado = document.getElementById("filtroEstadoSolicitudes");
     const filtroTexto = document.getElementById("filtroTextoSolicitudes");
+    const filtroCarrera = document.getElementById("filtroCarreraSolicitudes");
     if(filtroEstado) filtroEstado.addEventListener("change", renderSolicitudes);
     if(filtroTexto) filtroTexto.addEventListener("input", renderSolicitudes);
+    if(filtroCarrera) filtroCarrera.addEventListener("change", renderSolicitudes);
 });
+
+function normalizarCarrera(valor) {
+    const v = (valor || "").toString().trim();
+    return v ? v : "Sin carrera";
+}
 
 function cargarSolicitudes() {
     if (!tabla) return;
-    tabla.innerHTML = "<tr><td colspan='5'><div class='skeleton-table'><div class='skeleton-row'></div><div class='skeleton-row'></div><div class='skeleton-row'></div></div></td></tr>";
+    tabla.innerHTML = "<tr><td colspan='6'><div class='skeleton-table'><div class='skeleton-row'></div><div class='skeleton-row'></div><div class='skeleton-row'></div></div></td></tr>";
     fetch("/admin/obtener_solicitudes/")
         .then(response => response.json())
         .then(data => {
@@ -28,12 +35,31 @@ function cargarSolicitudes() {
                 const idStr = String(s._id || "");
                 if (idStr) solicitudesPorId.set(idStr, s);
             });
+            poblarCarreras();
             renderSolicitudes();
         })
         .catch(error => {
             console.error("Error cargando solicitudes:", error);
-            tabla.innerHTML = "<tr><td colspan='5'>No se pudieron cargar las solicitudes</td></tr>";
+            tabla.innerHTML = "<tr><td colspan='6'>No se pudieron cargar las solicitudes</td></tr>";
         });
+}
+
+function poblarCarreras() {
+    const select = document.getElementById("filtroCarreraSolicitudes");
+    if (!select) return;
+
+    const actuales = new Set(Array.from(select.options).map(o => o.value));
+    const carreras = Array.from(new Set(todasSolicitudes.map(s => normalizarCarrera(s.carrera))))
+        .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+
+    carreras.forEach(c => {
+        const value = c.toLowerCase();
+        if (actuales.has(value)) return;
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = c;
+        select.appendChild(opt);
+    });
 }
 
 function renderSolicitudes(){
@@ -41,15 +67,46 @@ function renderSolicitudes(){
     tabla.innerHTML = "";
     const estadoSel = (document.getElementById("filtroEstadoSolicitudes")?.value || "todos").toLowerCase();
     const texto = (document.getElementById("filtroTextoSolicitudes")?.value || "").toLowerCase().trim();
+    const carreraSel = (document.getElementById("filtroCarreraSolicitudes")?.value || "todas").toLowerCase();
 
     const filtradas = todasSolicitudes.filter(s => {
         const est = (s.estado || "EN PROCESO").toLowerCase();
         const matchEstado = estadoSel === "todos" || est.includes(estadoSel.toLowerCase());
         const matchTexto = !texto || (s.nombre_completo || "").toLowerCase().includes(texto) || (s.nombre_proyecto || "").toLowerCase().includes(texto);
-        return matchEstado && matchTexto;
+        const carrera = normalizarCarrera(s.carrera).toLowerCase();
+        const matchCarrera = carreraSel === "todas" || carrera === carreraSel;
+        return matchEstado && matchTexto && matchCarrera;
     });
 
-    filtradas.forEach(s => agregarFila(s));
+    const grupos = new Map();
+    filtradas.forEach(s => {
+        const carrera = normalizarCarrera(s.carrera);
+        if (!grupos.has(carrera)) grupos.set(carrera, []);
+        grupos.get(carrera).push(s);
+    });
+
+    const carrerasOrdenadas = Array.from(grupos.keys()).sort((a, b) =>
+        a.localeCompare(b, "es", { sensitivity: "base" })
+    );
+
+    carrerasOrdenadas.forEach(carrera => {
+        const items = grupos.get(carrera) || [];
+        agregarGrupoCarrera(carrera, items.length);
+        items.forEach(s => agregarFila(s));
+    });
+}
+
+function agregarGrupoCarrera(carrera, count) {
+    const fila = document.createElement("tr");
+    fila.className = "carrera-group-row";
+    fila.innerHTML = `
+        <td colspan="6" class="carrera-group-cell">
+            <i class="bi bi-mortarboard-fill"></i>
+            <span class="carrera-group-title">${carrera}</span>
+            <span class="carrera-group-count">${count}</span>
+        </td>
+    `;
+    tabla.appendChild(fila);
 }
 
 function agregarFila(s) {
@@ -66,6 +123,7 @@ function agregarFila(s) {
     fila.innerHTML = `
         <td data-label="Nombre">${s.nombre_completo || ''}</td>
         <td data-label="Proyecto">${s.nombre_proyecto || ''}</td>
+        <td data-label="Carrera">${normalizarCarrera(s.carrera)}</td>
         <td data-label="Fecha">${s.fecha_creacion || ''}</td>
         <td data-label="Estado"><span class="status ${claseColor}">${estado}</span></td>
         <td class="acciones">

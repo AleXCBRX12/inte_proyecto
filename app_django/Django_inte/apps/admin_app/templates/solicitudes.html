@@ -11,6 +11,9 @@
             <h2>Solicitudes Recibidas</h2>
             <div class="filters">
                 <input type="search" id="filtroTextoSolicitudes" placeholder="Buscar nombre o proyecto" aria-label="Buscar solicitud">
+                <select id="filtroCarreraSolicitudes" aria-label="Filtrar por carrera">
+                    <option value="todas">Todas las carreras</option>
+                </select>
                 <select id="filtroEstadoSolicitudes" aria-label="Filtrar por estado">
                     <option value="todos">Todos</option>
                     <option value="EN PROCESO" selected>En proceso</option>
@@ -26,6 +29,7 @@
                     <tr>
                         <th>Nombre</th>
                         <th>Proyecto</th>
+                        <th>Carrera</th>
                         <th>Fecha</th>
                         <th>Estado</th>
                         <th>Acciones</th>

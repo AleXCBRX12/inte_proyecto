@@ -80,9 +80,35 @@
     font-size:14px;
 }
 
+.expedientes-toolbar select{
+    padding:10px 12px;
+    border:1px solid var(--borde);
+    border-radius:10px;
+    font-size:14px;
+    background:#fff;
+    min-width:200px;
+}
+
 .toolbar-hint{
     color:#6b7280;
     font-size:13px;
+}
+
+@media (max-width: 720px){
+    .expedientes-toolbar{
+        flex-wrap:wrap;
+        gap:10px;
+    }
+
+    .expedientes-toolbar input,
+    .expedientes-toolbar select{
+        width:100%;
+        min-width:0;
+    }
+
+    .toolbar-hint{
+        flex-basis:100%;
+    }
 }
 
 .usuarios-lista{

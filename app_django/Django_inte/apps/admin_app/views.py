@@ -1416,9 +1416,18 @@ def expedientes_admin(request):
     proyectos_cursor = db.proyectos.find().sort("nombre", 1)
     proyectos_data = []
     usuarios_mapeados = set()
+    carreras_set = set()
 
     total_documentos = 0
     total_versiones = 0
+
+    def carrera_resumen(desde_integrantes):
+        carreras = {c for c in desde_integrantes if c and c != "Sin carrera"}
+        if not carreras:
+            return "Sin carrera"
+        if len(carreras) == 1:
+            return next(iter(carreras))
+        return "Mixto"
 
     for proyecto in proyectos_cursor:
         integrantes_p = []
@@ -1439,12 +1448,15 @@ def expedientes_admin(request):
         for u in users_equipo:
             u_id = str(u["_id"])
             usuarios_mapeados.add(u_id)
-            
+            carrera_u = (u.get("carrera") or "").strip() or "Sin carrera"
+            carreras_set.add(carrera_u)
+             
             integrantes_p.append({
                 "id": u_id,
                 "nombre": u.get("nombre", "Sin nombre"),
                 "correo": u.get("correo", ""),
-                "es_lider": u.get("correo") == proyecto.get("correo_lider")
+                "es_lider": u.get("correo") == proyecto.get("correo_lider"),
+                "carrera": carrera_u,
             })
 
         proyecto_id_str = str(proyecto["_id"])
@@ -1469,6 +1481,7 @@ def expedientes_admin(request):
         proyectos_data.append({
             "nombre_proyecto": nombre_proyecto or "Proyecto sin nombre",
             "integrantes": integrantes_p,
+            "carrera_resumen": carrera_resumen([i.get("carrera") for i in integrantes_p]),
             "id_proyecto": proyecto_id_str,
             "expedientes": expedientes_proyecto,
             "total_documentos": docs_count,
@@ -1494,10 +1507,14 @@ def expedientes_admin(request):
         ultima_ts = max([exp.get("ultima_fecha_ts") for exp in expedientes if exp.get("ultima_fecha_ts")], default=None)
         ultima_fecha = _exp_formatear_fecha(datetime.fromtimestamp(ultima_ts)) if ultima_ts else "Sin registros"
 
+        carrera_u = (u.get("carrera") or "").strip() or "Sin carrera"
+        carreras_set.add(carrera_u)
+
         usuarios_extra.append({
             "id": u_id,
             "nombre": u.get("nombre", "Sin nombre"),
             "correo": u.get("correo", ""),
+            "carrera": carrera_u,
             "expedientes": expedientes,
             "total_documentos": docs_count,
             "total_versiones": versions_count,
@@ -1510,6 +1527,7 @@ def expedientes_admin(request):
         "total_proyectos": len(proyectos_data),
         "total_documentos": total_documentos,
         "total_versiones": total_versiones,
+        "carreras": sorted(carreras_set, key=lambda x: x.lower()),
     }
     return render(request, "expedientes_admin.html", contexto)
 
@@ -1593,6 +1611,25 @@ def chat_admin_conversaciones_data():
     proyectos = list(db.proyectos.find().sort("nombre_proyecto", 1))
     ultimo_mensaje = {}
 
+    def carrera_resumen(proyecto):
+        carreras = set()
+        for m in (proyecto.get("integrantes") or []):
+            if isinstance(m, dict):
+                c = (m.get("carrera") or "").strip()
+                if c:
+                    carreras.add(c)
+        for m in (proyecto.get("resumen") or {}).get("integrantes") or []:
+            if isinstance(m, dict):
+                c = (m.get("carrera") or "").strip()
+                if c:
+                    carreras.add(c)
+        if not carreras:
+            c0 = (proyecto.get("carrera") or (proyecto.get("resumen") or {}).get("carrera") or "").strip()
+            return c0 or "Sin carrera"
+        if len(carreras) == 1:
+            return next(iter(carreras))
+        return "Mixto"
+
     # Obtenemos el último mensaje de cada proyecto
     for msg in db.chat_mensajes.find({"proyecto_id": {"$exists": True, "$ne": ""}}).sort("creado_en", -1):
         pid = msg.get("proyecto_id")
@@ -1618,6 +1655,7 @@ def chat_admin_conversaciones_data():
             "proyecto_nombre": nombre,
             "lider": lider,
             "correo": p.get("correo_usuario") or p.get("resumen", {}).get("correo", ""),
+            "carrera": carrera_resumen(p),
             "ultimo_mensaje": (ultimo.get("mensaje") or "").strip(),
             "hora_ultimo_mensaje": fecha_texto,
             "tipo": "proyecto"
@@ -2313,6 +2351,7 @@ def usuarios(request):
     # Obtener proyectos para agrupar
     proyectos = {str(p["usuario_id"]): p.get("nombre_proyecto", "Proyecto sin nombre") for p in db.proyectos.find()}
     proyectos_agrupados = {}
+    carreras_set = set()
 
     for u in usuarios_cursor:
         u_id_str = str(u["_id"])
@@ -2339,16 +2378,21 @@ def usuarios(request):
         if nombre_proyecto not in proyectos_agrupados:
             proyectos_agrupados[nombre_proyecto] = []
 
+        carrera = (u.get("carrera") or "").strip() or "Sin carrera"
+        carreras_set.add(carrera)
+
         proyectos_agrupados[nombre_proyecto].append({
             "id": u_id_str,
             "nombre": u.get("nombre", ""),
             "correo": u.get("correo", ""),
             "rol": rol_nombre,
-            "activo": u.get("activo", True)
+            "activo": u.get("activo", True),
+            "carrera": carrera,
         })
 
     return render(request, "usuarios.html", {
-        "proyectos_usuarios": proyectos_agrupados
+        "proyectos_usuarios": proyectos_agrupados,
+        "carreras": sorted(carreras_set, key=lambda x: x.lower()),
     })
 
 @csrf_exempt

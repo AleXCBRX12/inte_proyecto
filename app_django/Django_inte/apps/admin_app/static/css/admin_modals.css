@@ -1,0 +1,141 @@
+:root{
+  --admin-modal-overlay: rgba(15, 23, 42, 0.6);
+  --admin-modal-surface: #ffffff;
+  --admin-modal-radius: 16px;
+  --admin-modal-shadow: 0 24px 60px rgba(0,0,0,0.22);
+  --admin-modal-border: 1px solid rgba(226,232,240,0.9);
+}
+
+/* ========== Overlay (varios tipos de modal existentes) ========== */
+.modal-bg,
+.modal,
+.solicitud-modal,
+#modalPassword,
+.logout-modal{
+  position: fixed;
+  inset: 0;
+  background: var(--admin-modal-overlay) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 16px;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Asegura centrado cuando están visibles (la mayoría usa display:flex al abrir) */
+.modal-bg[style*="display: flex"],
+.modal[style*="display: flex"],
+.solicitud-modal[style*="display: flex"],
+#modalPassword[style*="display: flex"],
+.logout-modal.active{
+  display: flex !important;
+}
+
+/* ========== Contenido ========== */
+.modal-box,
+.modal-content,
+#modalPassword .modal-contenido,
+.modal-credenciales,
+.logout-box{
+  width: 100%;
+  max-width: 560px;
+  max-height: min(85vh, 760px) !important;
+  overflow: auto;
+  background: var(--admin-modal-surface);
+  border-radius: var(--admin-modal-radius);
+  border: var(--admin-modal-border);
+  box-shadow: var(--admin-modal-shadow);
+}
+
+/* Modales de solicitudes (detalle, rechazo, etc.) varían mucho de tamaño */
+.solicitud-modal-content{
+  width: 100%;
+  max-width: 95vw;
+  max-height: min(85vh, 900px);
+  overflow: auto;
+  background: var(--admin-modal-surface);
+  border-radius: var(--admin-modal-radius);
+  border: var(--admin-modal-border);
+  box-shadow: var(--admin-modal-shadow);
+}
+
+/* Padding consistente sin romper modales que ya traen padding */
+.modal-box,
+.solicitud-modal-content,
+.logout-box{
+  padding: 22px;
+}
+
+@media (max-width: 480px){
+  .modal-box,
+  .modal-content,
+  #modalPassword .modal-contenido,
+  .modal-credenciales,
+  .logout-box{
+    width: 100%;
+    max-width: 100%;
+    border-radius: 14px;
+  }
+}
+
+/* ========== Botón cerrar ========== */
+.modal-close,
+.logout-close,
+.modal-content .close,
+.modal-box .close{
+  appearance: none;
+  border: none;
+  background: rgba(241,245,249,0.9);
+  color: #0f172a;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.modal-close:hover,
+.logout-close:hover{
+  background: rgba(226,232,240,1);
+}
+
+/* ========== Layout de acciones ========== */
+.modal-actions,
+.modal-buttons{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+@media (max-width: 480px){
+  .modal-actions,
+  .modal-buttons{
+    justify-content: stretch;
+  }
+  .modal-actions button,
+  .modal-buttons button{
+    width: 100%;
+  }
+}
+
+/* Inputs a 100% dentro de modales */
+.modal-box input,
+.modal-box textarea,
+.modal-box select,
+.modal-content input,
+.modal-content textarea,
+.modal-content select,
+.solicitud-modal-content input,
+.solicitud-modal-content textarea,
+.solicitud-modal-content select,
+#modalPassword input,
+#modalPassword textarea,
+#modalPassword select{
+  width: 100%;
+  max-width: 100%;
+}

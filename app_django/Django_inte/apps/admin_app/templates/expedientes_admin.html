@@ -28,18 +28,25 @@
 
     <div class="expedientes-toolbar">
         <input type="search" id="buscadorUsuarios" placeholder="Buscar por nombre o correo">
+        <select id="filtroCarreraExpedientes" aria-label="Filtrar por carrera">
+            <option value="todas">Todas las carreras</option>
+            {% for c in carreras %}
+            <option value="{{ c|lower }}">{{ c }}</option>
+            {% endfor %}
+        </select>
         <span class="toolbar-hint">Tip: abre solo al usuario que necesitas revisar.</span>
     </div>
 
     <div class="usuarios-lista">
         <!-- SECCIÓN DE PROYECTOS -->
         {% for proyecto in proyectos_expedientes %}
-        <div class="proyecto-header">
-            <h3><i class="bi bi-briefcase-fill"></i> Proyecto: {{ proyecto.nombre_proyecto }}</h3>
-            <span class="badge-equipo">Equipo ({{ proyecto.integrantes|length }})</span>
-        </div>
+        <div class="proyecto-block" data-carrera="{{ proyecto.carrera_resumen|default:'Sin carrera'|lower }}" data-search="{{ proyecto.nombre_proyecto }}">
+            <div class="proyecto-header">
+                <h3><i class="bi bi-briefcase-fill"></i> Proyecto: {{ proyecto.nombre_proyecto }}</h3>
+                <span class="badge-equipo">Equipo ({{ proyecto.integrantes|length }})</span>
+            </div>
 
-        <div class="usuario-card" data-target="proj-{{ proyecto.id_proyecto }}" data-search="{{ proyecto.nombre_proyecto }}">
+        <div class="usuario-card" data-target="proj-{{ proyecto.id_proyecto }}" data-search="{{ proyecto.nombre_proyecto }}" data-carrera="{{ proyecto.carrera_resumen|default:'Sin carrera'|lower }}">
             <div class="usuario-info">
                 <div>
                     <div class="usuario-nombre">
@@ -94,6 +101,7 @@
                 <div class="empty">Aun no hay documentos para este equipo.</div>
             {% endif %}
         </div>
+        </div>
         {% endfor %}
 
         <!-- SECCIÓN DE USUARIOS SIN PROYECTO -->
@@ -102,7 +110,7 @@
             <h3><i class="bi bi-person-slash"></i> Usuarios sin equipo asignado</h3>
         </div>
         {% for usuario in usuarios_sin_proyecto %}
-        <div class="usuario-card" data-target="exp-{{ usuario.id }}" data-search="{{ usuario.nombre }} {{ usuario.correo }}">
+        <div class="usuario-card huerfano" data-target="exp-{{ usuario.id }}" data-search="{{ usuario.nombre }} {{ usuario.correo }}" data-carrera="{{ usuario.carrera|default:'Sin carrera'|lower }}">
             <!-- ... contenido similar al de arriba ... -->
             <div class="usuario-info">
                 <div>
@@ -159,7 +167,10 @@
 <script>
 (() => {
     const searchInput = document.getElementById("buscadorUsuarios");
-    const cards = Array.from(document.querySelectorAll(".usuario-card"));
+    const carreraSelect = document.getElementById("filtroCarreraExpedientes");
+    const projectBlocks = Array.from(document.querySelectorAll(".proyecto-block"));
+    const orphanHeader = document.querySelector(".proyecto-header.huerfanos");
+    const orphanCards = Array.from(document.querySelectorAll(".usuario-card.huerfano"));
     const toggles = document.querySelectorAll(".toggle-btn");
 
     toggles.forEach(btn => {
@@ -171,19 +182,36 @@
         });
     });
 
-    if (searchInput) {
-        searchInput.addEventListener("input", () => {
-            const term = searchInput.value.trim().toLowerCase();
-            cards.forEach(card => {
-                const hayCoincidencia = card.dataset.search.toLowerCase().includes(term);
-                const panel = document.getElementById(card.dataset.target);
-                card.style.display = hayCoincidencia ? "" : "none";
-                if (panel) {
-                    panel.style.display = hayCoincidencia ? "" : "none";
-                }
-            });
+    function aplicarFiltros() {
+        const term = (searchInput?.value || "").trim().toLowerCase();
+        const carrera = (carreraSelect?.value || "todas").toLowerCase();
+
+        projectBlocks.forEach(block => {
+            const hayTexto = !term || (block.dataset.search || "").toLowerCase().includes(term);
+            const c = (block.dataset.carrera || "sin carrera").toLowerCase();
+            const hayCarrera = carrera === "todas" || c === carrera;
+            block.style.display = (hayTexto && hayCarrera) ? "" : "none";
         });
+
+        let orphansVisible = 0;
+        orphanCards.forEach(card => {
+            const hayTexto = !term || (card.dataset.search || "").toLowerCase().includes(term);
+            const c = (card.dataset.carrera || "sin carrera").toLowerCase();
+            const hayCarrera = carrera === "todas" || c === carrera;
+            const ok = hayTexto && hayCarrera;
+
+            const panel = document.getElementById(card.dataset.target);
+            card.style.display = ok ? "" : "none";
+            if (panel) panel.style.display = ok ? "" : "none";
+            if (ok) orphansVisible += 1;
+        });
+
+        if (orphanHeader) orphanHeader.style.display = orphansVisible ? "" : "none";
     }
+
+    if (searchInput) searchInput.addEventListener("input", aplicarFiltros);
+    if (carreraSelect) carreraSelect.addEventListener("change", aplicarFiltros);
+    aplicarFiltros();
 })();
 </script>
 {% endblock %}
