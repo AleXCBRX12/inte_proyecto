@@ -1,28 +1,44 @@
 :root{
   --cal-surface: #ffffff;
   --cal-border: #e2e8f0;
-  --cal-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  --cal-shadow: 0 10px 30px rgba(0,0,0,0.05);
   --cal-text: #0f172a;
   --cal-muted: #64748b;
+  --cal-accent: #1e293b;
 }
 
 body.modal-open{
   overflow: hidden;
 }
 
+.cal-wrap {
+    padding: 20px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .empr-cal-layout{
   display:grid;
   grid-template-columns: 1fr 360px;
-  gap: 18px;
+  gap: 24px;
   align-items: start;
 }
 
 .cal-main-area{
   background: var(--cal-surface);
   border: 1px solid var(--cal-border);
-  border-radius: 14px;
+  border-radius: 20px;
   box-shadow: var(--cal-shadow);
-  padding: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.cal-main-area:hover {
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
 }
 
 .cal-main-head{
@@ -30,12 +46,12 @@ body.modal-open{
   align-items:center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .cal-controls{
   display:flex;
-  gap: 8px;
+  gap:10px;
   flex-wrap: wrap;
 }
 
@@ -44,40 +60,47 @@ body.modal-open{
   border: 1px solid var(--cal-border);
   background: #ffffff;
   color: var(--cal-text);
-  border-radius: 12px;
-  padding: 8px 12px;
-  font-weight: 800;
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.9rem;
 }
 
 .btn-cal:hover{
-  transform: translateY(-1px);
-  border-color: rgba(37, 99, 235, 0.45);
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.12);
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .btn-cal-primary{
-  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #2563eb 100%);
-  border: 1px solid rgba(255,255,255,0.25);
+  background: var(--cal-accent);
   color: #ffffff;
+  border: none;
   text-decoration: none;
+}
+
+.btn-cal-primary:hover {
+    background: #334155;
+    color: white;
 }
 
 .cal-side-area{
   position: sticky;
-  top: 72px;
+  top: 90px;
 }
 
 .side-card{
   background: var(--cal-surface);
   border: 1px solid var(--cal-border);
-  border-radius: 14px;
+  border-radius: 20px;
   box-shadow: var(--cal-shadow);
-  padding: 16px;
+  padding: 24px;
 }
 
 .event-row-btn{
