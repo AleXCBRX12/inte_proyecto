@@ -407,20 +407,7 @@
 <!-- Toast Notification Container -->
 <div id="toastContainer" class="toast-container"></div>
 
-<!-- Custom Confirmation Modal -->
-<div id="modalConfirmDelete" class="modal-confirm" style="display:none;">
-    <div class="modal-confirm-content">
-        <div class="modal-confirm-icon">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-        </div>
-        <h3 class="modal-confirm-title">¿Estás seguro?</h3>
-        <p class="modal-confirm-text">Esta acción no se puede deshacer. La publicación será eliminada permanentemente del sistema.</p>
-        <div class="modal-confirm-footer">
-            <button class="modal-confirm-btn btn-cancel" onclick="closeConfirmModal()">Cancelar</button>
-            <button id="btnConfirmAction" class="modal-confirm-btn btn-confirm-delete">Sí, Eliminar</button>
-        </div>
-    </div>
-</div>
+{% include 'modals/modal_eliminar_convocatoria.html' %}
 
 <script>
     let currentCategory = 'todo';
