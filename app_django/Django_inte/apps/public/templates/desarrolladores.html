@@ -72,10 +72,40 @@
     padding: 30px;
     max-width: 800px;
     width: 100%;
-    overflow: hidden; /* Quitamos scroll interno */
+
+    /* 🔥 SCROLL SUAVE Y LIMPIO */
+    max-height: 90vh;
+    overflow-y: auto;
+
+    /* 🔥 scroll tipo iOS */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+
+    /* 🔥 ocultar scroll feo */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.2) transparent;
+
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     position: relative;
     animation: modalFadeIn 0.3s ease-out;
+}
+
+/* 🔥 Scroll minimalista (solo aparece al usarlo) */
+.modal-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.modal-container::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+
+.modal-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.35);
+}
+
+.modal-container::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 /* Botón cerrar */
@@ -164,13 +194,41 @@ h1 {
     to {opacity: 1; transform: translateY(0);}
 }
 
-/* Responsive */
+/* ==============================
+   RESPONSIVE
+============================== */
 @media (max-width: 768px) {
-    .modal-container { padding: 20px; }
-    h1 { font-size: 1.6rem; }
-    .subtitle { font-size: 0.95rem; margin-bottom: 20px; }
-    .dev-card { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px 20px; }
-    .dev-badge { align-self: flex-start; }
+
+    .modal-overlay {
+        align-items: flex-start;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .modal-container {
+        padding: 20px;
+        max-height: 85vh;
+    }
+
+    h1 { 
+        font-size: 1.6rem; 
+    }
+
+    .subtitle { 
+        font-size: 0.95rem; 
+        margin-bottom: 20px; 
+    }
+
+    .dev-card { 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 10px; 
+        padding: 15px 20px; 
+    }
+
+    .dev-badge { 
+        align-self: flex-start; 
+    }
 }
 </style>
 

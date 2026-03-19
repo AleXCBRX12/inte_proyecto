@@ -1,135 +1,260 @@
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aviso de Privacidad - Incubadora de Empresas</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --navy: #1e293b;
-            --blue: #1e40af;
-            --slate: #64748b;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--navy);
-            background-color: #f8fafc;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 60px auto;
-            background: white;
-            padding: 60px;
-            border-radius: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 50px;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 30px;
-        }
-        h1 {
-            font-weight: 800;
-            font-size: 2.5rem;
-            margin: 0;
-            color: var(--navy);
-        }
-        h2 {
-            font-weight: 800;
-            font-size: 1.25rem;
-            color: var(--blue);
-            margin-top: 40px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        p {
-            margin-bottom: 20px;
-            color: #334155;
-        }
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            text-decoration: none;
-            color: var(--blue);
-            font-weight: 700;
-            margin-bottom: 30px;
-            transition: transform 0.2s;
-        }
-        .back-link:hover { transform: translateX(-5px); }
+
+<div id="privacyModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container modal-large">
         
-        @media (max-width: 600px) {
-            .container { padding: 30px; margin: 20px; }
-            h1 { font-size: 1.75rem; }
-        }
-    </style>
-</head>
-<body>
+        <button class="modal-close" onclick="closePrivacyModal()">&times;</button>
 
-<div class="container">
-    <a href="javascript:history.back()" class="back-link">← Volver</a>
-    
-    <div class="header">
-        <h1>Aviso de Privacidad</h1>
-        <p>Última actualización: 14 de marzo de 2026</p>
+        <!-- Header -->
+        <div class="header">
+            <h1>Aviso de Privacidad</h1>
+            <p class="subtitle">Última actualización: 14 de marzo de 2026</p>
+        </div>
+
+        <!-- Contenido -->
+        <div class="modal-body-scroll">
+
+            <section>
+                <h2>1. Identidad y Domicilio del Responsable</h2>
+                <p>
+                    La <strong>Incubadora de Empresas</strong>, con domicilio en [Dirección de la Institución], 
+                    es la responsable del tratamiento de los datos personales que nos proporcione.
+                </p>
+
+                <h2>2. Finalidades del Tratamiento</h2>
+                <p>Los datos personales que recabamos serán utilizados para las siguientes finalidades:</p>
+                <ul>
+                    <li>Gestión y seguimiento de proyectos de incubación.</li>
+                    <li>Comunicación directa con emprendedores y mentores.</li>
+                    <li>Validación de requisitos institucionales y académicos.</li>
+                    <li>Emisión de constancias y documentos oficiales.</li>
+                </ul>
+
+                <h2>3. Datos Personales Recabados</h2>
+                <p>Para las finalidades antes mencionadas, se recabarán los siguientes datos:</p>
+                <ul>
+                    <li>Datos de identificación (Nombre, firma).</li>
+                    <li>Datos de contacto (Correo electrónico, teléfono).</li>
+                    <li>Datos académicos (Carrera, número de control/matrícula).</li>
+                </ul>
+
+                <h2>4. Derechos ARCO</h2>
+                <p>
+                    Usted tiene derecho a conocer qué datos personales tenemos de usted, para qué los utilizamos y las condiciones del uso que les damos (Acceso). 
+                    Asimismo, es su derecho solicitar la corrección de su información personal en caso de que esté desactualizada, sea inexacta o incompleta (Rectificación); 
+                    que la eliminemos de nuestros registros o bases de datos cuando considere que la misma no está siendo utilizada conforme a los principios, deberes y obligaciones previstos en la normativa (Cancelación); 
+                    así como oponerse al uso de sus datos personales para fines específicos (Oposición).
+                </p>
+
+                <h2>5. Transferencia de Datos</h2>
+                <p>
+                    Se informa que no se realizarán transferencias de datos personales a terceros, 
+                    salvo aquellas que sean necesarias para atender requerimientos de información de una autoridad competente, 
+                    que estén debidamente fundados y motivados.
+                </p>
+
+                <h2>6. Cambios al Aviso de Privacidad</h2>
+                <p>
+                    El presente aviso de privacidad puede sufrir modificaciones, cambios o actualizaciones derivadas de nuevos requerimientos legales 
+                    o de nuestras propias necesidades por los servicios que ofrecemos. Nos comprometemos a mantenerlo informado sobre los cambios 
+                    que pueda sufrir el presente aviso de privacidad, a través de este portal institucional.
+                </p>
+            </section>
+
+            <!-- Footer interno -->
+            <div class="modal-footer">
+                © 2026 Incubadora de Empresas. Todos los derechos reservados.
+            </div>
+
+        </div>
     </div>
-
-    <section>
-        <h2>1. Identidad y Domicilio del Responsable</h2>
-        <p>
-            La <strong>Incubadora de Empresas</strong>, con domicilio en [Dirección de la Institución], 
-            es la responsable del tratamiento de los datos personales que nos proporcione.
-        </p>
-
-        <h2>2. Finalidades del Tratamiento</h2>
-        <p>Los datos personales que recabamos serán utilizados para las siguientes finalidades:</p>
-        <ul>
-            <li>Gestión y seguimiento de proyectos de incubación.</li>
-            <li>Comunicación directa con emprendedores y mentores.</li>
-            <li>Validación de requisitos institucionales y académicos.</li>
-            <li>Emisión de constancias y documentos oficiales.</li>
-        </ul>
-
-        <h2>3. Datos Personales Recabados</h2>
-        <p>Para las finalidades antes mencionadas, se recabarán los siguientes datos:</p>
-        <ul>
-            <li>Datos de identificación (Nombre, firma).</li>
-            <li>Datos de contacto (Correo electrónico, teléfono).</li>
-            <li>Datos académicos (Carrera, número de control/matrícula).</li>
-        </ul>
-
-        <h2>4. Derechos ARCO</h2>
-        <p>
-            Usted tiene derecho a conocer qué datos personales tenemos de usted, para qué los utilizamos y las condiciones del uso que les damos (Acceso). 
-            Asimismo, es su derecho solicitar la corrección de su información personal en caso de que esté desactualizada, sea inexacta o incompleta (Rectificación); 
-            que la eliminemos de nuestros registros o bases de datos cuando considere que la misma no está siendo utilizada conforme a los principios, deberes y obligaciones previstos en la normativa (Cancelación); 
-            así como oponerse al uso de sus datos personales para fines específicos (Oposición).
-        </p>
-
-        <h2>5. Transferencia de Datos</h2>
-        <p>
-            Se informa que no se realizarán transferencias de datos personales a terceros, 
-            salvo aquellas que sean necesarias para atender requerimientos de información de una autoridad competente, 
-            que estén debidamente fundados y motivados.
-        </p>
-
-        <h2>6. Cambios al Aviso de Privacidad</h2>
-        <p>
-            El presente aviso de privacidad puede sufrir modificaciones, cambios o actualizaciones derivadas de nuevos requerimientos legales 
-            o de nuestras propias necesidades por los servicios que ofrecemos. Nos comprometemos a mantenerlo informado sobre los cambios 
-            que pueda sufrir el presente aviso de privacidad, a través de este portal institucional.
-        </p>
-    </section>
-
-    <footer style="margin-top: 60px; text-align: center; color: var(--slate); font-size: 0.9rem;">
-        &copy; 2026 Incubadora de Empresas. Todos los derechos reservados.
-    </footer>
 </div>
 
-</body>
-</html>
+<!-- JS -->
+<script>
+let privacyScrollPosition = 0;
+
+function openPrivacyModal() {
+    const modal = document.getElementById('privacyModal');
+    modal.style.display = 'flex';
+
+    // Guardar scroll
+    privacyScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+    // Bloquear fondo
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${privacyScrollPosition}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.touchAction = 'none';
+}
+
+function closePrivacyModal() {
+    const modal = document.getElementById('privacyModal');
+    modal.style.display = 'none';
+
+    // Restaurar scroll
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.touchAction = '';
+
+    window.scrollTo(0, privacyScrollPosition);
+}
+
+// Cerrar al hacer click fuera
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('privacyModal');
+    if (modal && e.target === modal) closePrivacyModal();
+});
+</script>
+
+<!-- CSS -->
+<style>
+/* Overlay */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 10000;
+}
+
+/* Contenedor */
+.modal-large {
+    max-width: 900px;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    position: relative;
+}
+
+/* Scroll interno */
+.modal-body-scroll {
+    overflow-y: auto;
+    margin-top: 10px;
+    padding-right: 10px;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 15px;
+}
+
+.header h1 {
+    font-weight: 800;
+    font-size: 2rem;
+    margin: 0;
+    color: #1e293b;
+}
+
+.header .subtitle {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+/* Contenido */
+.modal-body-scroll h2 {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #1e40af;
+    margin-top: 25px;
+    text-transform: uppercase;
+}
+
+.modal-body-scroll p {
+    font-size: 0.95rem;
+    color: #334155;
+}
+
+.modal-body-scroll ul {
+    padding-left: 20px;
+}
+
+/* Footer */
+.modal-footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* Botón cerrar */
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* Scroll bonito */
+.modal-body-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body-scroll::-webkit-scrollbar-thumb {
+    background: #2563eb;
+    border-radius: 10px;
+}
+
+/* ===== RESPONSIVE ===== */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-large {
+        border-radius: 20px 20px 0 0;
+        height: 95vh;
+        max-height: 95vh;
+        padding: 20px 15px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .modal-close {
+        top: 10px;
+        right: 15px;
+        font-size: 1.8rem;
+    }
+}
+
+/* Móvil */
+@media (max-width: 480px) {
+    .modal-large {
+        padding: 15px 12px;
+    }
+
+    .header h1 {
+        font-size: 1.3rem;
+    }
+
+    .modal-body-scroll h2 {
+        font-size: 1rem;
+    }
+
+    .modal-body-scroll p {
+        font-size: 0.85rem;
+    }
+}
+</style>
