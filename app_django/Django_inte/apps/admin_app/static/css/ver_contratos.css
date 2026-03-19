@@ -351,13 +351,17 @@
         gap: 10px;              
     }
 
-    .btn-ver, .btn-aceptar, .btn-rechazar {
+    .uta-card-admin-item .btn-ver,
+    .uta-card-admin-item .btn-aceptar,
+    .uta-card-admin-item .btn-rechazar {
         width: 50px;       
         padding: 10px 0;   
         justify-content: center;
     }
 
-    .btn-ver span, .btn-aceptar span, .btn-rechazar span {
+    .uta-card-admin-item .btn-ver span,
+    .uta-card-admin-item .btn-aceptar span,
+    .uta-card-admin-item .btn-rechazar span {
         display: none; 
     }
 }

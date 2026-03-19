@@ -4,6 +4,7 @@ from datetime import datetime
 import threading
 import gridfs
 import logging
+from urllib.parse import urljoin, urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,42 @@ from reportlab.lib import colors
 # ==========================================================
 #  Utilidades de Email
 # ==========================================================
+
+def _portal_origin(request=None):
+    """
+    Retorna el origen (scheme+host) del portal para armar links en correos.
+
+    Prioridad:
+    1) PORTAL_URL (si viene con /login/ u otra ruta, se normaliza al origen)
+    2) RENDER_EXTERNAL_URL (Render)
+    3) request.build_absolute_uri("/") (si hay request)
+    4) Fallback hardcoded (prod actual)
+    """
+    candidates = [
+        os.getenv("PORTAL_URL"),
+        os.getenv("RENDER_EXTERNAL_URL"),
+    ]
+
+    if request is not None:
+        try:
+            candidates.append(request.build_absolute_uri("/"))
+        except Exception:
+            pass
+
+    for c in candidates:
+        if not c:
+            continue
+        try:
+            parsed = urlparse(c)
+            if parsed.scheme and parsed.netloc:
+                return f"{parsed.scheme}://{parsed.netloc}/"
+        except Exception:
+            continue
+
+    return "https://inte-proyecto.onrender.com/"
+
+def portal_login_url(request=None):
+    return urljoin(_portal_origin(request), "login/")
 
 def enviar_correo(destinatario, datos):
     """
@@ -239,8 +276,38 @@ def enviar_correo_async(destinatario, datos):
 
 def notificar_equipo_contrato(contrato_id, estado, motivo=None):
     thread = threading.Thread(target=_background_notificar_equipo_contrato, args=(contrato_id, estado, motivo))
+    thread.daemon = True
     thread.start()
     return True
+
+def notificar_equipo_contrato_direct(destinatarios, estado, motivo=None, proyecto_nombre="Tu Proyecto"):
+    """
+    Variante que NO depende de leer el contrato desde la BD (útil si el contrato se elimina).
+    """
+    thread = threading.Thread(
+        target=_background_notificar_equipo_contrato_direct,
+        args=(destinatarios, estado, motivo, proyecto_nombre),
+    )
+    thread.daemon = True
+    thread.start()
+    return True
+
+def _background_notificar_equipo_contrato_direct(destinatarios, estado, motivo=None, proyecto_nombre="Tu Proyecto"):
+    try:
+        correos = []
+        for e in (destinatarios or []):
+            if not e:
+                continue
+            email = str(e).strip().lower()
+            if email and email not in correos:
+                correos.append(email)
+
+        for email in correos:
+            _enviar_correo_individual_contrato(email, "Emprendedor", estado, motivo, proyecto_nombre or "Tu Proyecto")
+        return True
+    except Exception as e:
+        print(f"Error en notificar_equipo_contrato_direct: {e}")
+        return False
 
 def _background_notificar_equipo_contrato(contrato_id, estado, motivo=None):
     try:
@@ -270,7 +337,7 @@ def _background_notificar_equipo_contrato(contrato_id, estado, motivo=None):
         return False
 
 def _enviar_correo_individual_contrato(destinatario, nombre, estado, motivo=None, proyecto_nombre="Tu Proyecto"):
-    portal_url = os.getenv("PORTAL_URL", "https://incubadora-ut.onrender.com/login/")
+    portal_url = portal_login_url()
     if estado.lower() == "aceptado":
         sub = f"✅ Contrato Aceptado - {proyecto_nombre}"
         msg = f"Tu contrato para <strong>{proyecto_nombre}</strong> ha sido aprobado."
@@ -333,7 +400,7 @@ def enviar_confirmacion_registro(destinatario, nombre, password, request=None):
     """
     Correo de bienvenida con credenciales (Bulk/Individual).
     """
-    portal_url = request.build_absolute_uri('/login/') if request else os.getenv("PORTAL_URL", "https://incubadora-ut.onrender.com/login/")
+    portal_url = portal_login_url(request)
     
     subject = "🚀 ¡Felicidades! Tu proyecto ha sido aceptado"
     html = f"""
@@ -377,7 +444,7 @@ def enviar_credenciales_equipo_lider(destinatario_lider, nombre_lider, credencia
     raise NotImplementedError(
         "Función desactivada: ahora se envían correos individuales a cada integrante."
     )
-    portal_url = request.build_absolute_uri('/login/') if request else os.getenv("PORTAL_URL", "https://incubadora-ut.onrender.com/login/")
+    portal_url = portal_login_url(request)
 
     subject = "✅ Credenciales del equipo - Incubadora de Empresas"
 

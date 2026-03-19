@@ -101,9 +101,13 @@ function agregarGrupoCarrera(carrera, count) {
     fila.className = "carrera-group-row";
     fila.innerHTML = `
         <td colspan="6" class="carrera-group-cell">
-            <i class="bi bi-mortarboard-fill"></i>
-            <span class="carrera-group-title">${carrera}</span>
-            <span class="carrera-group-count">${count}</span>
+            <div class="carrera-banner" role="rowheader" aria-label="Sección de carrera: ${carrera}">
+                <div class="carrera-banner-left">
+                    <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                    <span class="carrera-group-title">${carrera}</span>
+                </div>
+                <span class="carrera-group-count" title="Solicitudes en esta carrera">${count}</span>
+            </div>
         </td>
     `;
     tabla.appendChild(fila);

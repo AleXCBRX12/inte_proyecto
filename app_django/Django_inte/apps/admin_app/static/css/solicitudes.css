@@ -177,28 +177,62 @@ body.modal-open {
 }
 
 .carrera-group-cell{
-    padding: 10px 14px !important;
-    background: #0f172a;
-    color: #fff;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
 }
 
-.carrera-group-cell i{
-    opacity: 0.9;
+.carrera-banner{
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 12px 0 10px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    color: #ffffff;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 55%, #2563eb 100%);
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
+    border: 1px solid rgba(255,255,255,0.18);
+}
+
+.carrera-banner::before{
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 12px;
+    bottom: 12px;
+    width: 6px;
+    border-radius: 999px;
+    background: rgba(191, 219, 254, 0.95);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+}
+
+.carrera-banner-left{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.carrera-banner-left i{
+    opacity: 0.95;
+    flex: 0 0 auto;
 }
 
 .carrera-group-title{
     font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .carrera-group-count{
     margin-left: auto;
-    background: rgba(255,255,255,0.14);
-    border: 1px solid rgba(255,255,255,0.22);
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.28);
     padding: 2px 10px;
     border-radius: 999px;
     font-size: 0.8rem;
@@ -264,7 +298,25 @@ body.modal-open {
         border-top: 1px solid #f1f5f9 !important;
     }
 
+    tr.carrera-group-row{
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 0 10px 0 !important;
+    }
+
+    td.carrera-group-cell{
+        display: block !important;
+        padding: 0 !important;
+    }
+
     td.carrera-group-cell::before{
         content: "" !important;
+    }
+
+    .carrera-banner{
+        margin: 0 0 10px;
+        padding: 12px 14px;
     }
 }

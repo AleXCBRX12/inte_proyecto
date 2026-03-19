@@ -44,10 +44,11 @@
                 </a>
                 <form action="{% url 'confirmar_contrato' contrato.id %}" method="POST" style="display: contents;">
                     {% csrf_token %}
+                    <input type="hidden" name="motivo_rechazo" value="">
                     <button type="submit" class="btn-aceptar" name="decision" value="aceptado">
                         <i class="bi bi-check-circle"></i> Aceptar
                     </button>
-                    <button type="button" class="btn-rechazar" data-role="rechazar">
+                    <button type="button" class="btn-rechazar" data-role="rechazar" data-contrato="{{ contrato.nombre_contrato }}">
                         <i class="bi bi-x-circle"></i> Rechazar
                     </button>
                 </form>
@@ -60,9 +61,39 @@
     </div>
     {% empty %}
     <div class="no-anuncios">
-        No se han recibido contratos aun.
+        No se han recibido contratos aún.
     </div>
     {% endfor %}
+</div>
+
+<!-- Modal: Rechazo de contrato -->
+<div id="modalRechazoContrato" class="modal" style="display:none;" aria-hidden="true" aria-labelledby="rechazoTitle" role="dialog">
+    <div class="modal-box" role="document">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+            <div>
+                <h3 id="rechazoTitle" style="margin:0; color:#0f172a;">Rechazar contrato</h3>
+                <p style="margin:6px 0 0; color:#64748b; font-size:14px;">
+                    Motivo para: <strong id="rechazoContratoNombre">—</strong>
+                </p>
+            </div>
+            <button type="button" class="modal-close" id="cerrarModalRechazo" aria-label="Cerrar">&times;</button>
+        </div>
+
+        <div style="margin-top:16px;">
+            <label for="rechazoMotivo" style="display:block; font-weight:700; color:#334155; margin-bottom:8px;">Motivo del rechazo</label>
+            <textarea id="rechazoMotivo" rows="4" placeholder="Ej. Falta firma, datos incompletos, documento ilegible..." style="padding:12px 14px; border:1px solid #e2e8f0; border-radius:12px; font-size:14px; resize:vertical;"></textarea>
+            <div id="rechazoError" style="display:none; margin-top:10px; background:#fff1f2; border:1px solid #fecdd3; color:#9f1239; padding:10px 12px; border-radius:12px; font-weight:600; font-size:13px;"></div>
+        </div>
+
+        <div class="modal-actions" style="margin-top:16px;">
+            <button type="button" class="btn-ver" id="cancelarRechazo" style="flex:0 0 auto; background: linear-gradient(135deg, #64748b, #475569);">
+                Cancelar
+            </button>
+            <button type="button" class="btn-rechazar" id="confirmarRechazo" style="flex:0 0 auto;">
+                <i class="bi bi-x-circle"></i> Rechazar y enviar correo
+            </button>
+        </div>
+    </div>
 </div>
 
 
@@ -90,18 +121,79 @@ if (buscador) {
     });
 }
 
+const modalRechazo = document.getElementById("modalRechazoContrato");
+const cerrarModalBtn = document.getElementById("cerrarModalRechazo");
+const cancelarBtn = document.getElementById("cancelarRechazo");
+const confirmarBtn = document.getElementById("confirmarRechazo");
+const motivoTextarea = document.getElementById("rechazoMotivo");
+const rechazoError = document.getElementById("rechazoError");
+const rechazoContratoNombre = document.getElementById("rechazoContratoNombre");
+
+let formRechazoActivo = null;
+
+function abrirModalRechazo(form, contratoNombre) {
+    formRechazoActivo = form;
+    rechazoContratoNombre.textContent = contratoNombre || "—";
+    if (rechazoError) rechazoError.style.display = "none";
+    if (motivoTextarea) motivoTextarea.value = "";
+    modalRechazo.style.display = "flex";
+    modalRechazo.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    setTimeout(() => motivoTextarea?.focus(), 50);
+}
+
+function cerrarModalRechazo() {
+    modalRechazo.style.display = "none";
+    modalRechazo.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+    formRechazoActivo = null;
+    if (confirmarBtn) confirmarBtn.disabled = false;
+}
+
 document.querySelectorAll('button[data-role="rechazar"]').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const form = btn.closest('form');
-        const motivoInput = form.querySelector('input[name="motivo_rechazo"]');
-        const motivo = prompt("Ingresa el motivo del rechazo para notificar al usuario:");
-        if (motivo && motivo.trim().length > 2) {
-            motivoInput.value = motivo.trim();
-            form.submit();
-        } else if (motivo !== null) {
-            alert("Debes ingresar un motivo válido.");
-        }
+    btn.addEventListener("click", () => {
+        const form = btn.closest("form");
+        if (!form) return;
+        abrirModalRechazo(form, btn.dataset.contrato);
     });
+});
+
+cerrarModalBtn?.addEventListener("click", cerrarModalRechazo);
+cancelarBtn?.addEventListener("click", cerrarModalRechazo);
+
+modalRechazo?.addEventListener("click", (e) => {
+    if (e.target === modalRechazo) cerrarModalRechazo();
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modalRechazo?.style.display === "flex") cerrarModalRechazo();
+});
+
+confirmarBtn?.addEventListener("click", () => {
+    if (!formRechazoActivo) return;
+    const motivo = (motivoTextarea?.value || "").trim();
+    if (motivo.length < 3) {
+        if (rechazoError) {
+            rechazoError.textContent = "Debes ingresar un motivo válido (mínimo 3 caracteres).";
+            rechazoError.style.display = "block";
+        }
+        motivoTextarea?.focus();
+        return;
+    }
+
+    const motivoInput = formRechazoActivo.querySelector('input[name="motivo_rechazo"]');
+    if (motivoInput) motivoInput.value = motivo;
+
+    const decisionHidden = document.createElement("input");
+    decisionHidden.type = "hidden";
+    decisionHidden.name = "decision";
+    decisionHidden.value = "rechazado";
+    formRechazoActivo.appendChild(decisionHidden);
+
+    confirmarBtn.disabled = true;
+    const tmpForm = formRechazoActivo;
+    cerrarModalRechazo();
+    tmpForm.submit();
 });
 </script>
 

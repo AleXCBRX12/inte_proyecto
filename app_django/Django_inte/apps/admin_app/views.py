@@ -388,7 +388,8 @@ def solicitudes_panel(request):
 logger = logging.getLogger(__name__)
 
 def enviar_correo_estado_solicitud(destinatario, nombre, estado, password=None, motivo=None):
-    portal_url = os.getenv("PORTAL_URL", "https://incubadora-ut.onrender.com/login/")
+    from apps.utils.email_service import portal_login_url
+    portal_url = portal_login_url()
 
     if not destinatario:
         return False
@@ -1109,7 +1110,11 @@ def confirmar_contrato(request, id):
     accion = request.POST.get("decision")
     motivo_rechazo = (request.POST.get("motivo_rechazo") or "").strip()
     if accion not in ["aceptado", "rechazado"]:
-        messages.error(request, "Accion no valida.")
+        messages.error(request, "Acción no válida.")
+        return redirect("ver_contratos")
+
+    if accion == "rechazado" and not motivo_rechazo:
+        messages.error(request, "Debes indicar el motivo del rechazo.")
         return redirect("ver_contratos")
 
     try:
@@ -1184,7 +1189,52 @@ def confirmar_contrato(request, id):
             messages.success(request, "El contrato fue aceptado y todo el equipo ha sido activado.")
         else:
             usuario_id = contrato.get("usuario_id")
+
+            # Notificar antes de eliminar el contrato (el envío por contrato_id fallaría si se borra).
+            try:
+                destinatarios = []
+                proyecto_nombre = "Tu Proyecto"
+
+                correo_contrato = (contrato.get("usuario_correo") or "").strip().lower()
+                if correo_contrato:
+                    destinatarios.append(correo_contrato)
+
+                usuario = None
+                if usuario_id:
+                    try:
+                        usuario = db.usuarios.find_one({"_id": ObjectId(str(usuario_id))})
+                    except Exception:
+                        usuario = db.usuarios.find_one({"_id": usuario_id})
+
+                if usuario:
+                    correo_lider = (usuario.get("correo") or "").strip().lower()
+                    if correo_lider and correo_lider not in destinatarios:
+                        destinatarios.append(correo_lider)
+
+                    proyecto = db.proyectos.find_one({
+                        "$or": [
+                            {"usuario_id": str(usuario_id)},
+                            {"usuario_lider_id": str(usuario_id)},
+                            {"correo_usuario": correo_lider},
+                        ]
+                    })
+                    if proyecto:
+                        proyecto_nombre = (proyecto.get("nombre_proyecto") or proyecto_nombre).strip() or proyecto_nombre
+                        for m in (proyecto.get("integrantes") or []):
+                            email = m.get("correo") if isinstance(m, dict) else m
+                            if not email:
+                                continue
+                            e = str(email).strip().lower()
+                            if e and e not in destinatarios:
+                                destinatarios.append(e)
+
+                from apps.utils.email_service import notificar_equipo_contrato_direct
+                notificar_equipo_contrato_direct(destinatarios, "rechazado", motivo_rechazo, proyecto_nombre)
+            except Exception as e:
+                print(f"Error notificando rechazo de contrato: {e}")
+
             db.contrato_proyecto.delete_one({"_id": contrato_obj_id})
+
             if usuario_id:
                 db.firmas.update_one(
                     {"usuario_id": usuario_id},
@@ -1194,17 +1244,6 @@ def confirmar_contrato(request, id):
                     }},
                     upsert=True
                 )
-                usuario = None
-                try:
-                    usuario = db.usuarios.find_one({"_id": ObjectId(str(usuario_id))})
-                except Exception:
-                    usuario = db.usuarios.find_one({"_id": usuario_id})
-                if usuario:
-                    correo = (usuario.get("correo") or "").strip()
-                    nombre = (usuario.get("nombre") or "Emprendedor").strip()
-                    if correo:
-                        from apps.utils.email_service import notificar_equipo_contrato
-                        notificar_equipo_contrato(contrato_obj_id, "rechazado", motivo_rechazo)
             messages.success(request, "Contrato rechazado y eliminado. El usuario debe subir uno nuevo sin firma.")
 
     except Exception as e:
