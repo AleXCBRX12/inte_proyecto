@@ -19,6 +19,14 @@
         <i class="bi bi-arrow-left-short"></i> 
     </a>
 
+    {% if mensaje %}
+    <div class="error-container" style="background: rgba(16, 185, 129, 0.9) !important; box-shadow: 0 8px 20px rgba(0,0,0,0.25);">
+        <p class="error-message" style="background:transparent !important; color:white !important; box-shadow:none !important;">
+            <i class="bi bi-check-circle" style="font-size:1.2rem;"></i> {{ mensaje }}
+        </p>
+    </div>
+    {% endif %}
+
     {% if error %}
     <div class="error-container">
         <p class="error-message">{{ error }}</p>

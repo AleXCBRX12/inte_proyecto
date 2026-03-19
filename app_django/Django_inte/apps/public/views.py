@@ -155,6 +155,10 @@ def _bloquear_emprendedor_sin_contrato(request):
 
 
 def login_view(request):
+    login_mensaje = None
+    if request.method != "POST":
+        login_mensaje = request.session.pop("login_mensaje", None)
+
     if request.method == "POST":
         correo = request.POST.get("email")
         contrasena = request.POST.get("password")
@@ -188,7 +192,10 @@ def login_view(request):
 
         return render(request, "login.html", {"error": "Rol no autorizado"})
 
-    return render(request, "login.html")
+    ctx = {}
+    if login_mensaje:
+        ctx["mensaje"] = login_mensaje
+    return render(request, "login.html", ctx)
 
 
 def solicitar_reset(request):
@@ -244,6 +251,7 @@ def reset_password(request, token):
                 email_service.enviar_confirmacion_password(usuario.get("correo"), usuario.get("nombre"), request)
 
             mensaje = "Contraseña actualizada. Ya puedes iniciar sesión."
+            request.session["login_mensaje"] = mensaje
             token_valido = False
 
     if not token_valido and not mensaje and not error:
