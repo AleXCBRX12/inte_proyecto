@@ -1,32 +1,94 @@
-{% extends 'panel_admin.html' %}
+{% extends 'portal_publico.html' %}
 {% load static %}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/calendario.css' %}">
+<link rel="stylesheet" href="{% static 'css/calendario_emprendedor.css' %}?v=1">
 
 <div class="cal-wrap">
     <div class="cal-head">
-        <div>
+        <div class="cal-title">
             <h2>Calendario de incubación</h2>
-            <p>Consulta fechas clave de asesorías, entregas y concursos.</p>
+            <p>Vista completa de fechas clave de asesorías, entregas y concursos.</p>
         </div>
         <div class="legend">
             <span class="pill pill-green">Asesorías</span>
-            <span class="pill pill-orange">Entrega video</span>
-            <span class="pill pill-blue">Entrega proyectos</span>
+            <span class="pill pill-orange">Video</span>
+            <span class="pill pill-blue">Proyecto</span>
             <span class="pill pill-red">Concurso</span>
         </div>
     </div>
 
-    <div class="card calendar-scroll">
-        <h3 style="margin-top:0;">Calendario 2026</h3>
-        <div class="year-grid" id="gridCalendario"></div>
+    <div class="empr-cal-layout">
+        <div class="cal-main-area">
+            <div class="cal-main-head">
+                <h3 style="margin-top:0;">Calendario <span id="calYearLabel"></span></h3>
+                <div class="cal-controls">
+                    <button type="button" class="btn-cal" id="btnPrevYear" aria-label="Año anterior">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button type="button" class="btn-cal" id="btnToday" title="Ir al año actual">Hoy</button>
+                    <button type="button" class="btn-cal" id="btnNextYear" aria-label="Año siguiente">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="year-grid" id="gridCalendario"></div>
+        </div>
+
+        <aside class="cal-side-area">
+            <div class="side-card">
+                <h3 style="margin-top:0;">Próximos eventos</h3>
+                <div id="listaEventos" class="event-list"></div>
+                <div id="sinEventos" class="empty-events" style="display:none;">
+                    No hay eventos programados próximamente.
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Modal detalle de evento -->
+<div id="modalEventoEmpr" class="cal-modal" style="display:none;" aria-hidden="true" role="dialog" aria-labelledby="modalEvtTitle">
+    <div class="cal-modal-box" role="document">
+        <button type="button" class="cal-modal-close" id="cerrarModalEvento" aria-label="Cerrar">&times;</button>
+        <div class="cal-modal-header">
+            <div class="cal-modal-badge" id="modalEvtBadge">Evento</div>
+            <h3 id="modalEvtTitle" style="margin:10px 0 0;">—</h3>
+            <p id="modalEvtMeta" class="cal-modal-meta">—</p>
+        </div>
+        <div class="cal-modal-body">
+            <p id="modalEvtDesc" class="cal-modal-desc">—</p>
+        </div>
+        <div class="cal-modal-actions">
+            <a class="btn-cal btn-cal-primary" href="{% url 'chat_usuario' %}" title="Si tienes dudas, escribe al admin">
+                <i class="bi bi-chat-dots"></i> Consultar al admin
+            </a>
+            <button type="button" class="btn-cal" id="btnCerrarDetalle">Cerrar</button>
+        </div>
     </div>
 </div>
 
 <script>
-function badge(cat){
-    switch(cat){
+const CATEGORIA_COLOR = {
+    asesoria: "#22c55e",
+    video: "#f97316",
+    proyecto: "#0ea5e9",
+    concurso: "#ef4444",
+};
+
+function categoriaLabel(cat){
+    switch((cat || "").toLowerCase()){
+        case "asesoria": return "Asesoría";
+        case "video": return "Video";
+        case "proyecto": return "Proyecto";
+        case "concurso": return "Concurso";
+    }
+    return "Evento";
+}
+
+function categoriaPillClass(cat){
+    switch((cat || "").toLowerCase()){
         case "asesoria": return "pill pill-green";
         case "video": return "pill pill-orange";
         case "proyecto": return "pill pill-blue";
@@ -35,45 +97,101 @@ function badge(cat){
     return "pill";
 }
 
-function buildMonths(eventos){
+let eventosCache = [];
+let yearActual = new Date().getFullYear();
+
+function openDetalle(evt){
+    const modal = document.getElementById("modalEventoEmpr");
+    const badge = document.getElementById("modalEvtBadge");
+    const title = document.getElementById("modalEvtTitle");
+    const meta = document.getElementById("modalEvtMeta");
+    const desc = document.getElementById("modalEvtDesc");
+
+    const cat = (evt.categoria || "").toLowerCase();
+    const color = evt.color || CATEGORIA_COLOR[cat] || "#1f3c88";
+
+    badge.textContent = categoriaLabel(cat);
+    badge.style.background = color + "22";
+    badge.style.border = `1px solid ${color}`;
+    badge.style.color = "#0f172a";
+
+    title.textContent = evt.titulo || "Evento";
+    meta.textContent = `${evt.fecha || "—"} • ${categoriaLabel(cat)}`;
+    desc.textContent = (evt.descripcion || "").trim() || "Sin descripción adicional.";
+
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+}
+
+function closeDetalle(){
+    const modal = document.getElementById("modalEventoEmpr");
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+}
+
+function buildMonths(eventos, year){
     const grid = document.getElementById("gridCalendario");
+    const yearLabel = document.getElementById("calYearLabel");
     grid.innerHTML = "";
-    const year = 2026;
+    yearLabel.textContent = String(year);
+
     for(let m=0; m<12; m++){
         const date = new Date(year, m, 1);
-        const monthName = date.toLocaleString('es-ES', { month:'long'});
+        const monthName = date.toLocaleString("es-ES", { month: "long" });
         const firstDay = new Date(year, m, 1).getDay();
-        const daysInMonth = new Date(year, m+1, 0).getDate();
+        const daysInMonth = new Date(year, m + 1, 0).getDate();
+
         const monthDiv = document.createElement("div");
         monthDiv.className = "month";
+
         const header = document.createElement("div");
         header.className = "month-header";
-        header.textContent = `${monthName.charAt(0).toUpperCase()+monthName.slice(1)} '${year.toString().slice(-2)}`;
+        header.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} '${String(year).slice(-2)}`;
+
         const body = document.createElement("div");
         body.className = "month-body";
+
         const dayNames = document.createElement("div");
         dayNames.className = "day-names";
-        ['L','M','M','J','V','S','D'].forEach(l=>{const s=document.createElement("span");s.textContent=l;dayNames.appendChild(s);});
+        ["L","M","M","J","V","S","D"].forEach(l => {
+            const s = document.createElement("span");
+            s.textContent = l;
+            dayNames.appendChild(s);
+        });
+
         const days = document.createElement("div");
         days.className = "days";
-        const offset = (firstDay+6)%7;
-        for(let i=0;i<offset;i++){ days.appendChild(document.createElement("div")); }
-        for(let d=1; d<=daysInMonth; d++){
-            const cell=document.createElement("div");
-            cell.className="day";
-            cell.textContent=d;
-            const iso = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const evt = eventos.filter(e=>e.fecha===iso)[0];
-            if(evt){
+
+        const offset = (firstDay + 6) % 7;
+        for(let i = 0; i < offset; i++){
+            days.appendChild(document.createElement("div"));
+        }
+
+        for(let d = 1; d <= daysInMonth; d++){
+            const cell = document.createElement("div");
+            cell.className = "day";
+            cell.textContent = d;
+
+            const iso = `${year}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+            const evts = eventos.filter(e => e.fecha === iso);
+            if(evts.length){
+                const evt = evts[0];
+                const cat = (evt.categoria || "").toLowerCase();
+                const color = evt.color || CATEGORIA_COLOR[cat] || "#1f3c88";
                 cell.classList.add("event");
-                const color = {"asesoria":"#22c55e","video":"#f97316","proyecto":"#0ea5e9","concurso":"#ef4444"}[evt.categoria] || "#1f3c88";
-                cell.style.backgroundColor = color+"22";
-                cell.style.border=`1px solid ${color}`;
-                cell.style.color="#0f172a";
-                cell.title = evt.titulo;
+                cell.style.border = `1px solid ${color}`;
+                cell.style.background = color + "22";
+                cell.title = evt.titulo || "Evento";
+                cell.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    openDetalle(evt);
+                });
             }
             days.appendChild(cell);
         }
+
         body.appendChild(dayNames);
         body.appendChild(days);
         monthDiv.appendChild(header);
@@ -82,11 +200,81 @@ function buildMonths(eventos){
     }
 }
 
+function renderListaProximos(eventos){
+    const cont = document.getElementById("listaEventos");
+    const vacio = document.getElementById("sinEventos");
+    cont.innerHTML = "";
+
+    const hoyIso = new Date().toISOString().slice(0, 10);
+    const proximos = (eventos || []).filter(e => (e.fecha || "") >= hoyIso).slice(0, 12);
+
+    if(!proximos.length){
+        vacio.style.display = "block";
+        return;
+    }
+    vacio.style.display = "none";
+
+    proximos.forEach(evt => {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = "event-row-btn";
+
+        const cat = (evt.categoria || "").toLowerCase();
+        const color = evt.color || CATEGORIA_COLOR[cat] || "#1f3c88";
+
+        row.innerHTML = `
+            <div class="event-row-left">
+                <span class="event-dot" style="background:${color};"></span>
+                <div>
+                    <div class="event-title">${evt.titulo || "Evento"}</div>
+                    <div class="event-meta">${evt.fecha || "—"} • ${categoriaLabel(cat)}</div>
+                </div>
+            </div>
+            <span class="${categoriaPillClass(cat)}">${categoriaLabel(cat)}</span>
+        `;
+
+        row.addEventListener("click", () => openDetalle(evt));
+        cont.appendChild(row);
+    });
+}
+
 async function cargarEventos(){
     const resp = await fetch("{% url 'calendario_eventos' %}");
     const data = await resp.json();
-    buildMonths(data.eventos || []);
+
+    eventosCache = (data.eventos || []).slice().sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
+
+    const yearFromEventos = (eventosCache.find(e => (e.fecha || "").length >= 4)?.fecha || "").slice(0, 4);
+    if(yearFromEventos && /^\\d{4}$/.test(yearFromEventos)){
+        yearActual = parseInt(yearFromEventos, 10);
+    }
+
+    buildMonths(eventosCache.filter(e => (e.fecha || "").startsWith(String(yearActual))), yearActual);
+    renderListaProximos(eventosCache);
 }
+
+document.getElementById("btnPrevYear")?.addEventListener("click", () => {
+    yearActual -= 1;
+    buildMonths(eventosCache.filter(e => (e.fecha || "").startsWith(String(yearActual))), yearActual);
+});
+document.getElementById("btnNextYear")?.addEventListener("click", () => {
+    yearActual += 1;
+    buildMonths(eventosCache.filter(e => (e.fecha || "").startsWith(String(yearActual))), yearActual);
+});
+document.getElementById("btnToday")?.addEventListener("click", () => {
+    yearActual = new Date().getFullYear();
+    buildMonths(eventosCache.filter(e => (e.fecha || "").startsWith(String(yearActual))), yearActual);
+});
+
+document.getElementById("cerrarModalEvento")?.addEventListener("click", closeDetalle);
+document.getElementById("btnCerrarDetalle")?.addEventListener("click", closeDetalle);
+document.getElementById("modalEventoEmpr")?.addEventListener("click", (e) => {
+    if(e.target?.id === "modalEventoEmpr") closeDetalle();
+});
+document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") closeDetalle();
+});
+
 document.addEventListener("DOMContentLoaded", cargarEventos);
 </script>
 {% endblock %}

@@ -1,0 +1,240 @@
+:root{
+  --cal-surface: #ffffff;
+  --cal-border: #e2e8f0;
+  --cal-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  --cal-text: #0f172a;
+  --cal-muted: #64748b;
+}
+
+body.modal-open{
+  overflow: hidden;
+}
+
+.empr-cal-layout{
+  display:grid;
+  grid-template-columns: 1fr 360px;
+  gap: 18px;
+  align-items: start;
+}
+
+.cal-main-area{
+  background: var(--cal-surface);
+  border: 1px solid var(--cal-border);
+  border-radius: 14px;
+  box-shadow: var(--cal-shadow);
+  padding: 16px;
+}
+
+.cal-main-head{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.cal-controls{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-cal{
+  appearance:none;
+  border: 1px solid var(--cal-border);
+  background: #ffffff;
+  color: var(--cal-text);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.btn-cal:hover{
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.12);
+}
+
+.btn-cal-primary{
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #2563eb 100%);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.cal-side-area{
+  position: sticky;
+  top: 72px;
+}
+
+.side-card{
+  background: var(--cal-surface);
+  border: 1px solid var(--cal-border);
+  border-radius: 14px;
+  box-shadow: var(--cal-shadow);
+  padding: 16px;
+}
+
+.event-row-btn{
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(226,232,240,0.9);
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.event-row-btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 12px 24px rgba(2, 132, 199, 0.08);
+}
+
+.event-row-left{
+  display:flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.event-dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.event-title{
+  font-weight: 900;
+  color: var(--cal-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-meta{
+  color: var(--cal-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.empty-events{
+  color: var(--cal-muted);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 0 0;
+}
+
+/* ===== Modal ===== */
+.cal-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.cal-modal-box{
+  width: 100%;
+  max-width: 560px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(226,232,240,0.9);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+  padding: 18px;
+  position: relative;
+}
+
+.cal-modal-close{
+  appearance:none;
+  border:none;
+  background: rgba(241,245,249,0.95);
+  color: #0f172a;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+.cal-modal-header{
+  padding-right: 44px;
+}
+
+.cal-modal-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  border: 1px solid var(--cal-border);
+  background: #f1f5f9;
+  color: var(--cal-text);
+  width: fit-content;
+}
+
+.cal-modal-meta{
+  margin: 8px 0 0;
+  color: var(--cal-muted);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.cal-modal-desc{
+  margin: 14px 0 0;
+  color: #334155;
+  line-height: 1.65;
+}
+
+.cal-modal-actions{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+@media (max-width: 1100px){
+  .empr-cal-layout{
+    grid-template-columns: 1fr;
+  }
+  .cal-side-area{
+    position: static;
+  }
+}
+
+@media (max-width: 480px){
+  .cal-main-head{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cal-modal-actions{
+    justify-content: stretch;
+  }
+  .cal-modal-actions .btn-cal{
+    width: 100%;
+    justify-content: center;
+  }
+}
