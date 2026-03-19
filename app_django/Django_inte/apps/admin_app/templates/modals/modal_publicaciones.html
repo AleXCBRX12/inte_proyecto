@@ -1,0 +1,367 @@
+{load static}
+<style>
+/* =========================
+   MODAL OVERLAY CON BLUR
+========================= */
+.modal-modern{
+    position:fixed;
+    inset:0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:9999;
+}
+
+/* =========================
+   CONTENEDOR MODAL
+========================= */
+.modal-content-modern{
+    width:100%;
+    max-width:780px;
+    background:#fff;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 25px 80px rgba(0,0,0,0.35);
+    animation:modalPop .25s ease;
+}
+
+@keyframes modalPop{
+    from{
+        transform:scale(.95);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+/* =========================
+   HEADER
+========================= */
+.modal-header-modern{
+    padding:16px 20px;
+    background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-header-modern h3{
+    font-size:1.2rem;
+    font-weight:900;
+}
+
+/* =========================
+   BODY
+========================= */
+.modal-body-modern{
+    padding:20px;
+}
+
+/* =========================
+   TABS (CENTRADOS)
+========================= */
+.modal-tabs{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.modal-tab-btn{
+    border:none;
+    padding:10px 18px;
+    border-radius:999px;
+    background:#f1f5f9;
+    font-weight:900;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.modal-tab-btn.active{
+    background:var(--primary);
+    color:white;
+    box-shadow:0 4px 12px rgba(37,99,235,0.3);
+}
+
+/* =========================
+   FORM
+========================= */
+.modal-form-container{
+    margin-top:10px;
+}
+
+.admin-form-modern{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.form-group-modern label{
+    font-weight:800;
+    font-size:0.9rem;
+    color:var(--text);
+    margin-bottom:5px;
+    display:block;
+}
+
+/* 🔥 FIX CLAVE */
+.form-input-modern{
+    width:100%;
+    max-width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    outline:none;
+    transition:.2s;
+    box-sizing:border-box; /* 🔥 evita que se salga */
+}
+
+/* 🔥 SOLO PARA TEXTAREA */
+textarea.form-input-modern{
+    resize:vertical; /* solo crece hacia abajo */
+}
+
+/* focus */
+.form-input-modern:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(37,99,235,0.15);
+}
+
+/* =========================
+   CHECKBOX
+========================= */
+.audience-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px;
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:12px;
+}
+
+.audience-box input{
+    width:18px;
+    height:18px;
+    cursor:pointer;
+}
+
+.audience-box label{
+    font-size:0.95rem;
+    font-weight:600;
+    color:var(--muted);
+    cursor:pointer;
+}
+
+/* =========================
+   FOOTER (CENTRADO)
+========================= */
+.modal-footer-modern{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    margin-top:15px;
+}
+
+/* =========================
+   BOTONES
+========================= */
+.btn-premium-post{
+    padding:10px 16px;
+    min-width:140px;
+    border-radius:10px;
+    border:none;
+    font-weight:900;
+    cursor:pointer;
+    transition:.25s;
+    text-align:center;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-primary:hover{
+    background:var(--primary-dark);
+    transform:translateY(-2px) scale(1.03);
+    box-shadow:0 6px 18px rgba(37,99,235,0.35);
+}
+
+.btn-cancel{
+    background:#f1f5f9;
+    color:#64748b;
+}
+
+.btn-cancel:hover{
+    background:#e2e8f0;
+    transform:translateY(-2px);
+}
+</style>
+
+<!-- Modal Unificado de Creación/Edición -->
+<div id="modalPremium" class="modal-modern admin-modal-context">
+    <div class="modal-content-modern">
+        
+        <!-- HEADER -->
+        <div class="modal-header-modern">
+            <h3 id="modalTitle">Nueva Publicación</h3>
+            <div class="close-modal" onclick="cerrarModal()">
+                
+            </div>
+        </div>
+
+        <div class="modal-body-modern">
+
+            <!-- TABS -->
+            <div class="modal-tabs" id="modalCreationTabs">
+                <button class="modal-tab-btn active" id="tabBtnNoticia"
+                        onclick="switchModalForm('anuncio')">
+                    Aviso / Anuncio
+                </button>
+
+                <button class="modal-tab-btn" id="tabBtnConvocatoria"
+                        onclick="switchModalForm('convocatoria')">
+                    Convocatoria
+                </button>
+            </div>
+
+            <!-- ===================== -->
+            <!-- FORM ANUNCIO -->
+            <!-- ===================== -->
+            <div id="modalFormNoticia" class="modal-form-container">
+                <form id="formAnuncio" method="POST"
+                      action="{% url 'crear_anuncio' %}"
+                      class="admin-form-modern">
+
+                    {% csrf_token %}
+
+                    <!-- TITULO -->
+                    <div class="form-group-modern">
+                        <label>Título del Aviso</label>
+                        <input type="text"
+                               id="anuncioTitulo"
+                               name="titulo"
+                               class="form-input-modern"
+                               placeholder="Ej: Nuevo curso disponible, aviso importante..."
+                               required>
+                    </div>
+
+                    <!-- CONTENIDO -->
+                    <div class="form-group-modern">
+                        <label>Contenido</label>
+                        <textarea id="anuncioContenido"
+                                  name="contenido"
+                                  rows="5"
+                                  class="form-input-modern"
+                                  placeholder="Describe los detalles del aviso, fechas, requisitos o información relevante..."
+                                  required></textarea>
+                    </div>
+
+                    <!-- CHECK -->
+                    <div class="audience-box">
+                        <input type="checkbox"
+                               id="anuncioAudiencia"
+                               name="solo_emprendedores">
+                        <label for="anuncioAudiencia">
+                            Solo visible para emprendedores registrados
+                        </label>
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="modal-footer-modern">
+                        <button type="button"
+                                class="btn-premium-post btn-cancel"
+                                onclick="cerrarModal()">
+                            Cancelar
+                        </button>
+
+                        <button type="submit"
+                                id="btnSubmitNoticia"
+                                class="btn-premium-post btn-primary">
+                            Publicar Ahora
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ===================== -->
+            <!-- FORM CONVOCATORIA -->
+            <!-- ===================== -->
+            <div id="modalFormConvocatoria"
+                 class="modal-form-container"
+                 style="display:none;">
+
+                <form id="formCrear"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      action="{% url 'crear_convocatoria' %}"
+                      class="admin-form-modern">
+
+                    {% csrf_token %}
+
+                    <input type="hidden"
+                           name="id"
+                           id="editConvocatoriaId">
+
+                    <!-- TITULO -->
+                    <div class="form-group-modern">
+                        <label>Título de la Convocatoria</label>
+                        <input type="text"
+                               name="titulo"
+                               id="crearTitulo"
+                               class="form-input-modern"
+                               placeholder="Ej: Convocatoria Semilla 2026"
+                               required>
+                    </div>
+
+                    <!-- FECHA -->
+                    <div class="form-group-modern">
+                        <label>Fecha de Cierre</label>
+                        <input type="datetime-local"
+                               name="fecha_fin"
+                               id="crearFecha"
+                               class="form-input-modern"
+                               required>
+                    </div>
+
+                    <!-- IMAGEN -->
+                    <div class="form-group-modern">
+                        <label>Banner / Imagen (Opcional)</label>
+                        <input type="file"
+                               name="banner"
+                               id="crearBanner"
+                               accept="image/*"
+                               class="form-input-modern">
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="modal-footer-modern">
+                        <button type="button"
+                                class="btn-premium-post btn-cancel"
+                                onclick="cerrarModal()">
+                            Cancelar
+                        </button>
+
+                        <button type="submit"
+                                id="btnSubmitConvocatoria"
+                                class="btn-premium-post btn-primary">
+                            Publicar Convocatoria
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>

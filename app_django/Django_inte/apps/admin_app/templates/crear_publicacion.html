@@ -2,8 +2,297 @@
 {% load static %}
 
 {% block content %} 
-<!-- Estilos base unificados de muro -->
-<link rel="stylesheet" href="{% static 'css/ver_convocatorias.css' %}?v=17">
+<style>
+
+/* ============================
+   ADMIN DASHBOARD PRO UI V2
+============================ */
+
+:root{
+    --primary:#2563eb;
+    --primary-dark:#1e40af;
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --text:#0f172a;
+    --muted:#64748b;
+    --border:#e2e8f0;
+    --danger:#ef4444;
+    --success:#10b981;
+    --shadow:0 10px 30px rgba(0,0,0,0.06);
+}
+
+/* =========================
+   CONTAINER GENERAL
+========================= */
+.muro-admin-container{
+    padding: 28px;
+    background: var(--bg);
+    min-height: 100vh;
+}
+
+/* =========================
+   HEADER
+========================= */
+.publications-header{
+    margin-bottom: 25px;
+}
+
+.publications-header h2{
+    font-size: 2.3rem;
+    font-weight: 900;
+    color: var(--text);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    letter-spacing:-0.5px;
+}
+
+.publications-header h2::before{
+    content:"📊";
+    font-size:1.8rem;
+}
+
+.publications-header p{
+    color: var(--muted);
+    font-size: 1.05rem;
+    margin-top:5px;
+}
+
+/* =========================
+   FILTER BAR (GLASS STYLE)
+========================= */
+.admin-filters-container{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    flex-wrap:wrap;
+
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+}
+
+/* SEARCH */
+.search-wrapper{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#f8fafc;
+    border:1px solid var(--border);
+    padding:10px 12px;
+    border-radius:12px;
+    min-width:260px;
+    transition:.2s;
+}
+
+.search-wrapper:focus-within{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(37,99,235,0.15);
+}
+
+.admin-search-input{
+    border:none;
+    outline:none;
+    width:100%;
+    background:transparent;
+    font-size:0.95rem;
+}
+
+/* =========================
+   FILTER BUTTONS
+========================= */
+.filter-tabs{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.filter-tab{
+    border:1px solid var(--border);
+    background:#fff;
+    padding:8px 14px;
+    border-radius:12px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.25s;
+    font-size:0.9rem;
+}
+
+.filter-tab:hover{
+    transform:translateY(-2px);
+    border-color:var(--primary);
+    background:#eff6ff;
+}
+
+.filter-tab.active{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+}
+
+/* =========================
+   CREATE BUTTON (GRADIENT PRO)
+========================= */
+.btn-create-modal{
+    background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:14px;
+    font-weight:900;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:.25s;
+}
+
+.btn-create-modal:hover{
+    transform: translateY(-3px);
+    box-shadow:0 12px 25px rgba(37,99,235,0.25);
+}
+
+/* =========================
+   GRID SYSTEM
+========================= */
+.showcase-grid{
+    margin-top:25px;
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap:20px;
+}
+
+/* =========================
+   CARD (MODERNO SaaS)
+========================= */
+.showcase-card{
+    background:var(--card);
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition:.25s;
+    position:relative;
+}
+
+.showcase-card:hover{
+    transform: translateY(-6px);
+    box-shadow:0 18px 40px rgba(0,0,0,0.10);
+}
+
+/* IMAGE */
+.showcase-media img{
+    width:100%;
+    height:190px;
+    object-fit:cover;
+}
+
+/* BADGE */
+.showcase-badge{
+    position:absolute;
+    top:12px;
+    left:12px;
+    background:rgba(0,0,0,0.75);
+    color:white;
+    padding:6px 10px;
+    font-size:12px;
+    border-radius:8px;
+}
+
+/* BODY */
+.showcase-body{
+    padding:16px;
+}
+
+.showcase-title{
+    font-size:1.15rem;
+    font-weight:900;
+    color:var(--text);
+    margin-bottom:8px;
+}
+
+/* STATUS TAGS */
+.status-badge-admin{
+    display:inline-block;
+    font-size:11px;
+    font-weight:900;
+    padding:4px 10px;
+    border-radius:8px;
+    margin-bottom:8px;
+}
+
+.status-hidden{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.status-visible{
+    background:#dcfce7;
+    color:#166534;
+}
+
+/* =========================
+   ACTION BUTTONS
+========================= */
+.showcase-admin-actions-premium{
+    position:absolute;
+    top:10px;
+    right:10px;
+    display:flex;
+    gap:8px;
+    z-index:10;
+}
+
+.action-btn-p{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    border:none;
+    background:rgba(255,255,255,0.9);
+    backdrop-filter:blur(8px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.action-btn-p:hover{
+    transform:scale(1.1);
+}
+
+.edit-p:hover{
+    background:#dbeafe;
+}
+
+.delete-p:hover{
+    background:#fee2e2;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media(max-width:768px){
+    .admin-filters-container{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .search-wrapper{
+        width:100%;
+    }
+
+    .btn-create-modal{
+        width:100%;
+        justify-content:center;
+    }
+}
+
+</style>
 
 <div class="muro-admin-container">
     <div class="publications-header" style="margin-bottom: 35px;">
@@ -113,68 +402,22 @@
     </div>
 </div>
 
-<!-- Modal Unificado de Creación/Edición -->
-<div id="modalPremium" class="modal-modern admin-modal-context">
-    <div class="modal-content-modern">
-        <div class="modal-header-modern">
-            <h3 id="modalTitle">Nueva Publicación</h3>
-            <div class="close-modal" onclick="cerrarModal()"><i class="bi bi-x-lg"></i></div>
+{% include 'modals/modal_publicaciones.html' %}
+
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Custom Confirmation Modal -->
+<div id="modalConfirmDelete" class="modal-confirm" style="display:none;">
+    <div class="modal-confirm-content">
+        <div class="modal-confirm-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
         </div>
-        
-        <div class="modal-body-modern">
-            <div class="modal-tabs" id="modalCreationTabs">
-                <button class="modal-tab-btn active" id="tabBtnNoticia" onclick="switchModalForm('anuncio')">Aviso / Anuncio</button>
-                <button class="modal-tab-btn" id="tabBtnConvocatoria" onclick="switchModalForm('convocatoria')">Convocatoria</button>
-            </div>
-
-            <!-- Form Publicaciones -->
-            <div id="modalFormNoticia" class="modal-form-container">
-                <form id="formAnuncio" method="POST" action="{% url 'crear_anuncio' %}" class="admin-form-modern">
-                    {% csrf_token %}
-                    <div class="form-group-modern">
-                        <label>Título del Aviso</label>
-                        <input type="text" id="anuncioTitulo" name="titulo" class="form-input-modern" placeholder="Escribe un título atractivo..." required>
-                    </div>
-                    <div class="form-group-modern">
-                        <label>Contenido</label>
-                        <textarea id="anuncioContenido" name="contenido" rows="5" class="form-input-modern" placeholder="Escribe los detalles del aviso..." required></textarea>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px; padding: 12px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
-                        <input type="checkbox" id="anuncioAudiencia" name="solo_emprendedores" style="width:20px; height:20px; cursor:pointer;">
-                        <label for="anuncioAudiencia" style="font-size:0.95rem; font-weight:600; cursor:pointer; margin:0; color: #475569;">Solo visible para emprendedores registrados</label>
-                    </div>
-                    <div class="modal-footer-modern">
-                        <button type="button" class="btn-premium-post" style="background:#f1f5f9; color:#64748b;" onclick="cerrarModal()">Cancelar</button>
-                        <button type="submit" id="btnSubmitNoticia" class="btn-premium-post">Publicar Ahora</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Form Convocatoria -->
-            <div id="modalFormConvocatoria" class="modal-form-container" style="display:none;">
-                <form id="formCrear" method="POST" enctype="multipart/form-data" action="{% url 'crear_convocatoria' %}" class="admin-form-modern">
-                    {% csrf_token %}
-                    <input type="hidden" name="id" id="editConvocatoriaId">
-                    <div class="form-group-modern">
-                        <label>Título de la Convocatoria</label>
-                        <input type="text" name="titulo" id="crearTitulo" class="form-input-modern" placeholder="Ej: Convocatoria Semilla 2026" required>
-                    </div>
-                    <div class="form-group-modern">
-                        <label>Fecha de Cierre</label>
-                        <input type="datetime-local" name="fecha_fin" id="crearFecha" class="form-input-modern" required>
-                    </div>
-                    <div class="form-group-modern">
-                        <label>Banner / Imagen (Opcional)</label>
-                        <div style="position:relative; display:flex; align-items:center;">
-                            <input type="file" name="banner" id="crearBanner" accept="image/*" class="form-input-modern" style="width:100%;">
-                        </div>
-                    </div>
-                    <div class="modal-footer-modern">
-                        <button type="button" class="btn-premium-post" style="background:#f1f5f9; color:#64748b;" onclick="cerrarModal()">Cancelar</button>
-                        <button type="submit" id="btnSubmitConvocatoria" class="btn-premium-post" style="background:var(--showcase-text-main);">Publicar Convocatoria</button>
-                    </div>
-                </form>
-            </div>
+        <h3 class="modal-confirm-title">¿Estás seguro?</h3>
+        <p class="modal-confirm-text">Esta acción no se puede deshacer. La publicación será eliminada permanentemente del sistema.</p>
+        <div class="modal-confirm-footer">
+            <button class="modal-confirm-btn btn-cancel" onclick="closeConfirmModal()">Cancelar</button>
+            <button id="btnConfirmAction" class="modal-confirm-btn btn-confirm-delete">Sí, Eliminar</button>
         </div>
     </div>
 </div>
@@ -465,24 +708,6 @@
         }
     }
 </script>
-
-<!-- Toast Notification Container -->
-<div id="toastContainer" class="toast-container"></div>
-
-<!-- Custom Confirmation Modal -->
-<div id="modalConfirmDelete" class="modal-confirm" style="display:none;">
-    <div class="modal-confirm-content">
-        <div class="modal-confirm-icon">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-        </div>
-        <h3 class="modal-confirm-title">¿Estás seguro?</h3>
-        <p class="modal-confirm-text">Esta acción no se puede deshacer. La publicación será eliminada permanentemente del sistema.</p>
-        <div class="modal-confirm-footer">
-            <button class="modal-confirm-btn btn-cancel" onclick="closeConfirmModal()">Cancelar</button>
-            <button id="btnConfirmAction" class="modal-confirm-btn btn-confirm-delete">Sí, Eliminar</button>
-        </div>
-    </div>
-</div>
 
 <script>
     const URL_CREAR = "{% url 'crear_convocatoria' %}";
