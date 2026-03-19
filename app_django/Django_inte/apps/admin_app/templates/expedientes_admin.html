@@ -64,7 +64,7 @@
                 </div>
             </div>
             <div class="usuario-meta">
-                <span>Ultima carga: {{ proyecto.ultima_fecha }}</span>
+                <span>Última carga: {{ proyecto.ultima_fecha }}</span>
                 <button class="toggle-btn" data-target="proj-{{ proyecto.id_proyecto }}">Ver versiones</button>
             </div>
         </div>
@@ -76,7 +76,7 @@
                     <div class="expediente-head">
                         <div>
                             <div class="expediente-nombre">{{ expediente.nombre_documento }}</div>
-                            <div class="expediente-meta">{{ expediente.total_versiones }} versiones • Ultima {{ expediente.ultima_fecha }}</div>
+                            <div class="expediente-meta">{{ expediente.total_versiones }} versiones • Última {{ expediente.ultima_fecha }}</div>
                         </div>
                         <span class="badge">{{ expediente.ultima_version_label }}</span>
                     </div>
@@ -98,7 +98,7 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="empty">Aun no hay documentos para este equipo.</div>
+                <div class="empty">Aún no hay documentos para este equipo.</div>
             {% endif %}
         </div>
         </div>
@@ -123,7 +123,7 @@
                 </div>
             </div>
             <div class="usuario-meta">
-                <span>Ultima carga: {{ usuario.ultima_fecha }}</span>
+                <span>Última carga: {{ usuario.ultima_fecha }}</span>
                 <button class="toggle-btn" data-target="exp-{{ usuario.id }}">Ver versiones</button>
             </div>
         </div>
@@ -134,7 +134,7 @@
                     <div class="expediente-head">
                         <div>
                             <div class="expediente-nombre">{{ expediente.nombre_documento }}</div>
-                            <div class="expediente-meta">{{ expediente.total_versiones }} versiones • Ultima {{ expediente.ultima_fecha }}</div>
+                            <div class="expediente-meta">{{ expediente.total_versiones }} versiones • Última {{ expediente.ultima_fecha }}</div>
                         </div>
                         <span class="badge">{{ expediente.ultima_version_label }}</span>
                     </div>
@@ -156,7 +156,7 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="empty">Aun no hay documentos para este usuario.</div>
+                <div class="empty">Aún no hay documentos para este usuario.</div>
             {% endif %}
         </div>
         {% endfor %}

@@ -1,5 +1,6 @@
 :root{
     --azul: #1f3c88;
+    --azul2: #2d5bd1;
     --azul-accent: #2563eb;
     --azul-vibrant: #3b82f6; 
     --azul-light: rgba(59, 130, 246, 0.1);
@@ -12,8 +13,10 @@
     --blanco: #ffffff;
     --rojo: #ef4444;
     --verde: #10b981;
+    --verde-agua: #2dd4bf;
     --gris: #f4f6f9;
     --texto: #1e293b;
+    --borde: #e2e8f0;
 }
 
 html, body {
@@ -139,9 +142,17 @@ body{
 }
 
 .main h2{
-    font-size:48px;
-    font-weight:600;
+    margin: 0 0 20px;
+    font-size:28px;
+    font-weight:700;
     color:var(--azul);
+    border-left:6px solid var(--verde-agua);
+    padding-left:14px;
+}
+
+.main > p{
+    color: var(--slate-500);
+    margin: 0 0 16px;
 }
 
 /* Contenedores comunes que en móvil deben permitir scroll horizontal */
