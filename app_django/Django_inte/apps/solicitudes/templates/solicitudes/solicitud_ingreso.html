@@ -551,7 +551,20 @@ h5 i {
                     <div class="row g-2">
                         <div class="col-12"><textarea class="form-control" name="descripcion_negocio" placeholder="Descripción breve" required></textarea></div>
                         <div class="col-md-6"><input class="form-control" name="nombre_proyecto" placeholder="Nombre del proyecto" required></div>
-                        <div class="col-md-6"><input class="form-control" name="ubicacion_emprendimiento" placeholder="Ubicación" required></div>
+                        <div class="col-md-6">
+    <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="toggleUbicacion">
+        <label class="form-check-label" for="toggleUbicacion">
+            ¿Deseas agregar ubicación?
+        </label>
+    </div>
+
+    <input 
+        class="form-control d-none" 
+        name="ubicacion_emprendimiento" 
+        id="ubicacionInput"
+        placeholder="Ubicación del emprendimiento">
+</div>
                         <div class="col-md-6"><input class="form-control" name="inicio_emprendimiento" placeholder="Inicio" required></div>
                         <div class="col-md-6"><input class="form-control" name="clientes_clave" placeholder="Clientes clave" required></div>
                         <div class="col-12"><textarea class="form-control" name="problema_resuelve" placeholder="Problema que resuelve" required></textarea></div>
@@ -974,6 +987,21 @@ function showAlert(message, type = "info") {
         }
     }, 3000);
 }
+// ==================== Campo opcional de ubicación ====================
+const toggleUbicacion = document.getElementById("toggleUbicacion");
+const ubicacionInput = document.getElementById("ubicacionInput");
+
+toggleUbicacion.addEventListener("change", function() {
+    if (this.checked) {
+        ubicacionInput.classList.remove("d-none");
+        ubicacionInput.setAttribute("required", "required");
+    } else {
+        ubicacionInput.classList.add("d-none");
+        ubicacionInput.removeAttribute("required");
+        ubicacionInput.value = "";
+        ubicacionInput.classList.remove("is-invalid");
+    }
+});
 </script>
 </body>
 
