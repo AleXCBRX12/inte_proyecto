@@ -1,49 +1,83 @@
 {% load static %}
+<link rel="stylesheet" href="{% static 'css/desarrolladores.css' %}">
 <!-- Modal Desarrolladores -->
 <div id="developersModal" class="modal-overlay" style="display: none;">
     <div class="modal-container">
-        <button class="modal-close" onclick="closeDevelopersModal()">&times;</button>
+        <button class="modal-close" onclick="closeDevelopersModal()" title="Cerrar">&times;</button>
 
-        <h1>Equipo de Desarrollo</h1>
-        <p class="subtitle">Integrantes del Programa de Incubación Empresarial</p>
+        <div class="modal-header">
+            <h1>Equipo de Desarrollo</h1>
+            <p class="subtitle">Integrantes del Programa de Incubación Empresarial</p>
+            <div class="header-line"></div>
+        </div>
 
         <div class="dev-list">
+            <!-- Desarrollador 1 -->
             <div class="dev-card">
-                <div class="dev-info">
-                    <span class="dev-name">Karla Trujano Medina</span>
-                    <span class="dev-id">ID: 202404065</span>
+                <div class="dev-card-left">
+                    <div class="dev-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div class="dev-info">
+                        <span class="dev-name">Karla Trujano Medina</span>
+                        <span class="dev-id">ID: 202404065</span>
+                    </div>
                 </div>
                 <span class="dev-badge">Desarrollador</span>
             </div>
 
+            <!-- Desarrollador 2 -->
             <div class="dev-card">
-                <div class="dev-info">
-                    <span class="dev-name">Alejandro De Jesús Torres Reyes</span>
-                    <span class="dev-id">ID: 202404040</span>
+                <div class="dev-card-left">
+                    <div class="dev-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div class="dev-info">
+                        <span class="dev-name">Alejandro De Jesús Torres Reyes</span>
+                        <span class="dev-id">ID: 202404040</span>
+                    </div>
                 </div>
                 <span class="dev-badge">Desarrollador</span>
             </div>
 
+            <!-- Desarrollador 3 -->
             <div class="dev-card">
-                <div class="dev-info">
-                    <span class="dev-name">José Maria Urzua Ochoa</span>
-                    <span class="dev-id">ID: 202404094</span>
+                <div class="dev-card-left">
+                    <div class="dev-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div class="dev-info">
+                        <span class="dev-name">José Maria Urzua Ochoa</span>
+                        <span class="dev-id">ID: 202404094</span>
+                    </div>
                 </div>
                 <span class="dev-badge">Desarrollador</span>
             </div>
 
+            <!-- Desarrollador 4 -->
             <div class="dev-card">
-                <div class="dev-info">
-                    <span class="dev-name">Paola Ascencio Viveros</span>
-                    <span class="dev-id">ID: 202404062</span>
+                <div class="dev-card-left">
+                    <div class="dev-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div class="dev-info">
+                        <span class="dev-name">Paola Ascencio Viveros</span>
+                        <span class="dev-id">ID: 202404062</span>
+                    </div>
                 </div>
                 <span class="dev-badge">Desarrollador</span>
             </div>
 
+            <!-- Desarrollador 5 -->
             <div class="dev-card">
-                <div class="dev-info">
-                    <span class="dev-name">Milton Alejandro Bolaños De La Cruz</span>
-                    <span class="dev-id">ID: 202404096</span>
+                <div class="dev-card-left">
+                    <div class="dev-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div class="dev-info">
+                        <span class="dev-name">Milton Alejandro Bolaños De La Cruz</span>
+                        <span class="dev-id">ID: 202404096</span>
+                    </div>
                 </div>
                 <span class="dev-badge">Desarrollador</span>
             </div>
@@ -51,227 +85,4 @@
     </div>
 </div>
 
-<style>
-/* Modal overlay general */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0,0,0,0.6);
-    backdrop-filter: blur(5px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-    padding: 20px;
-}
-
-/* Contenedor del modal */
-.modal-container {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 30px;
-    max-width: 800px;
-    width: 100%;
-
-    /* 🔥 SCROLL SUAVE Y LIMPIO */
-    max-height: 90vh;
-    overflow-y: auto;
-
-    /* 🔥 scroll tipo iOS */
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-
-    /* 🔥 ocultar scroll feo */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0,0,0,0.2) transparent;
-
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    position: relative;
-    animation: modalFadeIn 0.3s ease-out;
-}
-
-/* 🔥 Scroll minimalista (solo aparece al usarlo) */
-.modal-container::-webkit-scrollbar {
-    width: 4px;
-}
-
-.modal-container::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.2);
-    border-radius: 10px;
-}
-
-.modal-container::-webkit-scrollbar-thumb:hover {
-    background: rgba(0,0,0,0.35);
-}
-
-.modal-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-/* Botón cerrar */
-.modal-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    border: none;
-    background: none;
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: #1f3c88;
-}
-
-/* Títulos y lista */
-h1 {
-    color: #1f3c88;
-    font-size: 2rem;
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.subtitle {
-    text-align: center;
-    color: #64748b;
-    margin-bottom: 30px;
-    font-size: 1rem;
-}
-
-/* Lista de desarrolladores */
-.dev-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-/* Tarjetas */
-.dev-card {
-    background: #ffffff;
-    padding: 18px 25px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
-}
-
-.dev-card:hover {
-    transform: translateX(6px);
-    border-color: #2563eb;
-    box-shadow: 0 4px 15px rgba(37,99,235,0.1);
-}
-
-/* Info del desarrollador */
-.dev-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.dev-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f3c88;
-}
-
-.dev-id {
-    font-size: 0.9rem;
-    color: #64748b;
-    font-family: monospace;
-}
-
-.dev-badge {
-    background: #2563eb;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-/* Animación */
-@keyframes modalFadeIn {
-    from {opacity: 0; transform: translateY(-20px);}
-    to {opacity: 1; transform: translateY(0);}
-}
-
-/* ==============================
-   RESPONSIVE
-============================== */
-@media (max-width: 768px) {
-
-    .modal-overlay {
-        align-items: flex-start;
-        padding-top: 20px;
-        padding-bottom: 20px;
-    }
-
-    .modal-container {
-        padding: 20px;
-        max-height: 85vh;
-    }
-
-    h1 { 
-        font-size: 1.6rem; 
-    }
-
-    .subtitle { 
-        font-size: 0.95rem; 
-        margin-bottom: 20px; 
-    }
-
-    .dev-card { 
-        flex-direction: column; 
-        align-items: flex-start; 
-        gap: 10px; 
-        padding: 15px 20px; 
-    }
-
-    .dev-badge { 
-        align-self: flex-start; 
-    }
-}
-</style>
-
-<script>
-let devScrollPos = 0;
-
-function openDevelopersModal() {
-    const modal = document.getElementById("developersModal");
-    if(!modal) return;
-
-    modal.style.display = "flex";
-
-    // Bloquear scroll del body
-    devScrollPos = window.pageYOffset || document.documentElement.scrollTop;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${devScrollPos}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.width = '100%';
-    document.body.style.touchAction = 'none';
-}
-
-function closeDevelopersModal() {
-    const modal = document.getElementById("developersModal");
-    if(!modal) return;
-
-    modal.style.display = "none";
-
-    // Restaurar scroll
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    document.body.style.right = '';
-    document.body.style.width = '';
-    document.body.style.touchAction = '';
-    window.scrollTo(0, devScrollPos);
-}
-
-// Cerrar modal al hacer click fuera
-window.addEventListener('click', function(e) {
-    const modal = document.getElementById("developersModal");
-    if(modal && e.target === modal){
-        closeDevelopersModal();
-    }
-});
-</script>
+<script src="{% static 'js/desarrolladores.js' %}"></script>
