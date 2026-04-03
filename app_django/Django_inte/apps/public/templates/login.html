@@ -15,7 +15,7 @@
     <!-- Canvas de partículas -->
     <canvas id="particles"></canvas>
 
-    <a href="{% url 'portal_visitante_public' %}" class="btn_inicio_link">
+    <a href="{% url 'portal_visitante_public' %}" class="btn_inicio_link" title="Regresar al inicio">
         <i class="bi bi-arrow-left-short"></i> 
     </a>
 
@@ -54,11 +54,11 @@
             </div>
             <button type="submit">Ingresar</button>
             <a href="{% url 'solicitar_reset' %}">Recuperar contraseña</a>
-            <a href="{% url 'aviso_privacidad' %}" style="display:block; margin-top:15px; font-size:0.85rem; opacity:0.7;">Aviso de Privacidad</a>
+            <a href="javascript:void(0)" style="display:block; margin-top:15px; font-size:0.85rem; opacity:0.7;" onclick="openPrivacyModal()">Aviso de Privacidad</a>
         </form>
 
     </div>
-
+    {% include 'aviso_privacidad.html' %}
     
     <script src="{% static 'js/login_listo.js' %}"></script>
 </body>
