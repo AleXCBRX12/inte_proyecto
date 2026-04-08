@@ -1,0 +1,205 @@
+/* ==============================
+   1. Reset de seguridad (Mantenido)
+============================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ==============================
+   2. Header sticky (Mantenido)
+============================== */
+.main-header {
+    background-color: #1f3c88;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4%;
+    height: 80px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 9999 !important;
+}
+
+/* ==============================
+   3. Logo
+============================== */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0; /* IMPORTANTE para evitar desbordes */
+}
+
+.logo-circle {
+    width: 48px;
+    height: 48px;
+    background-color: white !important;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.logo-circle:hover {
+    transform: scale(1.05);
+}
+
+.logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+}
+
+/* 🔥 MEJORA: título responsivo en una sola línea */
+.logo-title {
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    white-space: nowrap;        /* evita salto de línea */
+    overflow: hidden;           
+    text-overflow: ellipsis;    /* si no cabe, corta con ... */
+}
+
+/* Ajuste en móviles */
+@media (max-width: 600px) {
+    .logo-title {
+        font-size: 1rem; /* se reduce para que quepa */
+    }
+}
+
+/* ==============================
+   4. Botones
+============================== */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-menu a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: 8px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-menu a:hover:not(.btn-login) {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+.btn-login {
+    background-color: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    color: white !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 10px;
+    font-weight: 600 !important;
+}
+
+.btn-login:hover {
+    background-color: white !important;
+    color: #1f3c88 !important;
+    border-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-login svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    transition: transform 0.3s ease;
+}
+
+.btn-login:hover svg {
+    transform: translateX(2px);
+}
+
+/* ==============================
+   5. Hamburguesa MEJORADA
+============================== */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 28px;
+    height: 22px;
+    cursor: pointer;
+}
+
+.menu-toggle span {
+    display: block;
+    height: 3px;
+    width: 100%;
+    background: white;
+    border-radius: 2px;
+    transition: 0.4s ease;
+}
+
+/* 🔥 ANIMACIÓN A "X" */
+.menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* ==============================
+   6. Responsive
+============================== */
+@media (max-width: 900px) {
+    .menu-toggle { display: flex; }
+
+    .nav-menu {
+        position: absolute;
+        top: 80px;
+        left: 0;
+        width: 100%;
+        background: #1f3c88;
+        flex-direction: column;
+        padding: 20px 0;
+        transform: scaleY(0);
+        transform-origin: top;
+        opacity: 0;
+        transition: 0.4s ease;
+    }
+
+    .nav-menu.active {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+
+    .nav-menu a {
+        width: 90%;
+        text-align: center;
+    }
+
+    .btn-login {
+        justify-content: center;
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}

@@ -1,5 +1,6 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/visitante_navbar.css' %}?v=60">
+<link rel="stylesheet" href="{% static 'css/navbar_vis.css' %}?v=60">
+
 <header class="main-header">
     <div class="logo-container">
         <div class="logo-circle">
@@ -8,20 +9,25 @@
         <h1 class="logo-title">Portal Publico Institucional</h1>
     </div>
 
-    <!-- BOTÓN HAMBURGUESA -->
     <div class="menu-toggle" id="menuToggle">
         <span></span>
         <span></span>
         <span></span>
     </div>
 
-    <!-- MENÚ -->
     <nav class="nav-menu" id="navMenu">
         <a href="{% url 'portal_visitante_public' %}">Inicio</a>
         <a href="{% url 'portal_visitante_public' %}#programa">Programa</a>
         <a href="{% url 'portal_visitante_public' %}#muro">Convocatorias</a>
-        <a href="{% url 'login' %}">Acceder</a>
+        <a href="{% url 'login' %}" class="btn-login">
+            <span>Acceder</span>
+            <svg viewBox="0 0 24 24">
+                <path d="M10 17l5-5-5-5v10z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M21 3h-8v2h8v14h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+            </svg>
+        </a>
     </nav>
 </header>
 
-<script src="{% static 'js/navbar_visitante.js' %}"></script>
+<script src="{% static 'js/navbar_vis.js' %}"></script>
