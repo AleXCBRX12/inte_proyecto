@@ -1,50 +1,42 @@
 {% extends "panel_admin.html" %}
 {% load static %}
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/admin_perfil.css' %}?v=1">
 
-<link rel="stylesheet" href="{% static 'css/perfil_admin.css' %}">
+<div class="perfil-overlay" id="overlay" onclick="cerrarDesdeOverlay(event)">
+    <div class="perfil-card" id="card">
+        
+        <span class="cerrar-btn" onclick="cerrarPerfil()" title="Cerrar">&times;</span>
 
-<div class="perfil-overlay">
-
-    <div class="perfil-card">
-
-        <span class="cerrar" onclick="cerrarPerfil()">&times;</span>
-
-        <!-- LATERAL -->
         <div class="perfil-lateral">
-            <div class="perfil-avatar">
+            <div class="avatar-circle">
                 {{ request.session.nombre|slice:":1" }}
             </div>
-
-            <div class="rol-badge">
-                {{ request.session.rol }}
-            </div>
+            <span class="rol-tag">{{ request.session.rol }}</span>
         </div>
 
-        <!-- DETALLE -->
-        <div class="perfil-detalle">
-            <h2>Información del Perfil</h2>
+        <div class="perfil-contenido">
+            <h2>Información personal</h2>
+            
+            <div class="info-grid">
+                <div class="data-group">
+                    <label>Nombre Completo</label>
+                    <div class="data-value">
+                        {{ request.session.nombre }} {{ request.session.apellido_paterno }} {{ request.session.apellido_materno }}
+                    </div>
+                </div>
 
-            <div class="campo">
-                <label>Nombre completo</label>
-                <div class="valor">
-                    {{ request.session.nombre }} {{ request.session.apellido_paterno }} {{ request.session.apellido_materno }}
+                <div class="data-group">
+                    <label>Correo Electrónico:</label>
+                    <div class="data-value">
+                        {{ request.session.correo }}
+                    </div>
                 </div>
             </div>
-
-            <div class="campo">
-                <label>Correo electrónico</label>
-                <div class="valor">
-                    {{ request.session.correo }}
-                </div>
-            </div>
-
         </div>
-
     </div>
-
 </div>
 
-<script src="{% static 'js/perfil_admin.js' %}"></script>
+<script src="{% static 'js/admin_perfil.js' %}"></script>
 
 {% endblock %}

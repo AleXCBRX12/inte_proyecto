@@ -16,84 +16,70 @@
 }
 
 /* ===== CONTENEDOR ===== */
-
 .admins-container{
     width:100%;
-    max-width:1000px;
+    max-width:1100px;
     margin:auto;
+    padding: 15px; /* Ajuste para móviles */
 }
 
 /* ===== CABECERA ===== */
-
 .header-container{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:20px;
+    flex-wrap: wrap; /* Responsivo */
+    gap: 15px;
+    margin-bottom:30px;
     border-bottom:3px solid var(--verde-agua);
-    padding-bottom:12px;
+    padding-bottom:15px;
 }
 
 .header-container h2{
-    font-size:28px;
+    font-size: clamp(20px, 5vw, 30px); /* Tamaño fluido */
     font-weight:700;
     color:var(--azul);
-    border-left:6px solid var(--verde-agua);
-    padding-left:14px;
+    border-left:8px solid var(--verde-agua);
+    padding-left:16px;
+    margin: 0;
 }
 
-/* ===== BOTONES ===== */
-
-.btn-crear,
-.btn-confirmar,
-.btn-cancelar{
+/* ===== BOTONES (Efecto Luz Original) ===== */
+.btn-crear, .btn-confirmar, .btn-cancelar, .btn-eye-toggle {
     position:relative;
     overflow:hidden;
     display:flex;
     align-items:center;
     justify-content:center;
     gap:8px;
-    padding:12px 22px;
-    border-radius:8px;
+    padding:10px 20px;
+    border-radius:10px;
     border:none;
     font-weight:600;
     color:white;
     cursor:pointer;
-    transition:all .25s ease;
-    box-shadow:0 4px 6px rgba(0,0,0,0.2);
-    text-align:center;
+    transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:0 4px 10px rgba(0,0,0,0.15);
 }
 
-.btn-crear{
-    background:linear-gradient(135deg,var(--azul),var(--azul2));
+.btn-crear { background: linear-gradient(135deg, var(--azul), var(--azul2)); }
+.btn-confirmar { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.btn-cancelar { background: linear-gradient(135deg, #9ca3af, #6b7280); }
+
+.btn-eye-toggle {
+    background: var(--gris2);
+    color: var(--azul);
+    padding: 6px 10px;
+    box-shadow: none;
+    border: 1px solid #ddd;
 }
 
-.btn-confirmar{
-    background:linear-gradient(135deg,#22c55e,#16a34a);
+.btn-crear:hover, .btn-confirmar:hover, .btn-cancelar:hover {
+    transform:translateY(-3px) scale(1.02);
+    box-shadow:0 10px 20px rgba(0,0,0,0.2);
 }
 
-.btn-cancelar{
-    background:linear-gradient(135deg,#9ca3af,#6b7280);
-}
-
-.btn-crear:hover,
-.btn-confirmar:hover,
-.btn-cancelar:hover{
-    transform:translateY(-3px) scale(1.04);
-    box-shadow:0 8px 16px rgba(0,0,0,0.3);
-}
-
-.btn-crear:active,
-.btn-confirmar:active,
-.btn-cancelar:active{
-    transform:translateY(0) scale(.97);
-}
-
-/* EFECTO LUZ */
-
-.btn-crear::before,
-.btn-confirmar::before,
-.btn-cancelar::before{
+.btn-crear::before, .btn-confirmar::before, .btn-cancelar::before {
     content:'';
     position:absolute;
     top:0;
@@ -104,145 +90,157 @@
     transform:skewX(-25deg);
     transition:.7s;
 }
-
-.btn-crear:hover::before,
-.btn-confirmar:hover::before,
-.btn-cancelar:hover::before{
+.btn-crear:hover::before, .btn-confirmar:hover::before, .btn-cancelar:hover::before {
     left:130%;
 }
 
-/* ===== TABLA ===== */
-
-.table-wrapper{
-    background:white;
-    border-radius:12px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.08);
-    overflow-x:auto;
-    -webkit-overflow-scrolling: touch;
+/* ===== TABLA MEJORADA (Centrada y Responsiva) ===== */
+.table-wrapper {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    /* Permitimos que el menú sobresalga sin romper el diseño */
+    overflow: visible; 
 }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    text-align:center;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Evita que la tabla se estire de más */
 }
 
-thead{
-    background:var(--azul);
-    color:white;
+thead {
+    background: var(--azul);
+    color: white;
 }
 
-thead th{
-    padding:14px;
+thead th, tbody td {
+    padding: 15px 10px;
+    text-align: center; /* TODO CENTRADO */
+    vertical-align: middle;
+    word-wrap: break-word;
 }
 
-tbody td{
-    padding:14px;
-    border-bottom:1px solid var(--gris2);
+thead th {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-tbody tr:hover{
-    background:var(--gris);
+/* Ajuste para nombres largos: Máximo 2 líneas */
+.td-nombre {
+    font-weight: 600;
+    max-width: 150px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: auto;
 }
 
-tbody td:last-child{
-    display:flex;
-    justify-content:center;
+tbody tr:hover { background: #f9fafb; }
+
+/* ===== COLUMNA PASSSWORD ===== */
+.password-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.password-text {
+    font-family: monospace;
+    font-size: 14px;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    min-width: 90px;
 }
 
-/* ===== MENU OPCIONES ===== */
-
-.acciones{
-    position:relative;
+/* ===== BOTÓN OPCIONES CON ICONO ===== */
+.btn-opciones {
+    background: var(--gris);
+    color: var(--azul);
+    border: 1px solid var(--gris2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: .3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.btn-opciones{
-    background:linear-gradient(135deg,var(--azul),var(--azul2));
-    color:white;
-    border:none;
-    border-radius:8px;
-    padding:10px 14px;
-    cursor:pointer;
-    font-size:16px;
+.btn-opciones:hover { background: var(--gris2); }
+
+/* ===== MENU DESPLEGABLE (Encima de la tabla) ===== */
+.acciones {
+    position: relative;
+    display: flex;
+    justify-content: center;
 }
 
-.menu-acciones{
-    position:absolute;
-    top:45px;
-    right:0;
-    background:white;
-    border-radius:10px;
-    box-shadow:0 10px 25px rgba(0,0,0,.2);
-    display:none;
-    flex-direction:column;
-    min-width:200px;
-    z-index:9999;
+.menu-acciones {
+    position: absolute;
+    top: 45px; /* Debajo del botón */
+    right: 50%;
+    transform: translateX(50%); /* Centra el menú respecto al botón */
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    min-width: 200px;
+    z-index: 1000; /* Siempre encima */
+    padding: 8px;
+    border: 1px solid #eee;
 }
 
-.menu-acciones button{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:12px;
-    border:none;
-    background:white;
-    cursor:pointer;
-    font-weight:600;
-    transition:.2s;
+.menu-acciones button {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* CENTRADO INTERNO */
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--texto);
+    transition: .2s;
+    width: 100%;
 }
 
-.opcion-bloquear:hover{background:#fef3c7;}
-.opcion-password:hover{background:#dbeafe;}
-.opcion-eliminar:hover{background:#fee2e2;}
-.opcion-desbloquear:hover{background:#dcfce7;}
+.opcion-bloquear:hover { background: #fff7ed; color: #9a3412; }
+.opcion-password:hover { background: #eff6ff; color: #1e40af; }
+.opcion-eliminar:hover { background: #fef2f2; color: #991b1b; }
+.opcion-desbloquear:hover { background: #f0fdf4; color: #166534; }
 
-/* ===== ESTADO ===== */
-
-.estado-cuenta{
-    font-weight:700;
-    padding:6px 12px;
-    border-radius:12px;
-    color:white;
-    display:inline-block;
+/* ESTADOS */
+.estado-cuenta {
+    font-weight: 700;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
 }
+.estado-activo { background: #dcfce7; color: #166534; }
+.estado-bloqueado { background: #fee2e2; color: #991b1b; }
 
-.estado-activo{
-    background:#22c55e; /* verde */
-}
-
-.estado-bloqueado{
-    background:#dc2626; /* rojo */
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px){
-    .header-container{
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-    }
-    .btn-crear{
-        width: 100%;
-    }
-    thead th, tbody td{
-        padding: 12px;
-        font-size: 13px;
-    }
-    .btn-opciones{
-        width: 100%;
-        justify-content: center;
-    }
+/* RESPONSIVIDAD PARA TABLA SIN SCROLL */
+@media (max-width: 768px) {
+    .table-wrapper { overflow-x: auto; } /* En pantallas muy pequeñas el scroll es inevitable para no romper diseño, pero los menús seguirán flotando arriba */
+    table { min-width: 700px; }
+    .header-container { justify-content: center; text-align: center; }
 }
 </style>
 
-
 <div class="admins-container">
-
     <div class="header-container">
         <h2>Administradores</h2>
         <button class="btn-crear" onclick="abrirModal()">
-            <i class="bi bi-person-plus"></i> Crear Administrador
+            <i class="bi bi-person-plus-fill"></i> Crear Administrador
         </button>
     </div>
 
@@ -250,20 +248,19 @@ tbody td:last-child{
         <table>
             <thead>
                 <tr>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Estado</th>
-                    <th>Contraseña</th>
-                    <th>Acciones</th>
+                    <th style="width: 25%;"><i class="bi bi-person me-1"></i> Nombre</th>
+                    <th style="width: 25%;"><i class="bi bi-envelope me-1"></i> Correo</th>
+                    <th style="width: 15%;">Estado</th>
+                    <th style="width: 20%;">Contraseña</th>
+                    <th style="width: 15%;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for admin in administradores %}
                 <tr data-id="{{ admin.id }}">
-                    <td>{{ admin.nombre }}</td>
-                    <td>{{ admin.correo }}</td>
+                    <td><div class="td-nombre">{{ admin.nombre }}</div></td>
+                    <td style="color: #666; font-size: 14px;">{{ admin.correo }}</td>
 
-                    <!-- ESTADO -->
                     <td class="estado-col">
                         {% if admin.bloqueado %}
                         <span class="estado-cuenta estado-bloqueado">Bloqueado</span>
@@ -272,47 +269,48 @@ tbody td:last-child{
                         {% endif %}
                     </td>
 
-                    <td>{{ admin.password }}</td>
+                    <td>
+                        <div class="password-cell">
+                            <span class="password-text" id="pwd-{{ admin.id }}">••••••••</span>
+                            <button class="btn-eye-toggle" onclick="togglePasswordRow('{{ admin.id }}', '{{ admin.password }}')">
+                                <i class="bi bi-eye" id="icon-{{ admin.id }}"></i>
+                            </button>
+                        </div>
+                    </td>
 
                     <td>
                         <div class="acciones">
                             <button class="btn-opciones" onclick="toggleMenu(this)">
-                                <i class="bi bi-three-dots-vertical"></i> Opciones
+                                <i class="bi bi-gear-fill"></i> Opciones
                             </button>
                             <div class="menu-acciones">
                                 {% if admin.bloqueado %}
-                                    <!-- Solo mostrar desbloquear y eliminar -->
                                     <button class="opcion-desbloquear" onclick="cambiarEstadoAdmin('{{ admin.id }}', false, this)">
-                                        <i class="bi bi-unlock"></i> Desbloquear
-                                    </button>
-                                    <button class="opcion-eliminar" onclick="eliminarAdmin('{{ admin.id }}')">
-                                        <i class="bi bi-trash"></i> Eliminar
+                                        <i class="bi bi-unlock-fill"></i> Desbloquear
                                     </button>
                                 {% else %}
-                                    <!-- Administrador activo: mostrar todas las opciones -->
                                     <button class="opcion-bloquear" onclick="cambiarEstadoAdmin('{{ admin.id }}', true, this)">
-                                        <i class="bi bi-lock"></i> Bloquear
+                                        <i class="bi bi-lock-fill"></i> Bloquear
                                     </button>
                                     <button class="opcion-password" onclick="cambiarPasswordAdmin('{{ admin.id }}')">
-                                        <i class="bi bi-key"></i> Cambiar contraseña
-                                    </button>
-                                    <button class="opcion-eliminar" onclick="eliminarAdmin('{{ admin.id }}')">
-                                        <i class="bi bi-trash"></i> Eliminar
+                                        <i class="bi bi-shield-lock-fill"></i> Credenciales
                                     </button>
                                 {% endif %}
+                                <button class="opcion-eliminar" onclick="eliminarAdmin('{{ admin.id }}')">
+                                    <i class="bi bi-trash3-fill"></i> Eliminar
+                                </button>
                             </div>
                         </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5">No hay administradores registrados</td>
+                    <td colspan="5" style="padding: 40px; color: #999;">No hay administradores registrados.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-
 </div>
 
 {% include "modals/modal_crear_admin.html" %}
@@ -320,6 +318,37 @@ tbody td:last-child{
 {% include "modals/modal_cambiar_contraseña.html" %}
 
 <script>
+    /* Función para alternar visibilidad de contraseña en la tabla */
+function togglePasswordRow(id, realPassword) {
+    const span = document.getElementById(`pwd-${id}`);
+    const icon = document.getElementById(`icon-${id}`);
+    
+    if (span.textContent === "••••••••") {
+        span.textContent = realPassword;
+        icon.classList.replace('bi-eye', 'bi-eye-slash');
+        span.style.background = "#fff"; // Resaltar cuando es visible
+    } else {
+        span.textContent = "••••••••";
+        icon.classList.replace('bi-eye-slash', 'bi-eye');
+        span.style.background = "#f1f5f9";
+    }
+}
+
+/* --- Tus funciones lógicas se mantienen igual --- */
+function toggleMenu(btn){
+    const menu = btn.nextElementSibling;
+    document.querySelectorAll(".menu-acciones").forEach(m => {
+        if(m !== menu) m.style.display = "none";
+    });
+    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+}
+
+document.addEventListener("click", function(e){
+    if(!e.target.closest(".acciones")){
+        document.querySelectorAll(".menu-acciones").forEach(m => { m.style.display = "none"; });
+    }
+});
+
 let adminIdActual = null; // Guarda el id del admin seleccionado
 
 /* Abrir y cerrar modales de contraseña */

@@ -1,0 +1,274 @@
+    :root {
+        --azul: #1f3c88;
+        --azul2: #2d5bd1;
+        --azul-accent: #2563eb;
+        --azul-vibrant: #3b82f6; 
+        --azul-light: rgba(59, 130, 246, 0.1);
+        --navy-900: #0f172a;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-500: #64748b;
+        --slate-900: #1e293b;
+        --blanco: #ffffff;
+        --rojo: #ef4444;
+        --verde: #10b981;
+        --verde-agua: #2dd4bf;
+        --gris: #f4f6f9;
+        --texto: #1e293b;
+        --borde: #e2e8f0;
+    }
+
+    /* ===== BASE RESET ===== */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    html, body {
+        height: 100%;
+        min-height: 100vh;
+        background: var(--gris);
+        color: var(--texto);
+        overflow-x: hidden;
+    }
+
+    @supports (height: 100dvh) {
+        html, body {
+            min-height: 100dvh;
+        }
+    }
+
+    /* ===== LAYOUT ESTRUCTURA ===== */
+    .layout {
+        display: flex;
+        height: 100vh;
+        width: 100%;
+        overflow: hidden;
+        background: white;
+    }
+
+    /* ===== SIDEBAR (ESCRITORIO) ===== */
+    .sidebar {
+        width: 260px;
+        background: var(--slate-100);
+        padding: 30px 20px;
+        border-right: 1px solid var(--slate-200);
+        flex-shrink: 0;
+        overflow-y: auto;
+        height: 100%;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        z-index: 4000;
+    }
+
+    .sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: var(--texto);
+        padding: 14px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        font-size: 15px;
+        font-weight: 500;
+        transition: .2s ease;
+    }
+
+    .sidebar a svg {
+        width: 24px;
+        height: 24px;
+        stroke-width: 2.5;
+        transition: .2s;
+    }
+
+    .sidebar a:hover {
+        background: var(--azul-vibrant);
+        color: white;
+    }
+
+    .sidebar a.active {
+        background: var(--azul);
+        color: var(--blanco);
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(31,60,136,.25);
+        transform: translateX(4px);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main {
+        flex: 1;
+        overflow-y: auto;
+        background: white;
+        padding: 30px;
+        height: 100%;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .main h2 {
+        margin: 0 0 20px;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--azul);
+        border-left: 6px solid var(--verde-agua);
+        padding-left: 14px;
+    }
+
+    /* ===== BIENVENIDA (ADAPTADA) ===== */
+    .welcome-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        flex: 1;
+        padding: 20px;
+        animation: entrance 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .welcome-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--azul-light);
+        color: var(--azul);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        font-size: 40px;
+        box-shadow: 0 10px 25px rgba(31, 60, 136, 0.1);
+    }
+
+    .welcome-container h2 {
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        color: var(--azul) !important;
+        border-left: none !important;
+        padding-left: 0 !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* ===== TABLAS RESPONSIVAS ===== */
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid var(--slate-200);
+        margin-bottom: 20px;
+    }
+
+    /* ===== TOASTS Y ALERTAS ===== */
+    #toastContainer, .mensajes-globales {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+
+    .toast-item, .alerta {
+        pointer-events: auto;
+        min-width: 280px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        color: white;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+    }
+
+    /* ===== RESPONSIVE SMARTPHONES (MODIFICACIONES CLAVE) ===== */
+    @media (max-width: 900px) {
+        .layout {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0; /* Si tienes una topbar, ajusta aquí */
+            height: 100vh;
+            width: 280px;
+            transform: translateX(-100%);
+            box-shadow: 15px 0 40px rgba(0,0,0,0.15);
+            visibility: hidden;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 3500;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        .main {
+            padding: 20px 15px;
+            width: 100%;
+        }
+
+        /* Ajustes de texto en móvil */
+        .main h2 {
+            font-size: 24px;
+            padding-left: 10px;
+        }
+
+        .welcome-container h2 {
+            font-size: 28px !important;
+        }
+
+        .welcome-container p {
+            font-size: 15px;
+        }
+
+        .welcome-icon {
+            width: 65px;
+            height: 65px;
+            font-size: 30px;
+        }
+
+        /* Toasts en móvil ocupan el ancho casi completo */
+        #toastContainer, .mensajes-globales {
+            top: 20px;
+            left: 15px;
+            right: 15px;
+        }
+
+        .toast-item, .alerta {
+            min-width: 0;
+            width: 100%;
+        }
+    }
+
+    /* Pantallas extra pequeñas */
+    @media (max-width: 480px) {
+        .sidebar {
+            width: 85%; /* Casi toda la pantalla en móviles muy pequeños */
+        }
+        
+        .card {
+            padding: 15px;
+        }
+    }
+
+    /* ANIMACIONES */
+    @keyframes entrance {
+        0% { opacity: 0; transform: translateY(20px); filter: blur(5px); }
+        100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }

@@ -1885,24 +1885,28 @@ def chat_admin_archivo(request, mensaje_id):
     response["Content-Disposition"] = f'{disposition}; filename="{nombre}"'
     return response
 
+# =========================
+# Agregar Administrador
+# =========================
 def agregar_administrador(request):
     guard = _require_admin(request)
     if guard:
         return guard
     
-    admins_cursor = db.usuarios.find({"rol_id": {"$in": ADMIN_ROLE_IDS}}).sort("fecha_creacion", -1)
+    # Mantenemos la optimización de campos
+    admins_cursor = db.usuarios.find(
+        {"rol_id": {"$in": ADMIN_ROLE_IDS}},
+        {"nombre": 1, "correo": 1, "contrasena": 1, "fecha_creacion": 1}
+    ).sort("fecha_creacion", -1)
     
-    lista_admins = []
-    for a in admins_cursor:
-        lista_admins.append({
-            "id": str(a.get("_id")),
-            "nombre": a.get("nombre", "Sin nombre"),
-            "correo": a.get("correo", "Sin correo"),
-            
-            "password": a.get("contrasena", "********") 
-        })
+    # Devolvemos el valor real de 'contrasena' al campo 'password'
+    lista_admins = [{
+        "id": str(a.get("_id")),
+        "nombre": a.get("nombre", "Sin nombre"),
+        "correo": a.get("correo", "Sin correo"),
+        "password": a.get("contrasena", "") # Ahora vuelve a mostrar el valor de la DB
+    } for a in admins_cursor]
 
-    
     return render(request, "agregar_administrador.html", {
         "administradores": lista_admins
     })
@@ -1912,72 +1916,89 @@ def crear_admin_api(request):
     guard = _require_admin(request)
     if guard:
         return guard
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
+        
+    if request.method != "POST":
+        return JsonResponse({"status": "error", "message": "Metodo no permitido"}, status=405)
 
-            correo = (data.get("correo") or "").strip()
-            if not correo:
-                return JsonResponse({"status": "error", "message": "Correo requerido"}, status=400)
+    try:
+        data = json.loads(request.body)
+        correo = (data.get("correo") or "").strip().lower()
+        nombre = (data.get("nombre") or "").strip()
+        password = data.get("password")
 
-            # Evita duplicar correos
-            existente = db.usuarios.find_one({"correo": correo})
-            if existente:
-                return JsonResponse({"status": "error", "message": "El correo ya esta registrado"}, status=400)
-            
-            db.usuarios.insert_one({
-                "nombre": data.get("nombre"),
-                "apellido_paterno": "",
-                "apellido_materno": "", 
-                "correo": correo,
-                "contrasena": data.get("password"),
-                "rol_id": ADMIN_ROLE_ID,
-                "activo": True,
-                "fecha_creacion": datetime.utcnow()
-            })
-            return JsonResponse({"status": "success"})
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=400)
-    return JsonResponse({"status": "error", "message": "Metodo no permitido"}, status=405)
+        # Validaciones básicas
+        if not correo or not nombre or not password:
+            return JsonResponse({"status": "error", "message": "Todos los campos son requeridos"}, status=400)
 
+        if db.usuarios.find_one({"correo": correo}):
+            return JsonResponse({"status": "error", "message": "El correo ya esta registrado"}, status=400)
+        
+        db.usuarios.insert_one({
+            "nombre": nombre,
+            "apellido_paterno": "",
+            "apellido_materno": "", 
+            "correo": correo,
+            "contrasena": password, # Se recomienda aplicar hash aquí si el sistema lo permite
+            "rol_id": ADMIN_ROLE_ID,
+            "activo": True,
+            "fecha_creacion": datetime.utcnow()
+        })
+        return JsonResponse({"status": "success"})
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "JSON invalido"}, status=400)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 @csrf_exempt
 def actualizar_password_admin(request, id):
     guard = _require_admin(request)
     if guard:
         return guard
+        
     if request.method != "POST":
         return JsonResponse({"success": False, "error": "Metodo no permitido"}, status=405)
+
     try:
         data = json.loads(request.body or "{}")
-    except Exception:
-        data = {}
-    nueva = (data.get("password") or "").strip()
-    if len(nueva) < 8:
-        return JsonResponse({"success": False, "error": "Contrasena muy corta"}, status=400)
-    filtro = {"rol_id": {"$in": ADMIN_ROLE_IDS}}
-    try:
-        filtro["_id"] = ObjectId(id)
-    except Exception:
-        filtro["_id"] = id
-    db.usuarios.update_one(filtro, {"$set": {"contrasena": nueva}})
-    return JsonResponse({"success": True})
-
+        nueva = (data.get("password") or "").strip()
+        
+        if len(nueva) < 8:
+            return JsonResponse({"success": False, "error": "La contraseña debe tener al menos 8 caracteres"}, status=400)
+        
+        # Validación robusta de ObjectId
+        obj_id = ObjectId(id) if ObjectId.is_valid(id) else id
+        filtro = {"_id": obj_id, "rol_id": {"$in": ADMIN_ROLE_IDS}}
+        
+        resultado = db.usuarios.update_one(filtro, {"$set": {"contrasena": nueva}})
+        
+        if resultado.matched_count == 0:
+            return JsonResponse({"success": False, "error": "Administrador no encontrado"}, status=404)
+            
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 @csrf_exempt
 def eliminar_admin(request, id):
     guard = _require_admin(request)
     if guard:
         return guard
+        
     if request.method != "POST":
         return JsonResponse({"success": False, "error": "Metodo no permitido"}, status=405)
-    filtro = {"rol_id": {"$in": ADMIN_ROLE_IDS}}
+
     try:
-        filtro["_id"] = ObjectId(id)
-    except Exception:
-        filtro["_id"] = id
-    db.usuarios.delete_one(filtro)
-    return JsonResponse({"success": True})
+        obj_id = ObjectId(id) if ObjectId.is_valid(id) else id
+        filtro = {"_id": obj_id, "rol_id": {"$in": ADMIN_ROLE_IDS}}
+        
+        resultado = db.usuarios.delete_one(filtro)
+        
+        if resultado.deleted_count == 0:
+            return JsonResponse({"success": False, "error": "Administrador no encontrado"}, status=404)
+            
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 # =========================

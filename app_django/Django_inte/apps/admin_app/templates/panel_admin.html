@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="{% static 'css/panel_admin_mejorado.css' %}?v=40">
+<link rel="stylesheet" href="{% static 'css/panel_admin.css' %}?v=1">
 <link rel="stylesheet" href="{% static 'css/admin_modals.css' %}?v=1">
 <title>Panel Administrador</title>
 
@@ -105,10 +105,16 @@
     {% endif %}
 
     {% block content %}
- 
+<div class="welcome-container">
+    <!-- Icono decorativo elegante -->
+    <div class="welcome-icon">
+        <i class="bi bi-shield-lock-fill"></i>
+    </div>
+    
     <h2>Panel de Administración</h2>
-<p>Selecciona una opción del menú lateral para comenzar .</p>
- {% endblock %}
+    <p>Bienvenido al centro de control. Selecciona una opción del menú lateral para comenzar a gestionar la plataforma.</p>
+</div>
+{% endblock %}
 </div>
 </div>
 
