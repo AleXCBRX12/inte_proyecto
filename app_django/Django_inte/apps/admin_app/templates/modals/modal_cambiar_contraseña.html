@@ -1,6 +1,32 @@
 {% load static %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<!-- ===== ALERTA ===== -->
 <style>
-/* ===== MODAL CAMBIO DE CONTRASEÑA ===== */
+.alert-msg {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 20px;
+    border-radius: 10px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 10000;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+.alert-msg i { font-size: 18px; }
+.alert-error { background: #ef4444; color: white; }
+.alert-success { background: #10b981; color: white; }
+</style>
+
+<div id="alertBox" class="alert-msg"></div>
+
+<!-- ===== MODAL ===== -->
+<style>
 #modalPassword {
     position: fixed;
     top: 0;
@@ -12,10 +38,9 @@
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* muy arriba para sobrepasar navbar y menús */
+    z-index: 9999;
 }
 
-/* ===== CONTENIDO MODAL ===== */
 #modalPassword .modal-contenido {
     background: #ffffff;
     padding: 40px 30px;
@@ -32,7 +57,27 @@
     box-shadow: 0 20px 40px rgba(0,0,0,0.25);
 }
 
-/* TITULO */
+/* 🔒 ICONO PRO */
+.lock-icon {
+    font-size: 55px;
+    color: #1e3a8a;
+    background: #e0e7ff;
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(30, 58, 138, 0.25);
+    animation: pulseLock 1.6s infinite;
+}
+
+@keyframes pulseLock {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
 #modalPassword h3 {
     text-align: center;
     color: #1e3a8a;
@@ -40,7 +85,6 @@
     font-weight: 700;
 }
 
-/* INPUT PASSWORD CON OJO */
 .password-wrapper {
     position: relative;
     width: 100%;
@@ -48,12 +92,11 @@
 
 .password-wrapper input {
     width: 100%;
-    padding: 15px 45px 15px 16px;
+    padding: 15px 80px 15px 16px;
     font-size: 15px;
     border-radius: 10px;
     border: 1px solid #d1d5db;
     background: #fafafa;
-    transition: 0.2s;
 }
 
 .password-wrapper input:focus {
@@ -62,22 +105,25 @@
     outline: none;
 }
 
-/* ICONO VER PASSWORD */
-.password-toggle {
+.password-icons {
     position: absolute;
     right: 14px;
     top: 50%;
     transform: translateY(-50%);
-    cursor: pointer;
+    display: flex;
+    gap: 10px;
     color: #6b7280;
+}
+
+.password-icons i {
+    cursor: pointer;
     font-size: 18px;
 }
 
-.password-toggle:hover {
+.password-icons i:hover {
     color: #3b82f6;
 }
 
-/* BOTONES */
 #modalPassword .modal-buttons {
     display: flex;
     gap: 12px;
@@ -96,7 +142,7 @@
     border: none;
 }
 
-/* EFECTO BRILLO BOTONES */
+/* ✨ EFECTO BRILLO */
 #modalPassword .modal-buttons button::before {
     content: '';
     position: absolute;
@@ -113,39 +159,28 @@
     left: 130%;
 }
 
-/* BOTON ACEPTAR */
-#modalPassword .modal-buttons button.aceptar {
+/* BOTONES MEJORADOS */
+.aceptar {
     background: #1e3a8a;
     color: #ffffff;
+    transition: all 0.25s ease;
 }
 
-/* BOTON CANCELAR */
-#modalPassword .modal-buttons button.cancelar {
-    background: #e5e7eb;
+.aceptar:hover {
+    background: #1e40af;
+}
+
+.cancelar {
+    background: #d1d5db;
     color: #374151;
+    transition: all 0.25s ease;
 }
 
-#modalPassword .modal-buttons button.cancelar::before {
-    background: rgba(255,255,255,0.15);
+.cancelar:hover {
+    background: #9ca3af;
+    color: #1f2937;
 }
 
-/* BOTON CERRAR */
-#modalPassword .modal-close {
-    position: absolute;
-    right: 16px;
-    top: 12px;
-    font-size: 24px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #444;
-}
-
-#modalPassword .modal-close:hover {
-    color: #ef4444;
-}
-
-/* ANIMACION */
 @keyframes modalPasswordEntrada {
     0% { transform: scale(0.8); opacity: 0; }
     60% { transform: scale(1.05); opacity: 1; }
@@ -153,94 +188,124 @@
 }
 </style>
 
-<!-- Modal Cambiar Contraseña -->
-<div id="modalPassword" class="modal">
+<!-- ===== HTML ===== -->
+<div id="modalPassword">
     <div class="modal-contenido">
-        <button class="modal-close" onclick="cerrarModalPassword()">&times;</button>
+
+        <div class="lock-icon">
+            <i class="bi bi-shield-lock-fill"></i>
+        </div>
+
         <h3>Cambiar Contraseña</h3>
+
         <div class="password-wrapper">
             <input type="password" id="nuevaPassword" placeholder="Nueva contraseña">
-            <span class="password-toggle" onclick="togglePassword()">
-                <i class="bi bi-eye"></i>
-            </span>
+            <div class="password-icons">
+                <i class="bi bi-eye-slash" id="togglePass"></i>
+                <i class="bi bi-shuffle" id="genPass"></i>
+            </div>
         </div>
+
         <div class="modal-buttons">
-            <button class="aceptar" onclick="confirmarCambioPassword()">Aceptar</button>
             <button class="cancelar" onclick="cerrarModalPassword()">Cancelar</button>
+            <button class="aceptar" onclick="confirmarCambioPassword()">Aceptar</button>
         </div>
     </div>
 </div>
 
+<!-- ===== JS (SIN CAMBIOS) ===== -->
 <script>
-// VARIABLE GLOBAL PARA BLOQUEAR MENUS
 let modalAbierto = false;
+let adminId = null;
 
-// ABRIR MODAL
+function setAdminId(id){
+    console.log("ID recibido:", id);
+    adminId = id;
+    abrirModalPassword();
+}
+
+function showAlert(msg, type="error"){
+    const box = document.getElementById("alertBox");
+
+    box.className = "alert-msg " + (type === "success" ? "alert-success" : "alert-error");
+
+    box.innerHTML = `
+        <i class="bi ${type === "success" ? "bi-check-circle" : "bi-exclamation-triangle"}"></i>
+        <span>${msg}</span>
+    `;
+
+    box.style.display = "flex";
+    setTimeout(() => box.style.display = "none", 3500);
+}
+
 function abrirModalPassword(){
     modalAbierto = true;
     document.getElementById("modalPassword").style.display = "flex";
-
-    // Ocultar navbar y menús
-    document.querySelectorAll("nav, header, .menu-acciones").forEach(el => {
-        el.style.visibility = "hidden";
-    });
 }
 
-// CERRAR MODAL
 function cerrarModalPassword(){
     modalAbierto = false;
     document.getElementById("modalPassword").style.display = "none";
-
-    // Mostrar navbar y menús nuevamente
-    document.querySelectorAll("nav, header, .menu-acciones").forEach(el => {
-        el.style.visibility = "visible";
-    });
 }
 
-// TOGGLE PASSWORD
-function togglePassword(){
+document.getElementById("togglePass").addEventListener("click", function(){
     const input = document.getElementById("nuevaPassword");
-    const icon = document.querySelector("#modalPassword .password-toggle i");
-    if(input.type === "password"){
-        input.type = "text";
-        icon.classList.remove("bi-eye");
-        icon.classList.add("bi-eye-slash");
-    } else {
-        input.type = "password";
-        icon.classList.remove("bi-eye-slash");
-        icon.classList.add("bi-eye");
+    input.type = input.type === "password" ? "text" : "password";
+    this.classList.toggle("bi-eye");
+    this.classList.toggle("bi-eye-slash");
+});
+
+document.getElementById("genPass").addEventListener("click", function(){
+    const randomPass = Math.random().toString(36).slice(-10);
+    document.getElementById("nuevaPassword").value = randomPass;
+    showAlert("Contraseña generada", "success");
+});
+
+async function confirmarCambioPassword(){
+    const nueva = document.getElementById("nuevaPassword").value.trim();
+
+    if(!adminId){
+        showAlert("Error: no se seleccionó el administrador");
+        return;
     }
-}
 
-// CONFIRMAR CAMBIO PASSWORD
-function confirmarCambioPassword(){
-    const nueva = document.getElementById("nuevaPassword").value;
-    if(!nueva || nueva.length < 8) return;
+    if(!nueva){
+        showAlert("La contraseña es obligatoria");
+        return;
+    }
 
-    fetch("{% url 'actualizar_password_admin' 'TEMP' %}".replace("TEMP", adminId), {
-        method: "POST",
-        headers: {
-            "Content-Type":"application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: JSON.stringify({password: nueva})
-    })
-    .then(res => res.json())
-    .then(data => {
+    try {
+        const resp = await fetch("{% url 'actualizar_password_admin' 'TEMP' %}".replace("TEMP", adminId), {
+            method: "POST",
+            headers: {
+                "Content-Type":"application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({password: nueva})
+        });
+
+        const data = await resp.json();
+
+        console.log("RESPUESTA:", data);
+
         if(data.success){
             cerrarModalPassword();
-            location.reload();
-        }
-    }).catch(err => console.error(err));
-}
+            triggerPasswordSuccess();
 
-// BLOQUEO DE MENÚ DESPLEGABLE MIENTRAS MODAL ESTÁ ABIERTO
-document.querySelectorAll(".acciones button").forEach(btn => {
-    btn.addEventListener("click", e => {
-        if(modalAbierto){
-            e.stopPropagation();
-            e.preventDefault();
+            setTimeout(() => {
+                location.reload();
+            }, 3600);
+            return;
         }
-    });
-});
+
+        if(data.error){
+            showAlert(data.error, "error");
+            return;
+        }
+
+    } catch (err){
+        console.error(err);
+        showAlert("Error de conexión con el servidor");
+    }
+}
 </script>

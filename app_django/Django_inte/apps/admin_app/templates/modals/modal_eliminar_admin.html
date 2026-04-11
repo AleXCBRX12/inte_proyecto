@@ -1,4 +1,5 @@
 {% load static %}
+
 <style>
 /* ===== MODAL ELIMINACIÓN ===== */
 #modalEliminar {
@@ -15,9 +16,9 @@
     z-index: 9999;
 }
 
-/* ===== CONTENIDO MODAL ===== */
+/* CONTENIDO */
 #modalEliminar .modal-contenido {
-    background: #ffffff;
+    background: #fff;
     padding: 30px 25px;
     width: 400px;
     border-radius: 16px;
@@ -25,160 +26,258 @@
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    position: relative;
-    transform: scale(0.8);
-    opacity: 0;
     animation: modalEntrada 0.35s ease forwards;
     box-shadow: 0 15px 35px rgba(0,0,0,0.25);
     text-align: center;
 }
 
-/* TITULO */
+/* ICONO ADVERTENCIA */
+.warning-icon {
+    font-size: 60px;
+    color: #dc2626;
+    background: #fee2e2;
+    width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+    animation: pulseWarning 1.5s infinite;
+}
+
+@keyframes pulseWarning {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
 #modalEliminar h3 {
     font-size: 22px;
     color: #dc2626;
     font-weight: 700;
 }
 
-/* TEXTO */
 #modalEliminar p {
     font-size: 15px;
     color: #374151;
 }
 
-/* BOTONES */
 #modalEliminar .modal-buttons {
     display: flex;
     gap: 12px;
     width: 100%;
-    justify-content: center;
 }
 
-#modalEliminar .modal-buttons button {
+#modalEliminar button {
     flex: 1;
     padding: 10px 0;
-    font-size: 15px;
     font-weight: 600;
     border-radius: 10px;
     cursor: pointer;
-    position: relative;
-    overflow: hidden;
     border: none;
-
-    /* elevación y transición */
-    box-shadow: 0 5px 10px rgba(0,0,0,0.15);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: .25s;
 }
 
-#modalEliminar .modal-buttons button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.25);
-}
-
-/* REFLEJO SUAVE */
-#modalEliminar .modal-buttons button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -75%;
-    width: 50%;
-    height: 100%;
-    background: rgba(255,255,255,0.18);
-    transform: skewX(-25deg);
-    transition: left 0.7s;
-}
-
-#modalEliminar .modal-buttons button:hover::before {
-    left: 130%;
-}
-
-/* BOTON ELIMINAR */
-#modalEliminar .modal-buttons button.eliminar {
+#modalEliminar .eliminar {
     background: #dc2626;
     color: #fff;
 }
 
-/* BOTON CANCELAR */
-#modalEliminar .modal-buttons button.cancelar {
+#modalEliminar .cancelar {
     background: #e5e7eb;
-    color: #374151;
 }
 
-/* ANIMACION ENTRADA */
 @keyframes modalEntrada {
     0% { transform: scale(0.8); opacity: 0; }
-    60% { transform: scale(1.05); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
+}
+
+/* ===== MODAL PRO ===== */
+.pro-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; 
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 11000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.pro-modal-card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  transform: scale(0.7);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  min-width: 300px;
+}
+
+.pro-modal-overlay.show { display: flex; opacity: 1; }
+.pro-modal-overlay.show .pro-modal-card { transform: scale(1); }
+
+.pro-modal-overlay.exit { opacity: 0; }
+.pro-modal-overlay.exit .pro-modal-card { transform: scale(1.15); opacity: 0; }
+
+.pro-spinner {
+  width: 70px; height: 70px;
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #1e3a8a;
+  border-radius: 50%;
+  margin: 0 auto 25px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* CHECK */
+.success-checkmark {
+  width: 80px; height: 80px;
+  margin: 0 auto 25px;
+  position: relative;
+}
+
+.check-icon {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 4px solid #10b981;
+}
+
+.icon-line {
+  height: 5px;
+  background-color: #10b981;
+  position: absolute;
+}
+
+.line-tip {
+  top: 45px; left: 14px;
+  width: 25px;
+  transform: rotate(45deg);
+}
+
+.line-long {
+  top: 38px; right: 8px;
+  width: 47px;
+  transform: rotate(-45deg);
+}
+
+.modal-text {
+  color: #1e3a8a;
+  font-size: 1.3rem;
+  font-weight: 700;
 }
 </style>
 
-<!-- Modal Confirmar Eliminación -->
-<div id="modalEliminar" class="modal">
+<!-- MODAL ELIMINAR -->
+<div id="modalEliminar">
     <div class="modal-contenido">
+
+        <div class="warning-icon">⚠</div>
+
         <h3>Eliminar Administrador</h3>
-        <p>¿Deseas eliminar este administrador? Esta acción es irreversible.</p>
+        <p>¿Deseas eliminar este administrador?</p>
+
         <div class="modal-buttons">
-            <button class="eliminar" onclick="confirmarEliminar()">Eliminar</button>
             <button class="cancelar" onclick="cerrarModalEliminar()">Cancelar</button>
+            <button class="eliminar" onclick="confirmarEliminar()">Eliminar</button>
         </div>
     </div>
 </div>
 
+<!-- MODAL PRO -->
+<div id="proModal" class="pro-modal-overlay">
+  <div class="pro-modal-card">
+    <div id="modalSpinner" class="pro-spinner"></div>
+
+    <div id="modalCheck" class="success-checkmark" style="display:none;">
+        <div class="check-icon">
+            <span class="icon-line line-tip"></span>
+            <span class="icon-line line-long"></span>
+        </div>
+    </div>
+
+    <h3 class="modal-text">Procesando...</h3>
+  </div>
+</div>
+
 <script>
-let modalEliminarAbierto = false;
-let scrollTopEliminar = 0;
+let adminIdEliminar = null;
 
-// ABRIR MODAL ELIMINACIÓN
-function abrirModalEliminar(){
-    modalEliminarAbierto = true;
-    const modal = document.getElementById("modalEliminar");
-    modal.style.display = "flex";
-
-    // Ocultar navbar y menús
-    document.querySelectorAll("nav, header, .menu-acciones").forEach(el => el.style.display = 'none');
-
-    // BLOQUEO TOTAL DE SCROLL
-    scrollTopEliminar = window.scrollY || window.pageYOffset;
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollTopEliminar}px`;
-    document.body.style.left = '0';
-    document.body.style.width = '100%';
+/* ABRIR */
+function abrirModalEliminar(id){
+    adminIdEliminar = id;
+    document.getElementById("modalEliminar").style.display = "flex";
 }
 
-// CERRAR MODAL ELIMINACIÓN
+/* CERRAR */
 function cerrarModalEliminar(){
-    modalEliminarAbierto = false;
-    const modal = document.getElementById("modalEliminar");
-    modal.style.display = "none";
-
-    // Mostrar navbar y menús nuevamente
-    document.querySelectorAll("nav, header, .menu-acciones").forEach(el => el.style.display = '');
-
-    // RESTAURAR SCROLL
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    document.body.style.width = '';
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-    window.scrollTo(0, scrollTopEliminar);
+    document.getElementById("modalEliminar").style.display = "none";
+    adminIdEliminar = null;
 }
 
-// CONFIRMAR ELIMINACIÓN
-function confirmarEliminar(){
-    console.log("Administrador eliminado");
-    cerrarModalEliminar();
-}
+/* CONFIRMAR */
+async function confirmarEliminar(){
+    if(!adminIdEliminar) return;
 
-// BLOQUEO DE MENÚ DESPLEGABLE MIENTRAS MODAL ESTÁ ABIERTO
-document.querySelectorAll(".acciones button").forEach(btn => {
-    btn.addEventListener("click", e => {
-        if(modalEliminarAbierto){
-            e.stopPropagation();
-            e.preventDefault();
+    const modal = document.getElementById('proModal');
+    const spinner = document.getElementById('modalSpinner');
+    const check = document.getElementById('modalCheck');
+    const text = modal.querySelector('.modal-text');
+
+    /* Mostrar carga */
+    spinner.style.display = 'block';
+    check.style.display = 'none';
+    text.innerText = 'Eliminando administrador...';
+
+    modal.classList.add('show');
+
+    try {
+        const resp = await fetch("{% url 'eliminar_admin' 'TEMP' %}".replace("TEMP", adminIdEliminar), {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "X-CSRFToken":"{{ csrf_token }}"
+            }
+        });
+
+        const data = await resp.json();
+
+        if(data.success){
+
+            const fila = document.querySelector(`tr[data-id='${adminIdEliminar}']`);
+            if(fila) fila.remove();
+            verificarTablaVacia();
+
+            cerrarModalEliminar();
+
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                check.style.display = 'block';
+                text.innerText = '¡Administrador eliminado!';
+                text.style.color = '#10b981';
+            }, 800);
+
+            setTimeout(() => {
+                modal.classList.add('exit');
+                setTimeout(() => {
+                    modal.classList.remove('show','exit');
+                }, 500);
+            }, 2500);
+
+        } else {
+            alert("No se pudo eliminar");
         }
-    });
-});
+
+    } catch(err){
+        console.error(err);
+        alert("Error de conexión");
+    }
+}
 </script>

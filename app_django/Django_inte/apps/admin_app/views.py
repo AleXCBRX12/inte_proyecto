@@ -1885,9 +1885,9 @@ def chat_admin_archivo(request, mensaje_id):
     response["Content-Disposition"] = f'{disposition}; filename="{nombre}"'
     return response
 
-# =========================
+# ========================================================
 # Agregar Administrador
-# =========================
+# ========================================================
 def agregar_administrador(request):
     guard = _require_admin(request)
     if guard:
@@ -1904,7 +1904,7 @@ def agregar_administrador(request):
         "id": str(a.get("_id")),
         "nombre": a.get("nombre", "Sin nombre"),
         "correo": a.get("correo", "Sin correo"),
-        "password": a.get("contrasena", "") # Ahora vuelve a mostrar el valor de la DB
+        "password": a.get("contrasena", "") 
     } for a in admins_cursor]
 
     return render(request, "agregar_administrador.html", {
@@ -1938,7 +1938,7 @@ def crear_admin_api(request):
             "apellido_paterno": "",
             "apellido_materno": "", 
             "correo": correo,
-            "contrasena": password, # Se recomienda aplicar hash aquí si el sistema lo permite
+            "contrasena": password, 
             "rol_id": ADMIN_ROLE_ID,
             "activo": True,
             "fecha_creacion": datetime.utcnow()
@@ -1949,34 +1949,57 @@ def crear_admin_api(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-@csrf_exempt
-def actualizar_password_admin(request, id):
-    guard = _require_admin(request)
-    if guard:
-        return guard
-        
-    if request.method != "POST":
-        return JsonResponse({"success": False, "error": "Metodo no permitido"}, status=405)
+@csrf_exempt 
+def actualizar_password_admin(request, id): 
+    guard = _require_admin(request) 
+    if guard: 
+        return guard 
 
-    try:
-        data = json.loads(request.body or "{}")
-        nueva = (data.get("password") or "").strip()
+    if request.method != "POST": 
+        return JsonResponse({"success": False, "error": "Método no permitido"}, status=405) 
+
+    try: 
+        data = json.loads(request.body or "{}") 
+        nueva = (data.get("password") or "").strip() 
+         
+        # 1. Validación de Vulnerabilidad (Longitud y Complejidad)
+        if len(nueva) < 8: 
+            return JsonResponse({"success": False, "error": "La contraseña es muy vulnerable. Debe tener al menos 8 caracteres."}, status=400) 
         
-        if len(nueva) < 8:
-            return JsonResponse({"success": False, "error": "La contraseña debe tener al menos 8 caracteres"}, status=400)
-        
-        # Validación robusta de ObjectId
-        obj_id = ObjectId(id) if ObjectId.is_valid(id) else id
-        filtro = {"_id": obj_id, "rol_id": {"$in": ADMIN_ROLE_IDS}}
-        
-        resultado = db.usuarios.update_one(filtro, {"$set": {"contrasena": nueva}})
-        
-        if resultado.matched_count == 0:
+        if not re.search(r"[A-Z]", nueva) or not re.search(r"[0-9]", nueva):
+            return JsonResponse({"success": False, "error": "La contraseña es débil. Debe incluir al menos una mayúscula y un número."}, status=400)
+
+        # Validación de ObjectId 
+        obj_id = ObjectId(id) if ObjectId.is_valid(id) else id 
+        filtro = {"_id": obj_id, "rol_id": {"$in": ADMIN_ROLE_IDS}} 
+
+        # 2. Verificar si el usuario existe y si la contraseña es la misma
+        usuario_actual = db.usuarios.find_one(filtro)
+        if not usuario_actual:
             return JsonResponse({"success": False, "error": "Administrador no encontrado"}, status=404)
-            
-        return JsonResponse({"success": True})
-    except Exception as e:
-        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+        # Comprobar si la contraseña ya es la que intenta poner
+        # Nota: Si usas hash, aquí deberías usar check_password(nueva, usuario_actual['contrasena'])
+        if usuario_actual.get("contrasena") == nueva:
+            return JsonResponse({"success": False, "error": "La nueva contraseña no puede ser igual a la anterior. Ya está siendo utilizada."}, status=400)
+
+        # 3. Intentar la actualización
+        # Recordatorio: ¡Considera usar hashing (ej. make_password) antes de guardar!
+        resultado = db.usuarios.update_one(filtro, {"$set": {"contrasena": nueva}}) 
+         
+        if resultado.modified_count > 0: 
+            return JsonResponse({
+                "success": True, 
+                "message": "La contraseña se ha actualizado con éxito."
+            }) 
+        else:
+            return JsonResponse({
+                "success": False, 
+                "error": "No se pudo cambiar la contraseña. El sistema no detectó cambios."
+            }, status=400)
+
+    except Exception as e: 
+        return JsonResponse({"success": False, "error": f"Error interno en el servidor: {str(e)}"}, status=500)
 
 @csrf_exempt
 def eliminar_admin(request, id):

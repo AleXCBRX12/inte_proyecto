@@ -2,168 +2,125 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
 <style>
-/* ===== MODAL ===== */
+/* ===== MODAL BASE ===== */
 .modal{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,.55);
-    backdrop-filter:blur(6px);
-    display:none;
-    justify-content:center;
-    align-items:center;
-    z-index:999;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
 }
 
-/* ===== CONTENIDO MODAL ===== */
+/* ===== CONTENEDOR ===== */
 .modal-content{
-    background:white;
-    padding:45px;
-    width:460px;
-    border-radius:16px;
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:28px;
-
-    position:relative;
-
-    transform:scale(.8);
-    opacity:0;
-    animation:modalEntrada .35s ease forwards;
-
-    box-shadow:0 20px 40px rgba(0,0,0,.25);
+    background: #ffffff;
+    width: 100%;
+    max-width: 520px;
+    padding: 2.2rem;
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 }
 
 /* ===== TITULO ===== */
 .modal-content h3{
-    text-align:center;
-    color:var(--azul);
-    font-size:24px;
-    font-weight:700;
+    margin-bottom: 1.5rem;
+    color: #3873c7;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-align: center;
 }
 
-/* ===== FORMULARIO ===== */
+/* ===== FORM ===== */
 .modal-content form{
-    width:100%;
-    display:flex;
-    flex-direction:column;
-    gap:18px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
 }
 
 /* ===== INPUTS ===== */
 .modal-content input{
-    width:100%;
-    padding:15px 16px;
-    font-size:15px;
-
-    border-radius:10px;
-    border:1px solid var(--gris2);
-    background:#fafafa;
-
-    transition:.2s;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: 0.2s;
 }
 
 .modal-content input:focus{
-    border-color:var(--azul2);
-    box-shadow:0 0 6px rgba(45,91,209,.25);
-    outline:none;
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* ===== CONTENEDOR PASSWORD ===== */
+/* ===== PASSWORD ===== */
 .password-wrapper{
-    position:relative;
-    width:100%;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .password-wrapper input{
-    padding-right:45px;
+    width: 100%;
+    padding-right: 4.5rem;
 }
 
-/* ===== ICONO VER PASSWORD ===== */
-.password-toggle{
-    position:absolute;
-    right:14px;
-    top:50%;
-    transform:translateY(-50%);
-    cursor:pointer;
-    color:#6b7280;
-    font-size:18px;
+/* ICONOS PASSWORD */
+.pass-icons{
+    position: absolute;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+    color: #64748b;
 }
 
-.password-toggle:hover{
-    color:var(--azul2);
+.pass-icons i{
+    cursor: pointer;
+    font-size: 18px;
 }
 
-/* ===== BOTONES DEL MODAL ===== */
+.pass-icons i:hover{
+    color: #1e293b;
+}
+
+/* ===== BOTONES ===== */
 .modal-actions{
-    display:flex;
-    gap:14px;
-    width:100%;
-    margin-top:10px;
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
 .modal-actions button{
-    flex:1;
-    position:relative;
-    overflow:hidden;
+    flex: 1;
+    padding: 0.85rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* ===== EFECTO BRILLO IGUAL PARA BOTONES ===== */
-.modal-actions button::before{
-    content:'';
-    position:absolute;
-    top:0;
-    left:-75%;
-    width:50%;
-    height:100%;
-    background:rgba(255,255,255,.22);
-    transform:skewX(-25deg);
-    transition:.7s;
+.modal-actions button:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 
-.modal-actions button:hover::before{
-    left:130%;
+.modal-actions button:active{
+    transform: translateY(-1px);
 }
 
-/* brillo más suave para cancelar */
-.modal-actions .btn-cancelar::before{
-    background:rgba(255,255,255,.15);
+/* estilos botones */
+.btn-cancelar{
+    background: #f1f5f9;
+    color: #475569;
 }
 
-/* ===== BOTON CERRAR ===== */
-.modal-close{
-    position:absolute;
-    right:16px;
-    top:12px;
-    border:none;
-    background:none;
-    font-size:24px;
-    cursor:pointer;
-    color:#444;
-}
-
-.modal-close:hover{
-    color:#ef4444;
-}
-
-/* ===== ANIMACION ===== */
-@keyframes modalEntrada{
-    0%{
-        transform:scale(.8);
-        opacity:0;
-    }
-    60%{
-        transform:scale(1.05);
-        opacity:1;
-    }
-    100%{
-        transform:scale(1);
-        opacity:1;
-    }
+.btn-confirmar{
+    background: #2563eb;
+    color: white;
 }
 </style>
 
@@ -200,8 +157,10 @@
                     required
                 >
 
-                <!-- Ojo inicial cerrado -->
-                <i class="bi bi-eye-slash password-toggle" id="togglePassword"></i>
+                <div class="pass-icons">
+                    <i class="bi bi-eye-slash" id="togglePassword"></i>
+                    <i class="bi bi-shuffle" id="generatePassword"></i>
+                </div>
 
             </div>
 
@@ -231,38 +190,35 @@
 
 <script>
 const togglePassword = document.getElementById('togglePassword');
+const generatePassword = document.getElementById('generatePassword');
 const passwordInput = document.getElementById('password');
 
+/* VER / OCULTAR PASSWORD */
 togglePassword.addEventListener('click', function() {
-    // Alternar tipo de input
     const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
     passwordInput.setAttribute('type', type);
 
-    // Alternar icono
     this.classList.toggle('bi-eye');
     this.classList.toggle('bi-eye-slash');
 });
 
-// Función para abrir el modal
+/* GENERAR PASSWORD */
+generatePassword.addEventListener('click', function() {
+    const randomPass = Math.random().toString(36).slice(-10);
+    passwordInput.value = randomPass;
+});
+
+/* abrir modal */
 function abrirModal() {
-    const modal = document.getElementById('modalAdmin');
-    modal.style.display = 'flex';
+    document.getElementById('modalAdmin').style.display = 'flex';
 }
 
-// Función para cerrar el modal
+/* cerrar modal */
 function cerrarModal() {
-    const modal = document.getElementById('modalAdmin');
-    modal.style.display = 'none';
+    document.getElementById('modalAdmin').style.display = 'none';
 
-    // Reiniciar input password y icono
     passwordInput.setAttribute('type', 'password');
     togglePassword.classList.remove('bi-eye');
     togglePassword.classList.add('bi-eye-slash');
-}
-
-// Función ejemplo para crear administrador
-function crearAdministrador() {
-    alert('Aquí iría la lógica para crear el administrador');
-    cerrarModal();
 }
 </script>
