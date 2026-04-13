@@ -1896,7 +1896,7 @@ def agregar_administrador(request):
     # Mantenemos la optimización de campos
     admins_cursor = db.usuarios.find(
         {"rol_id": {"$in": ADMIN_ROLE_IDS}},
-        {"nombre": 1, "correo": 1, "contrasena": 1, "fecha_creacion": 1}
+        {"nombre": 1, "correo": 1, "contrasena": 1, "fecha_creacion": 1, "activo": 1}
     ).sort("fecha_creacion", -1)
     
     # Devolvemos el valor real de 'contrasena' al campo 'password'
@@ -1904,7 +1904,8 @@ def agregar_administrador(request):
         "id": str(a.get("_id")),
         "nombre": a.get("nombre", "Sin nombre"),
         "correo": a.get("correo", "Sin correo"),
-        "password": a.get("contrasena", "") 
+        "password": a.get("contrasena", ""),
+        "bloqueado": not a.get("activo", True)
     } for a in admins_cursor]
 
     return render(request, "agregar_administrador.html", {
@@ -1918,36 +1919,71 @@ def crear_admin_api(request):
         return guard
         
     if request.method != "POST":
-        return JsonResponse({"status": "error", "message": "Metodo no permitido"}, status=405)
+        return JsonResponse({"status": "error", "message": "Método no permitido"}, status=405)
 
     try:
         data = json.loads(request.body)
         correo = (data.get("correo") or "").strip().lower()
         nombre = (data.get("nombre") or "").strip()
         password = data.get("password")
+        confirm_password = data.get("confirm_password") # Soporte para validación de duplicado/confirmación
 
-        # Validaciones básicas
-        if not correo or not nombre or not password:
-            return JsonResponse({"status": "error", "message": "Todos los campos son requeridos"}, status=400)
+        # 1. Validaciones de presencia y campos vacíos
+        if not correo:
+            return JsonResponse({"status": "error", "message": "El correo electrónico es obligatorio."}, status=400)
+        if not nombre:
+            return JsonResponse({"status": "error", "message": "El nombre del administrador es obligatorio."}, status=400)
+        if not password:
+            return JsonResponse({"status": "error", "message": "La contraseña es obligatoria."}, status=400)
 
+        # 2. Validación de formato de correo electrónico
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", correo):
+            return JsonResponse({"status": "error", "message": "El formato del correo electrónico no es válido."}, status=400)
+
+        # 3. Verificar si el correo ya está siendo utilizado
         if db.usuarios.find_one({"correo": correo}):
-            return JsonResponse({"status": "error", "message": "El correo ya esta registrado"}, status=400)
+            return JsonResponse({"status": "error", "message": "Lo sentimos, este correo electrónico ya está registrado por otro usuario."}, status=400)
         
+        # 4. Verificar si el nombre de admin ya existe (opcional, para mayor control)
+        if db.usuarios.find_one({"nombre": nombre, "rol_id": ADMIN_ROLE_ID}):
+            return JsonResponse({"status": "error", "message": "Ya existe un administrador registrado con ese nombre."}, status=400)
+
+        # 5. Validación de "contraseñas duplicado" (Confirmación de contraseña)
+        if confirm_password is not None and password != confirm_password:
+            return JsonResponse({"status": "error", "message": "La contraseña y la confirmación no coinciden. Por favor, verifica los campos."}, status=400)
+
+        # 6. Validación de Fortaleza de Contraseña (Consistencia con tus reglas de seguridad)
+        if len(password) < 8:
+            return JsonResponse({"status": "error", "message": "La contraseña es muy vulnerable. Debe tener al menos 8 caracteres."}, status=400)
+        
+        if not re.search(r"[A-Z]", password) or not re.search(r"[0-9]", password):
+            return JsonResponse({"status": "error", "message": "La contraseña es débil. Debe incluir al menos una letra mayúscula y un número."}, status=400)
+        
+        # 7. Verificar si la contraseña ya está siendo utilizada por otro admin
+        if db.usuarios.find_one({"contrasena": password, "rol_id": ADMIN_ROLE_ID}):
+            return JsonResponse({
+                "status": "error",
+                "message": "Esta contraseña ya está siendo utilizada por otro administrador. Por favor elige una diferente."
+            }, status=400)
+
+        # Inserción manteniendo nombres de campos originales
         db.usuarios.insert_one({
             "nombre": nombre,
             "apellido_paterno": "",
             "apellido_materno": "", 
             "correo": correo,
-            "contrasena": password, 
+            "contrasena": password, # Mantenemos el nombre de campo 'contrasena'
             "rol_id": ADMIN_ROLE_ID,
             "activo": True,
             "fecha_creacion": datetime.utcnow()
         })
-        return JsonResponse({"status": "success"})
+        
+        return JsonResponse({"status": "success", "message": "Administrador creado exitosamente."})
+
     except json.JSONDecodeError:
-        return JsonResponse({"status": "error", "message": "JSON invalido"}, status=400)
+        return JsonResponse({"status": "error", "message": "Error al procesar la solicitud (Formato JSON inválido)."}, status=400)
     except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        return JsonResponse({"status": "error", "message": f"Error interno en el servidor: {str(e)}"}, status=500)
 
 @csrf_exempt 
 def actualizar_password_admin(request, id): 
@@ -2022,6 +2058,22 @@ def eliminar_admin(request, id):
         return JsonResponse({"success": True})
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+def lista_admins_api(request):
+    admins_cursor = db.usuarios.find(
+        {"rol_id": {"$in": ADMIN_ROLE_IDS}},
+        {"nombre": 1, "correo": 1, "contrasena": 1, "activo": 1}
+    ).sort("fecha_creacion", -1)
+
+    lista_admins = [{
+        "id": str(a.get("_id")),
+        "nombre": a.get("nombre", ""),
+        "correo": a.get("correo", ""),
+        "password": a.get("contrasena", ""),
+        "bloqueado": not a.get("activo", True)
+    } for a in admins_cursor]
+
+    return JsonResponse(lista_admins, safe=False)
 
 
 # =========================

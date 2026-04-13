@@ -300,11 +300,11 @@ tbody tr:hover { background: #f9fafb; }
                 </button>
                 <div class="menu-acciones">
                     {% if admin.bloqueado %}
-                        <button class="opcion-desbloquear" onclick="cambiarEstadoAdmin('{{ admin.id }}', false, this)">
+                        <button class="opcion-desbloquear" onclick="abrirModalEstado('{{ admin.id }}', false)">
                             <i class="bi bi-unlock-fill"></i> Desbloquear
                         </button>
                     {% else %}
-                        <button class="opcion-bloquear" onclick="cambiarEstadoAdmin('{{ admin.id }}', true, this)">
+                        <button class="opcion-bloquear" onclick="abrirModalEstado('{{ admin.id }}', true)">
                             <i class="bi bi-lock-fill"></i> Bloquear
                         </button>
                         <button class="opcion-password" onclick="cambiarPasswordAdmin('{{ admin.id }}')">
@@ -334,6 +334,8 @@ tbody tr:hover { background: #f9fafb; }
 {% include "modals/modal_eliminar_admin.html" %}
 {% include "modals/modal_cambiar_contraseña.html" %}
 {% include "Mensajes_confirmacion/actualizar_contraseña_admin.html" %}
+{% include "modals/bloquear_desbloquar_admin.html" %}
+
 <script>
 /* Función para alternar visibilidad de contraseña en la tabla */
 function togglePasswordRow(id, realPassword) {
@@ -343,7 +345,7 @@ function togglePasswordRow(id, realPassword) {
     if (span.textContent === "••••••••") {
         span.textContent = realPassword;
         icon.classList.replace('bi-eye', 'bi-eye-slash');
-        span.style.background = "#fff"; // Resaltar cuando es visible
+        span.style.background = "#fff";
     } else {
         span.textContent = "••••••••";
         icon.classList.replace('bi-eye-slash', 'bi-eye');
@@ -351,7 +353,7 @@ function togglePasswordRow(id, realPassword) {
     }
 }
 
-/* --- Tus funciones lógicas se mantienen igual --- */
+/* MENÚ */
 function toggleMenu(btn){
     const menu = btn.nextElementSibling;
     document.querySelectorAll(".menu-acciones").forEach(m => {
@@ -366,7 +368,7 @@ document.addEventListener("click", function(e){
     }
 });
 
-/* Reemplaza los antiguos onclick de contraseña y eliminar */
+/* ACCIONES */
 function cambiarPasswordAdmin(id){
     setAdminId(id);
 }
@@ -374,7 +376,7 @@ function eliminarAdmin(id){
     abrirModalEliminar(id);
 }
 
-/* Crear Administrador */
+/* CREAR */
 async function crearAdministrador() {
     const nombre = document.querySelector('input[name="nombre"]').value;
     const correo = document.querySelector('input[name="correo"]').value;
@@ -399,62 +401,114 @@ async function crearAdministrador() {
     }
 }
 
-/* Cambiar Estado Activo/Bloqueado */
-async function cambiarEstadoAdmin(id, bloquear, btn){
-    const url = bloquear ? "{% url 'bloquear_usuario' 'TEMP' %}".replace("TEMP", id) 
-                         : "{% url 'desbloquear_usuario' 'TEMP' %}".replace("TEMP", id);
-    const resp = await fetch(url, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json", "X-CSRFToken":"{{ csrf_token }}" }
-    });
-    const data = await resp.json();
-    if(data.success){
-        const tr = btn.closest("tr");
-        const estadoSpan = tr.querySelector(".estado-col .estado-cuenta");
+/* 🔥 CAMBIO DE ESTADO (AQUÍ ESTABA EL PROBLEMA) */
+async function confirmarCambioEstado(){
+    if(!adminIdEstado) return;
 
-        if(bloquear){
-            estadoSpan.textContent = "Bloqueado";
-            estadoSpan.classList.remove("estado-activo");
-            estadoSpan.classList.add("estado-bloqueado");
+    const modal = document.getElementById('proModal');
+    const spinner = document.getElementById('modalSpinner');
+    const check = document.getElementById('modalCheck');
+    const text = modal.querySelector('.modal-text');
 
-            // Solo mostrar Desbloquear y Eliminar
+    spinner.style.display = 'block';
+    check.style.display = 'none';
+
+    /* 🔥 SOLO ESTOS DOS MENSAJES EN AZUL */
+    text.style.color = "#1e3a8a";
+
+    text.innerText = bloquearAccion 
+        ? 'Bloqueando administrador...' 
+        : 'Desbloqueando administrador...';
+
+    modal.classList.add('show');
+
+    try {
+        const url = bloquearAccion
+            ? "{% url 'bloquear_usuario' 'TEMP' %}".replace("TEMP", adminIdEstado)
+            : "{% url 'desbloquear_usuario' 'TEMP' %}".replace("TEMP", adminIdEstado);
+
+        const resp = await fetch(url, {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "X-CSRFToken":"{{ csrf_token }}"
+            }
+        });
+
+        const data = await resp.json();
+
+        if(data.success){
+
+            const tr = document.querySelector(`tr[data-id='${adminIdEstado}']`);
+            const estadoSpan = tr.querySelector(".estado-col .estado-cuenta");
             const menu = tr.querySelector(".menu-acciones");
-            menu.innerHTML = `
-                <button class="opcion-desbloquear" onclick="cambiarEstadoAdmin('${id}', false, this)">
-                    <i class="bi bi-unlock-fill"></i> Desbloquear
-                </button>
-                <button class="opcion-eliminar" onclick="eliminarAdmin('${id}')">
-                    <i class="bi bi-trash3-fill"></i> Eliminar
-                </button>
-            `;
+
+            if(bloquearAccion){
+                estadoSpan.textContent = "Bloqueado";
+                estadoSpan.classList.remove("estado-activo");
+                estadoSpan.classList.add("estado-bloqueado");
+
+                menu.innerHTML = `
+                    <button class="opcion-desbloquear" onclick="abrirModalEstado('${adminIdEstado}', false)">
+                        <i class="bi bi-unlock-fill"></i> Desbloquear
+                    </button>
+                    <button class="opcion-eliminar" onclick="eliminarAdmin('${adminIdEstado}')">
+                        <i class="bi bi-trash3-fill"></i> Eliminar
+                    </button>
+                `;
+            } else {
+                estadoSpan.textContent = "Activo";
+                estadoSpan.classList.remove("estado-bloqueado");
+                estadoSpan.classList.add("estado-activo");
+
+                menu.innerHTML = `
+                    <button class="opcion-bloquear" onclick="abrirModalEstado('${adminIdEstado}', true)">
+                        <i class="bi bi-lock-fill"></i> Bloquear
+                    </button>
+                    <button class="opcion-password" onclick="cambiarPasswordAdmin('${adminIdEstado}')">
+                        <i class="bi bi-key-fill"></i> Cambiar contraseña
+                    </button>
+                    <button class="opcion-eliminar" onclick="eliminarAdmin('${adminIdEstado}')">
+                        <i class="bi bi-trash3-fill"></i> Eliminar
+                    </button>
+                `;
+            }
+
+            cerrarModalEstado();
+
+            /* 👇 AQUÍ VUELVE A CAMBIAR COLOR (Y SOLO AQUÍ) */
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                check.style.display = 'block';
+
+                text.innerText = bloquearAccion 
+                    ? '¡Administrador bloqueado!' 
+                    : '¡Administrador desbloqueado!';
+
+                text.style.color = '#10b981'; // SOLO éxito en verde
+            }, 800);
+
+            setTimeout(() => {
+                modal.classList.add('exit');
+                setTimeout(() => {
+                    modal.classList.remove('show','exit');
+                }, 500);
+            }, 2500);
+
         } else {
-            estadoSpan.textContent = "Activo";
-            estadoSpan.classList.remove("estado-bloqueado");
-            estadoSpan.classList.add("estado-activo");
-
-            // Restaurar todas las opciones
-            const menu = tr.querySelector(".menu-acciones");
-            menu.innerHTML = `
-                <button class="opcion-bloquear" onclick="cambiarEstadoAdmin('${id}', true, this)">
-                    <i class="bi bi-lock-fill"></i> Bloquear
-                </button>
-                <button class="opcion-password" onclick="cambiarPasswordAdmin('${id}')">
-                    <i class="bi bi-key-fill"></i> Cambiar contraseña
-                </button>
-                <button class="opcion-eliminar" onclick="eliminarAdmin('${id}')">
-                    <i class="bi bi-trash3-fill"></i> Eliminar
-                </button>
-            `;
+            alert("No se pudo cambiar el estado");
         }
-    } else {
-        window.Toast.show("No se pudo cambiar el estado", "danger");
+
+    } catch(err){
+        console.error(err);
+        alert("Error de conexión");
     }
 }
+
+/* TABLA VACÍA */
 function verificarTablaVacia(){
     const tbody = document.getElementById("tablaAdmins");
     const filas = tbody.querySelectorAll("tr[data-id]");
-
-    // Si ya existe el mensaje, no duplicar
     let filaVacia = document.getElementById("filaVacia");
 
     if(filas.length === 0){
@@ -476,5 +530,93 @@ function verificarTablaVacia(){
         }
     }
 }
+/* 🔥 ACTUALIZACIÓN AUTOMÁTICA EN TIEMPO REAL */
+async function cargarAdmins(){
+    try{
+        const response = await fetch("/usuarios/api/admins/");
+        const data = await response.json();
+
+        const tbody = document.getElementById("tablaAdmins");
+        tbody.innerHTML = "";
+
+        if(data.length === 0){
+            tbody.innerHTML = `
+                <tr id="filaVacia">
+                    <td colspan="5" class="mensaje-vacio">
+                        No hay administradores registrados.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        data.forEach(admin => {
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-id", admin.id);
+
+            tr.innerHTML = `
+                <td><div class="td-nombre">${admin.nombre}</div></td>
+                <td style="color:#666;font-size:14px;">${admin.correo}</td>
+
+                <td class="estado-col">
+                    <span class="estado-cuenta ${admin.bloqueado ? 'estado-bloqueado':'estado-activo'}">
+                        ${admin.bloqueado ? 'Bloqueado':'Activo'}
+                    </span>
+                </td>
+
+                <td>
+                    <div class="password-cell">
+                        <span class="password-text" id="pwd-${admin.id}">••••••••</span>
+                        <button class="btn-eye-toggle" onclick="togglePasswordRow('${admin.id}','${admin.password}')">
+                            <i class="bi bi-eye" id="icon-${admin.id}"></i>
+                        </button>
+                    </div>
+                </td>
+
+                <td>
+                    <div class="acciones">
+                        <button class="btn-opciones" onclick="toggleMenu(this)">
+                            <i class="bi bi-gear-fill"></i> Opciones
+                        </button>
+
+                        <div class="menu-acciones">
+                            ${
+                                admin.bloqueado
+                                ? `
+                                <button class="opcion-desbloquear" onclick="abrirModalEstado('${admin.id}', false)">
+                                    <i class="bi bi-unlock-fill"></i> Desbloquear
+                                </button>
+                                `
+                                : `
+                                <button class="opcion-bloquear" onclick="abrirModalEstado('${admin.id}', true)">
+                                    <i class="bi bi-lock-fill"></i> Bloquear
+                                </button>
+                                <button class="opcion-password" onclick="cambiarPasswordAdmin('${admin.id}')">
+                                    <i class="bi bi-key-fill"></i> Cambiar contraseña
+                                </button>
+                                `
+                            }
+
+                            <button class="opcion-eliminar" onclick="eliminarAdmin('${admin.id}')">
+                                <i class="bi bi-trash3-fill"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+    } catch(err){
+        console.error("Error cargando admins:", err);
+    }
+}
+
+/* 🔄 Ejecutar cada 3 segundos */
+setInterval(cargarAdmins, 3000);
+
+/* 🚀 Ejecutar inmediato */
+cargarAdmins();
 </script>
 {% endblock %}

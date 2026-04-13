@@ -1,0 +1,274 @@
+{% load static %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+/* ===== MODAL ===== */
+#modalEstado {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    padding: 15px;
+}
+
+#modalEstado .modal-contenido {
+    background: #ffffff;
+    padding: 35px 30px;
+    width: 100%;
+    max-width: 410px;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    animation: modalEntrada 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+/* ICONO */
+.estado-icon {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    animation: latido 1.6s ease-in-out infinite;
+}
+
+/* AURA */
+.estado-icon::before {
+    content: "";
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    top: -10%;
+    left: -10%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.5), transparent 70%);
+    animation: auraPulse 1.6s ease-in-out infinite;
+}
+
+.estado-icon i {
+    font-size: 48px;
+    z-index: 2;
+}
+
+/* 🔴 BLOQUEAR */
+.icon-bloquear {
+    background: linear-gradient(145deg, #fee2e2, #fecaca);
+    box-shadow: 0 10px 25px rgba(220, 38, 38, 0.35);
+}
+.icon-bloquear i { color: #dc2626; }
+
+/* 🟢 DESBLOQUEAR */
+.icon-desbloquear {
+    background: linear-gradient(145deg, #ecfdf5, #d1fae5);
+    box-shadow: 0 10px 25px rgba(5, 150, 105, 0.25);
+}
+.icon-desbloquear i { color: #047857; }
+
+/* TEXTO */
+#modalEstado h3 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+#modalEstado p {
+    font-size: 16px;
+    color: #64748b;
+}
+
+/* BOTONES */
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+#modalEstado button {
+    flex: 1;
+    padding: 12px;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* EFECTO LUZ */
+#modalEstado button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,0.5),
+        transparent
+    );
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+}
+
+#modalEstado button:hover::before {
+    left: 125%;
+}
+
+/* BOTONES */
+.confirmar {
+    background: #1e3a8a;
+    color: #ffffff;
+}
+
+.confirmar:hover {
+    background: #1e40af;
+}
+
+.confirmar-bloquear {
+    background: #dc2626 !important;
+    color: #fff;
+}
+
+.confirmar-bloquear:hover {
+    background: #b91c1c !important;
+}
+
+.cancelar {
+    background: #d1d5db;
+    color: #374151;
+}
+
+.cancelar:hover {
+    background: #9ca3af;
+    color: #1f2937;
+}
+
+/* ANIMACIONES */
+@keyframes modalEntrada {
+    0% { transform: translateY(30px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes latido {
+    0%, 100% { transform: scale(1); }
+    40% { transform: scale(1.08); }
+    60% { transform: scale(1.05); }
+}
+
+@keyframes auraPulse {
+    0% { transform: scale(1); opacity: 0.5; }
+    40% { transform: scale(1.2); opacity: 0.2; }
+    60% { transform: scale(1.1); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 0.5; }
+}
+
+/* 📱 RESPONSIVE (BOTONES EN FILA) */
+@media (max-width: 480px) {
+    #modalEstado .modal-contenido {
+        padding: 25px 20px;
+        border-radius: 18px;
+    }
+
+    .estado-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .estado-icon i {
+        font-size: 36px;
+    }
+
+    #modalEstado h3 {
+        font-size: 20px;
+    }
+
+    #modalEstado p {
+        font-size: 14px;
+    }
+
+    /* 🔥 AQUÍ EL CAMBIO */
+    .modal-buttons {
+        flex-direction: row; /* en fila */
+    }
+
+    #modalEstado button {
+        width: 100%;
+    }
+}
+</style>
+<!-- MODAL -->
+<div id="modalEstado">
+    <div class="modal-contenido">
+        <div id="estadoIcon" class="estado-icon">
+            <i id="iconoBI" class="bi"></i>
+        </div>
+
+        <h3 id="estadoTitulo">Acción</h3>
+        <p id="estadoTexto">Descripción de la acción...</p>
+
+        <div class="modal-buttons">
+            <button class="cancelar" onclick="cerrarModalEstado()">Cancelar</button>
+            <button class="confirmar" onclick="confirmarCambioEstado()">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let adminIdEstado = null;
+let bloquearAccion = true;
+
+function abrirModalEstado(id, bloquear){
+    adminIdEstado = id;
+    bloquearAccion = bloquear;
+
+    const iconDiv = document.getElementById("estadoIcon");
+    const icono = document.getElementById("iconoBI");
+    const titulo = document.getElementById("estadoTitulo");
+    const texto = document.getElementById("estadoTexto");
+    const btnConfirmar = document.querySelector("#modalEstado .confirmar");
+
+    if(bloquear){
+        iconDiv.className = "estado-icon icon-bloquear";
+        icono.className = "bi bi-lock-fill";
+
+        titulo.innerText = "Bloquear Acceso";
+        titulo.style.color = "#dc2626";
+
+        texto.innerText = "El administrador no podrá ingresar al sistema hasta que sea desbloqueado.";
+
+        btnConfirmar.classList.add("confirmar-bloquear");
+
+    } else {
+        iconDiv.className = "estado-icon icon-desbloquear";
+        icono.className = "bi bi-unlock-fill";
+
+        titulo.innerText = "Restaurar Acceso";
+        titulo.style.color = "#1e3a8a";
+
+        texto.innerText = "El administrador recuperará todos sus permisos de forma inmediata.";
+
+        btnConfirmar.classList.remove("confirmar-bloquear");
+    }
+
+    document.getElementById("modalEstado").style.display = "flex";
+}
+
+function cerrarModalEstado(){
+    document.getElementById("modalEstado").style.display = "none";
+}
+</script>

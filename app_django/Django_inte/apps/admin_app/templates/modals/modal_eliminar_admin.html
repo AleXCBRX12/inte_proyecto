@@ -69,6 +69,7 @@
     width: 100%;
 }
 
+/* BOTONES BASE */
 #modalEliminar button {
     flex: 1;
     padding: 10px 0;
@@ -76,18 +77,56 @@
     border-radius: 10px;
     cursor: pointer;
     border: none;
-    transition: .25s;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
 }
 
+/* EFECTO DE LUZ (SUAVE IDA Y VUELTA) */
+#modalEliminar button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,0.5),
+        transparent
+    );
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+}
+
+/* HOVER: LUZ AVANZA */
+#modalEliminar button:hover::before {
+    left: 125%;
+}
+
+/* BOTÓN ELIMINAR */
 #modalEliminar .eliminar {
     background: #dc2626;
     color: #fff;
 }
 
-#modalEliminar .cancelar {
-    background: #e5e7eb;
+#modalEliminar .eliminar:hover {
+    background: #b91c1c;
 }
 
+/* BOTÓN CANCELAR */
+#modalEliminar .cancelar {
+    background: #d1d5db;
+    color: #374151;
+}
+
+#modalEliminar .cancelar:hover {
+    background: #9ca3af;
+    color: #1f2937;
+}
+
+/* ===== ANIMACIÓN MODAL ===== */
 @keyframes modalEntrada {
     0% { transform: scale(0.8); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }

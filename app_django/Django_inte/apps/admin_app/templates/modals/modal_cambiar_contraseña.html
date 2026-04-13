@@ -256,8 +256,14 @@ document.getElementById("togglePass").addEventListener("click", function(){
 });
 
 document.getElementById("genPass").addEventListener("click", function(){
-    const randomPass = Math.random().toString(36).slice(-10);
-    document.getElementById("nuevaPassword").value = randomPass;
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let password = "";
+
+    for(let i = 0; i < 10; i++){
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    document.getElementById("nuevaPassword").value = password;
     showAlert("Contraseña generada", "success");
 });
 
@@ -270,7 +276,7 @@ async function confirmarCambioPassword(){
     }
 
     if(!nueva){
-        showAlert("La contraseña es obligatoria");
+        showAlert("Llena el campo de nueva contraseña");
         return;
     }
 

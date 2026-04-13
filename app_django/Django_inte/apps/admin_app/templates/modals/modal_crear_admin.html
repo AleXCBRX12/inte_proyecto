@@ -204,8 +204,31 @@ togglePassword.addEventListener('click', function() {
 
 /* GENERAR PASSWORD */
 generatePassword.addEventListener('click', function() {
-    const randomPass = Math.random().toString(36).slice(-10);
-    passwordInput.value = randomPass;
+    const mayus = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const minus = "abcdefghijklmnopqrstuvwxyz";
+    const nums = "0123456789";
+
+    const todos = mayus + minus + nums;
+
+    let password = [];
+
+    // Asegurar variedad mínima
+    password.push(mayus[Math.floor(Math.random() * mayus.length)]);
+    password.push(minus[Math.floor(Math.random() * minus.length)]);
+    password.push(nums[Math.floor(Math.random() * nums.length)]);
+
+    // Completar hasta 8 caracteres
+    while (password.length < 8) {
+        password.push(todos[Math.floor(Math.random() * todos.length)]);
+    }
+
+    // Mezclar bien (Fisher-Yates shuffle)
+    for (let i = password.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [password[i], password[j]] = [password[j], password[i]];
+    }
+
+    passwordInput.value = password.join('');
 });
 
 /* abrir modal */
