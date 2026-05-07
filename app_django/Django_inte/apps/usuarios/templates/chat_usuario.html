@@ -4,7 +4,402 @@
 {% block title %}Chat con administrador{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/chat.css' %}?v=3.0">
+
+<style>
+:root{
+    --chat-bg:#efeae2;
+    --chat-panel:#ffffff;
+    --chat-accent:#2563eb;
+    --chat-accent-hover:#1d4ed8;
+    --chat-success:#22c55e;
+    --msg-mine:#d9fdd3;
+    --msg-theirs:#ffffff;
+    --text-main:#111827;
+    --text-muted:#6b7280;
+    --border:#e5e7eb;
+    --shadow:0 10px 30px rgba(0,0,0,.08);
+    --radius:20px;
+    --transition:all .25s ease;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.chat-user-wrapper{
+    width:min(1200px,95%);
+    height:calc(100vh - 110px);
+    margin:85px auto 25px;
+    display:flex;
+    flex-direction:column;
+}
+
+.chat-user-card{
+    flex:1;
+    background:var(--chat-panel);
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+}
+
+/* ===== HEADER ===== */
+.chat-user-header{
+    padding:18px 24px;
+    background:#ffffff;
+    border-bottom:1px solid var(--border);
+    z-index:20;
+}
+
+.header-info{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.user-avatar{
+    width:54px;
+    height:54px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:1.3rem;
+    font-weight:700;
+    box-shadow:0 10px 20px rgba(37,99,235,.25);
+}
+
+.user-details h2{
+    margin:0;
+    font-size:1.1rem;
+    color:var(--text-main);
+    font-weight:700;
+}
+
+.user-details p{
+    margin:4px 0 0;
+    color:var(--text-muted);
+    font-size:.85rem;
+}
+
+.status-online{
+    color:var(--chat-success);
+    font-weight:700;
+}
+
+/* ===== MENSAJES ===== */
+.chat-user-messages{
+    flex:1;
+    overflow-y:auto;
+    padding:25px 5%;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    background:
+        linear-gradient(rgba(255,255,255,.70),rgba(255,255,255,.70)),
+        url("https://www.transparenttextures.com/patterns/cubes.png");
+    background-color:var(--chat-bg);
+}
+
+.chat-user-placeholder{
+    text-align:center;
+    color:var(--text-muted);
+    margin-top:40px;
+}
+
+/* ===== BURBUJAS ===== */
+.chat-user-bubble{
+    max-width:72%;
+    padding:12px 14px 10px;
+    border-radius:18px;
+    position:relative;
+    animation:fadeIn .2s ease;
+    word-break:break-word;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+
+.chat-user-bubble.mine{
+    align-self:flex-end;
+    background:var(--msg-mine);
+    border-bottom-right-radius:5px;
+}
+
+.chat-user-bubble.theirs{
+    align-self:flex-start;
+    background:var(--msg-theirs);
+    border-bottom-left-radius:5px;
+}
+
+.chat-user-sender{
+    display:block;
+    margin-bottom:4px;
+    font-size:.74rem;
+    font-weight:700;
+    color:var(--chat-accent);
+}
+
+.chat-user-meta{
+    margin-top:6px;
+    text-align:right;
+    font-size:.72rem;
+    color:#667781;
+}
+
+/* ===== FORM ===== */
+.chat-user-form{
+    background:#f7f7f7;
+    padding:14px 18px 18px;
+    border-top:1px solid var(--border);
+    position:relative;
+}
+
+.input-container{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:28px;
+    padding:10px 14px;
+}
+
+.chat-actions-left{
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+
+.chat-tool-btn{
+    width:42px;
+    height:42px;
+    border:none;
+    background:transparent;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:.2s;
+    color:#64748b;
+    font-size:1.3rem;
+}
+
+.chat-tool-btn:hover{
+    background:#f1f5f9;
+    color:var(--chat-accent);
+}
+
+.chat-user-form textarea{
+    flex:1;
+    border:none;
+    outline:none;
+    resize:none;
+    background:transparent;
+    padding:10px 2px;
+    font-size:.96rem;
+    font-family:inherit;
+    line-height:1.4;
+    min-height:24px;
+    max-height:140px;
+    overflow-y:auto;
+    color:var(--text-main);
+}
+
+.send-btn{
+    width:46px;
+    height:46px;
+    border:none;
+    border-radius:50%;
+    background:linear-gradient(135deg,#2563eb,#4f46e5);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:.2s;
+}
+
+.send-btn:hover{
+    transform:scale(1.05);
+}
+
+.send-btn svg{
+    width:20px;
+    height:20px;
+}
+
+/* ===== PREVIEW ===== */
+.chat-user-attach-preview{
+    padding:12px 18px;
+    background:#f8fafc;
+    border-top:1px solid var(--border);
+    font-size:.9rem;
+    color:#334155;
+}
+
+/* ===== EMOJIS ===== */
+.chat-user-emoji{
+    position:absolute;
+    bottom:90px;
+    left:20px;
+    background:#fff;
+    border-radius:18px;
+    padding:12px;
+    display:flex;
+    gap:10px;
+    box-shadow:0 15px 35px rgba(0,0,0,.12);
+    border:1px solid #e5e7eb;
+    z-index:50;
+}
+
+.chat-user-emoji button{
+    border:none;
+    background:transparent;
+    font-size:1.5rem;
+    cursor:pointer;
+}
+
+/* ===== MODALES ===== */
+.chat-m-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.55);
+    backdrop-filter:blur(4px);
+
+    /* IMPORTANTE */
+    display:none;
+
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    padding:20px;
+}
+
+.chat-m-overlay.active{
+    display:flex;
+}
+
+.chat-m-content{
+    width:100%;
+    max-width:430px;
+    background:#fff;
+    border-radius:24px;
+    padding:28px;
+    box-shadow:0 20px 40px rgba(0,0,0,.15);
+    animation:modalShow .25s ease;
+}
+
+.chat-m-content h3{
+    margin:0 0 14px;
+    font-size:1.15rem;
+    color:#111827;
+}
+
+.chat-m-content p{
+    margin:0;
+    color:#6b7280;
+    line-height:1.5;
+}
+
+.chat-m-content textarea{
+    width:100%;
+    border:1px solid #dbe2ea;
+    border-radius:14px;
+    padding:14px;
+    resize:none;
+    outline:none;
+    margin-top:10px;
+    font-size:.95rem;
+    font-family:inherit;
+}
+
+.chat-m-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    margin-top:22px;
+}
+
+.chat-m-btn-cancel,
+.chat-m-btn-save,
+.chat-m-btn-delete{
+    border:none;
+    border-radius:12px;
+    padding:11px 18px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.chat-m-btn-cancel{
+    background:#f3f4f6;
+    color:#374151;
+}
+
+.chat-m-btn-save{
+    background:#2563eb;
+    color:#fff;
+}
+
+.chat-m-btn-delete{
+    background:#ef4444;
+    color:#fff;
+}
+
+/* ===== ANIMACIONES ===== */
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(5px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@keyframes modalShow{
+    from{
+        opacity:0;
+        transform:scale(.95);
+    }
+    to{
+        opacity:1;
+        transform:scale(1);
+    }
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+
+    .chat-user-wrapper{
+        width:100%;
+        height:calc(100vh - 70px);
+        margin:70px 0 0;
+    }
+
+    .chat-user-card{
+        border-radius:0;
+    }
+
+    .chat-user-messages{
+        padding:18px 14px;
+    }
+
+    .chat-user-bubble{
+        max-width:88%;
+    }
+
+    .chat-user-header{
+        padding:14px 16px;
+    }
+
+    .input-container{
+        padding:8px 12px;
+    }
+}
+</style>
 
 <main class="chat-user-wrapper"
       id="chatUsuarioApp"
@@ -14,74 +409,248 @@
       data-delete-url-template="{% url 'chat_usuario_eliminar' 'MSG_ID' %}"
       data-current-project-id="{{ proyectos.0.id|default:'' }}">
 
-    <!-- Sidebar removed as requested (single project view) -->
-
     <section class="chat-user-card">
+
+        <!-- HEADER -->
         <header class="chat-user-header">
-            <h2 id="currentProjectTitle">
-                {% if proyectos %}
-                    {{ proyectos.0.nombre_proyecto }}
-                {% else %}
-                    Chat de Proyecto
-                {% endif %}
-            </h2>
-            <p>Admin: <strong>{{ admin_nombre }}</strong></p>
+
+            <div class="header-info">
+
+                <div class="user-avatar">
+                    {{ admin_nombre|slice:":1" }}
+                </div>
+
+                <div class="user-details">
+
+                    <h2 id="currentProjectTitle">
+                        {% if proyectos %}
+                            {{ proyectos.0.nombre_proyecto }}
+                        {% else %}
+                            Chat de Proyecto
+                        {% endif %}
+                    </h2>
+
+                    <p>
+                        Admin:
+                        <strong>{{ admin_nombre }}</strong>
+                        •
+                        <span class="status-online">En línea</span>
+                    </p>
+
+                </div>
+
+            </div>
+
         </header>
 
+        <!-- MENSAJES -->
         <div id="chatUsuarioMessages" class="chat-user-messages">
-            <p class="chat-user-placeholder">Cargando mensajes...</p>
+
+            <p class="chat-user-placeholder">
+                Cargando mensajes...
+            </p>
+
         </div>
 
+        <!-- PREVIEW -->
+        <div id="chatUsuarioPreview"
+             class="chat-user-attach-preview"
+             hidden>
+        </div>
+
+        <!-- FORM -->
         <form id="chatUsuarioForm" class="chat-user-form">
-            <div class="chat-actions-left" style="display: flex; gap: 8px;">
-                <button type="button" id="emojiUsuarioBtn" class="chat-tool-btn" title="Emojis">😊</button>
-                <label id="chatUsuarioFileLabel" for="chatUsuarioFile" class="chat-tool-btn" title="Adjuntar archivo">📎</label>
-                <input id="chatUsuarioFile" type="file" style="display: none;">
+
+            <div class="input-container">
+
+                <div class="chat-actions-left">
+
+                    <button type="button"
+                            id="emojiUsuarioBtn"
+                            class="chat-tool-btn">
+                        😊
+                    </button>
+
+                    <label for="chatUsuarioFile"
+                           class="chat-tool-btn">
+                        📎
+                    </label>
+
+                    <input id="chatUsuarioFile"
+                           type="file"
+                           hidden>
+
+                </div>
+
+                <textarea id="chatUsuarioInput"
+                          rows="1"
+                          maxlength="800"
+                          placeholder="Escribe un mensaje..."></textarea>
+
+                <button type="submit" class="send-btn">
+
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                    </svg>
+
+                </button>
+
             </div>
 
-            <textarea id="chatUsuarioInput"
-                      placeholder="Escribe tu mensaje..."
-                      maxlength="800"
-                      rows="1"></textarea>
+            <!-- EMOJIS -->
+            <div id="emojiUsuarioPicker"
+                 class="chat-user-emoji"
+                 style="display:none;">
 
-            <button type="submit">Enviar</button>
+                <button type="button">😀</button>
+                <button type="button">😂</button>
+                <button type="button">😍</button>
+                <button type="button">🔥</button>
+                <button type="button">👍</button>
+                <button type="button">🚀</button>
 
-            <div id="emojiUsuarioPicker" class="chat-user-emoji" style="position: absolute; bottom: 85px; left: 24px; background: white; padding: 10px; border-radius: 12px; box-shadow: var(--p-shadow-xl); z-index: 100;" hidden>
-                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">😀</button>
-                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">😂</button>
-                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">😍</button>
-                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">🔥</button>
-                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">👍</button>
-                <button type="button" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">🚀</button>
             </div>
+
         </form>
 
-        <div id="chatUsuarioPreview" class="chat-user-attach-preview" hidden></div>
+        <!-- MODAL EDITAR -->
+        <div id="modalEditUsuario" class="chat-m-overlay">
 
-        <!-- MODALES PREMIUM (IDENTICAL TO ADMIN) -->
-        <div id="modalEditUsuario" class="chat-m-overlay" hidden>
             <div class="chat-m-content">
-                <h3>Editar Mensaje</h3>
-                <textarea id="editUsuarioInput" rows="4"></textarea>
+
+                <h3>Editar mensaje</h3>
+
+                <textarea id="editUsuarioInput"
+                          rows="4"></textarea>
+
                 <div class="chat-m-actions">
-                    <button type="button" class="chat-m-btn-cancel" onclick="closeEditModal()">Cancelar</button>
-                    <button type="button" class="chat-m-btn-save" onclick="saveEditMessage()">Guardar Cambios</button>
+
+                    <button type="button"
+                            class="chat-m-btn-cancel"
+                            onclick="closeEditModal()">
+                        Cancelar
+                    </button>
+
+                    <button type="button"
+                            class="chat-m-btn-save"
+                            onclick="saveEditMessage()">
+                        Guardar cambios
+                    </button>
+
                 </div>
+
             </div>
+
         </div>
 
-        <div id="modalDeleteUsuario" class="chat-m-overlay" hidden>
+        <!-- MODAL ELIMINAR -->
+        <div id="modalDeleteUsuario" class="chat-m-overlay">
+
             <div class="chat-m-content">
-                <h3>Confirmar eliminación</h3>
-                <p>El mensaje será reemplazado por un aviso de eliminación de forma permanente.</p>
+
+                <h3>Eliminar mensaje</h3>
+
+                <p>
+                    ¿Seguro que deseas eliminar este mensaje?
+                </p>
+
                 <div class="chat-m-actions">
-                    <button type="button" class="chat-m-btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
-                    <button type="button" class="chat-m-btn-delete" onclick="confirmDeleteMessage()">Eliminar permanentemente</button>
+
+                    <button type="button"
+                            class="chat-m-btn-cancel"
+                            onclick="closeDeleteModal()">
+                        Volver
+                    </button>
+
+                    <button type="button"
+                            class="chat-m-btn-delete"
+                            onclick="confirmDeleteMessage()">
+                        Eliminar
+                    </button>
+
                 </div>
+
             </div>
+
         </div>
+
     </section>
 </main>
 
-<script src="{% static 'js/chat_usuario.js' %}?v=3.0"></script>
+<script>
+/* ===== EMOJIS ===== */
+const emojiBtn = document.getElementById("emojiUsuarioBtn");
+const emojiPicker = document.getElementById("emojiUsuarioPicker");
+const textarea = document.getElementById("chatUsuarioInput");
+
+emojiBtn.addEventListener("click", () => {
+
+    if(emojiPicker.style.display === "flex"){
+        emojiPicker.style.display = "none";
+    }else{
+        emojiPicker.style.display = "flex";
+    }
+
+});
+
+emojiPicker.querySelectorAll("button").forEach(btn => {
+
+    btn.addEventListener("click", () => {
+
+        textarea.value += btn.textContent;
+        textarea.focus();
+
+    });
+
+});
+
+/* ===== MODALES ===== */
+function openEditModal(){
+
+    document
+        .getElementById("modalEditUsuario")
+        .classList.add("active");
+
+}
+
+function closeEditModal(){
+
+    document
+        .getElementById("modalEditUsuario")
+        .classList.remove("active");
+
+}
+
+function openDeleteModal(){
+
+    document
+        .getElementById("modalDeleteUsuario")
+        .classList.add("active");
+
+}
+
+function closeDeleteModal(){
+
+    document
+        .getElementById("modalDeleteUsuario")
+        .classList.remove("active");
+
+}
+
+/* CERRAR AL DAR CLICK FUERA */
+document.querySelectorAll(".chat-m-overlay").forEach(modal => {
+
+    modal.addEventListener("click", function(e){
+
+        if(e.target === modal){
+            modal.classList.remove("active");
+        }
+
+    });
+
+});
+</script>
+
+<script src="{% static 'js/chat_usuario.js' %}?v=5.0"></script>
+
 {% endblock %}

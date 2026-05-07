@@ -2,179 +2,566 @@
 {% load static %}
 
 {% block content %}
-<div style="padding: 20px;">
-    <h2 style="margin: 0 0 8px;">Biblioteca / Recursos</h2>
-    <p style="margin: 0 0 18px; color:#64748b;">Sube plantillas y guías para emprendedores (PDF, DOCX, XLSX, etc.).</p>
+<!-- Iconos Profesionales (Lucide) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+    :root {
+        --primary: #142d63;
+        --primary-light: #1e3a7a;
+        --secondary: #64748b;
+        --border: #e2e8f0;
+        --success: #10b981;
+        --danger: #dc2626;
+        --warning: #f59e0b;
+        --info: #3b82f6;
+        --white: #ffffff;
+        --bg-body: #f8fafc;
+        --radius: 12px;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Contenedor Principal */
+    .biblioteca-wrapper {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Títulos Respetados */
+    .page-title {
+        margin: 0 0 8px;
+        font-weight: 700;
+        color: #1e293b; /* Color oscuro profesional */
+    }
+
+    .page-subtitle {
+        margin: 0 0 24px;
+        color: var(--secondary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+    }
+
+    /* Grid Responsivo */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr; /* Desktop default */
+        gap: 24px;
+        align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Tarjetas (Cards) */
+    .card-panel {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        box-shadow: var(--shadow);
+    }
+
+    .card-title {
+        margin: 0 0 20px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Formularios Profesionales */
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        color: #334155;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: var(--transition);
+        outline: none;
+    }
+
+    .form-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(20, 45, 99, 0.1);
+    }
+
+    /* Contenedor de Checkboxes Mejorado */
+    .checkbox-container {
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        max-height: 160px;
+        overflow-y: auto;
+        background: #fdfdfd;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        color: #475569;
+        transition: var(--transition);
+    }
+
+    .checkbox-item:hover { color: var(--primary); }
+
+    /* Botones Profesionales */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: var(--white);
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(20, 45, 99, 0.2);
+    }
+
+    /* Botones de acción pequeña */
+    .btn-icon-text {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        background: transparent;
+        border-radius: 6px;
+    }
+
+    .btn-edit { color: var(--info); }
+    .btn-edit:hover { background: #eff6ff; }
+    
+    .btn-delete { color: var(--danger); }
+    .btn-delete:hover { background: #fef2f2; }
+
+    .btn-download { color: var(--primary); }
+    .btn-download:hover { background: #f1f5f9; }
+
+    /* Listado de Recursos */
+    .recurso-item {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        transition: var(--transition);
+    }
+
+    .recurso-item:hover {
+        border-color: var(--primary);
+        background: #fafbfc;
+    }
+
+    .recurso-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .recurso-info {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+    }
+
+    .badge {
+        background: #f1f5f9;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--secondary);
+    }
+
+    /* Modal - Reparado (Oculto por defecto con display none) */
+    #modalEditar {
+        display: none; 
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .modal-content {
+        background: var(--white);
+        border-radius: var(--radius);
+        width: 100%;
+        max-width: 550px;
+        padding: 28px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        animation: modalScale 0.3s ease-out;
+    }
+
+    @keyframes modalScale {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Alert Estilos */
+    .alerta {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .alerta.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .alerta.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+</style>
+
+<div class="biblioteca-wrapper">
+    <h2 class="page-title">Biblioteca / Recursos</h2>
+    <p class="page-subtitle">
+        <i data-lucide="info" size="18"></i> 
+        Sube plantillas y guías para emprendedores en formato PDF, DOCX o XLSX.
+    </p>
 
     {% if messages %}
         {% for message in messages %}
-            <div class="alerta {{ message.tags }}">{{ message }}</div>
+            <div class="alerta {{ message.tags }}">
+                <i data-lucide="bell"></i> {{ message }}
+            </div>
         {% endfor %}
     {% endif %}
 
-    <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 18px; align-items:start;">
-        <form method="POST" enctype="multipart/form-data" style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:16px;">
-            {% csrf_token %}
-            <input type="hidden" name="accion" value="subir_recurso">
+    <div class="main-grid">
+        <!-- Columna Formulario -->
+        <div class="card-panel">
+            <h3 class="card-title"><i data-lucide="plus-circle" style="color: var(--primary)"></i> Nuevo Recurso</h3>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="subir_recurso">
 
-            <label style="display:block; font-weight:700; margin-bottom:6px;">Título</label>
-            <input name="titulo" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; margin-bottom:12px;">
+                <div class="form-group">
+                    <label class="form-label">Título del recurso</label>
+                    <input name="titulo" required class="form-input" placeholder="Ej: Guía de Costos">
+                </div>
 
-            <label style="display:block; font-weight:700; margin-bottom:6px;">Descripción (opcional)</label>
-            <textarea name="descripcion" rows="3" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; margin-bottom:12px;"></textarea>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea name="descripcion" rows="3" class="form-input" placeholder="¿De qué trata este archivo?"></textarea>
+                </div>
 
-            <label style="display:block; font-weight:700; margin-bottom:6px;">Categoría (opcional)</label>
-            <input name="categoria" placeholder="Ej: Finanzas, Modelo de Negocio" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; margin-bottom:12px;">
+                <div class="form-group">
+                    <label class="form-label">Categoría</label>
+                    <input name="categoria" class="form-input" placeholder="Marketing, Finanzas...">
+                </div>
 
-            <label style="display:block; font-weight:700; margin-bottom:6px;">Visibilidad por Carrera</label>
-            <div style="margin-bottom:12px; max-height: 150px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px;">
-                <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:14px; cursor:pointer;">
-                    <input type="checkbox" id="checkTodas" onchange="toggleTodas(this)"> <strong>Todas</strong>
-                </label>
-                {% for c in carreras_disponibles %}
-                <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:14px; cursor:pointer;">
-                    <input type="checkbox" name="carreras" value="{{ c }}" class="checkCarrera"> {{ c }}
-                </label>
-                {% endfor %}
-            </div>
+                <div class="form-group">
+                    <label class="form-label">Visible para:</label>
+                    <div class="checkbox-container">
+                        <label class="checkbox-item" style="font-weight: 700; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; margin-bottom: 10px;">
+                            <input type="checkbox" id="checkTodas" onchange="toggleTodas(this)"> Seleccionar Todas
+                        </label>
+                        {% for c in carreras_disponibles %}
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="carreras" value="{{ c }}" class="checkCarrera"> {{ c }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
 
-            <label style="display:block; font-weight:700; margin-bottom:6px;">Archivo</label>
-            <input type="file" name="archivo" required style="width:100%; margin-bottom:14px;">
+                <div class="form-group">
+                    <label class="form-label">Seleccionar Archivo</label>
+                    <input type="file" name="archivo" required class="form-input" style="padding: 8px;">
+                </div>
 
-            <button type="submit" class="btn" style="padding:10px 14px;">Subir recurso</button>
-        </form>
+                <button type="submit" class="btn-action btn-primary" style="width: 100%;">
+                    <i data-lucide="upload-cloud"></i> Subir a la Biblioteca
+                </button>
+            </form>
+        </div>
 
-        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:16px;">
-            <h3 style="margin: 0 0 10px;">Recursos publicados</h3>
+        <!-- Columna Listado -->
+        <div class="card-panel">
+            <h3 class="card-title"><i data-lucide="folder-search" style="color: var(--primary)"></i> Recursos Publicados</h3>
+            
             {% if recursos %}
-                <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display: flex; flex-direction: column;">
                     {% for r in recursos %}
-                        <div id="recurso-{{ r.id }}" style="border:1px solid #e2e8f0; border-radius:12px; padding:12px;">
-                            <div style="display:flex; justify-content:space-between; gap:10px;">
-                                <div style="font-weight:800;" id="titulo-{{ r.id }}">{{ r.titulo }}</div>
-                                <div style="font-size:12px; color:#94a3b8;">{{ r.fecha|default:"" }}</div>
+                        <div class="recurso-item" id="recurso-{{ r.id }}">
+                            <div class="recurso-header">
+                                <div style="font-weight: 700; color: #1e293b; font-size: 1.05rem;" id="titulo-{{ r.id }}">
+                                    {{ r.titulo }}
+                                </div>
+                                <span style="font-size: 0.75rem; color: var(--secondary);">{{ r.fecha|default:"" }}</span>
                             </div>
-                            <div id="desc-{{ r.id }}" style="margin-top:6px; color:#475569; font-size:14px;">{{ r.descripcion }}</div>
-                            <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                                {% if r.categoria %}<span id="cat-{{ r.id }}" style="font-size:12px; background:#f1f5f9; padding:4px 8px; border-radius:999px;">{{ r.categoria }}</span>{% endif %}
-                                <span style="font-size:11px; color:#64748b;">Carreras: <strong id="carreras-label-{{ r.id }}">{{ r.carreras_label }}</strong></span>
-                                <div style="flex-grow:1;"></div>
-                                <a href="{% url 'recurso_descargar_admin' r.id %}" target="_blank" rel="noopener" style="font-weight:800; color:#142d63; text-decoration:none; font-size:14px;">Descargar</a>
-                                <button onclick="prepararEdicion('{{ r.id }}', '{{ r.titulo|escapejs }}', '{{ r.descripcion|escapejs }}', '{{ r.categoria|escapejs }}', {{ r.carreras|safe }})" style="background:none; border:none; color:#2563eb; cursor:pointer; font-weight:700; font-size:14px; padding:0;">Editar</button>
-                                <button onclick="eliminarRecurso('{{ r.id }}')" style="background:none; border:none; color:#dc2626; cursor:pointer; font-weight:700; font-size:14px; padding:0;">Eliminar</button>
+                            
+                            <div id="desc-{{ r.id }}" style="color: #475569; font-size: 0.9rem; line-height: 1.5;">
+                                {{ r.descripcion }}
+                            </div>
+
+                            <div class="recurso-info">
+                                {% if r.categoria %}
+                                    <span class="badge" id="cat-{{ r.id }}"><i data-lucide="tag" size="12" style="vertical-align: middle; margin-right: 3px;"></i> {{ r.categoria }}</span>
+                                {% endif %}
+                                <span style="font-size: 0.8rem; color: var(--secondary);">
+                                    <i data-lucide="users" size="14"></i> <strong id="carreras-label-{{ r.id }}">{{ r.carreras_label }}</strong>
+                                </span>
+
+                                <div style="flex-grow: 1;"></div>
+
+                                <div style="display: flex; gap: 5px;">
+                                    <a href="{% url 'recurso_descargar_admin' r.id %}" class="btn-action btn-icon-text btn-download" title="Descargar">
+                                        <i data-lucide="download" size="18"></i>
+                                    </a>
+                                    <button onclick="prepararEdicion('{{ r.id }}', '{{ r.titulo|escapejs }}', '{{ r.descripcion|escapejs }}', '{{ r.categoria|escapejs }}', {{ r.carreras|safe }})" class="btn-action btn-icon-text btn-edit" title="Editar">
+                                        <i data-lucide="edit-2" size="18"></i>
+                                    </button>
+                                    <button onclick="eliminarRecurso('{{ r.id }}')" class="btn-action btn-icon-text btn-delete" title="Eliminar">
+                                        <i data-lucide="trash-2" size="18"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div style="color:#64748b;">Aún no hay recursos.</div>
+                <div style="text-align: center; padding: 40px; color: var(--secondary);">
+                    <i data-lucide="folder-off" size="48" style="opacity: 0.2; margin-bottom: 10px;"></i>
+                    <p>Aún no has subido recursos a la biblioteca.</p>
+                </div>
             {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Modal para Editar -->
-<div id="modalEditar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; padding:20px;">
-    <div style="background:#fff; border-radius:14px; padding:24px; max-width:500px; width:100%; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
-        <h3 style="margin:0 0 16px;">Editar Recurso</h3>
-        <input type="hidden" id="editId">
-        
-        <label style="display:block; font-weight:700; margin-bottom:4px;">Título</label>
-        <input id="editTitulo" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:12px;">
-
-        <label style="display:block; font-weight:700; margin-bottom:4px;">Descripción</label>
-        <textarea id="editDesc" rows="3" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:12px;"></textarea>
-
-        <label style="display:block; font-weight:700; margin-bottom:4px;">Categoría</label>
-        <input id="editCat" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:12px;">
-
-        <label style="display:block; font-weight:700; margin-bottom:4px;">Carreras</label>
-        <div style="margin-bottom:16px; max-height:120px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:8px; padding:8px;">
-            <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:13px; cursor:pointer;">
-                <input type="checkbox" id="editCheckTodas" onchange="toggleTodasEdit(this)"> <strong>Todas</strong>
-            </label>
-            {% for c in carreras_disponibles %}
-            <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:13px; cursor:pointer;">
-                <input type="checkbox" value="{{ c }}" class="editCheckCarrera"> {{ c }}
-            </label>
-            {% endfor %}
+<!-- Modal de Edición -->
+<div id="modalEditar">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="margin: 0; font-weight: 700;"><i data-lucide="edit" style="color: var(--primary); vertical-align: middle; margin-right: 8px;"></i>Editar Recurso</h3>
+            <button onclick="cerrarModal()" style="background: none; border: none; cursor: pointer; color: var(--secondary);"><i data-lucide="x"></i></button>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="cerrarModal()" style="padding:8px 14px; background:#f1f5f9; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Cancelar</button>
-            <button onclick="guardarEdicion()" style="padding:8px 14px; background:#142d63; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Guardar cambios</button>
+        <input type="hidden" id="editId">
+        
+        <div class="form-group">
+            <label class="form-label">Título</label>
+            <input id="editTitulo" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <textarea id="editDesc" rows="3" class="form-input"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Categoría</label>
+            <input id="editCat" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Cambiar Carreras con Acceso</label>
+            <div class="checkbox-container">
+                <label class="checkbox-item" style="font-weight: 700;">
+                    <input type="checkbox" id="editCheckTodas" onchange="toggleTodasEdit(this)"> Todas
+                </label>
+                {% for c in carreras_disponibles %}
+                <label class="checkbox-item">
+                    <input type="checkbox" value="{{ c }}" class="editCheckCarrera"> {{ c }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+            <button onclick="cerrarModal()" class="btn-action" style="background: #f1f5f9; color: #475569;">Cancelar</button>
+            <button onclick="guardarEdicion()" class="btn-action btn-primary">Guardar Cambios</button>
         </div>
     </div>
 </div>
 
 <script>
-function toggleTodas(chk) {
-    document.querySelectorAll('.checkCarrera').forEach(c => c.checked = chk.checked);
-}
-function toggleTodasEdit(chk) {
-    document.querySelectorAll('.editCheckCarrera').forEach(c => c.checked = chk.checked);
-}
+    // Inicializar iconos
+    lucide.createIcons();
 
-function prepararEdicion(id, titulo, desc, cat, carreras) {
-    document.getElementById('editId').value = id;
-    document.getElementById('editTitulo').value = titulo;
-    document.getElementById('editDesc').value = desc;
-    document.getElementById('editCat').value = cat;
-    
-    const checks = document.querySelectorAll('.editCheckCarrera');
-    checks.forEach(c => {
-        c.checked = carreras.includes(c.value);
-    });
-    
-    document.getElementById('modalEditar').style.display = 'flex';
-}
-
-function cerrarModal() {
-    document.getElementById('modalEditar').style.display = 'none';
-}
-
-async function guardarEdicion() {
-    const id = document.getElementById('editId').value;
-    const titulo = document.getElementById('editTitulo').value;
-    const descripcion = document.getElementById('editDesc').value;
-    const categoria = document.getElementById('editCat').value;
-    const carreras = Array.from(document.querySelectorAll('.editCheckCarrera'))
-                          .filter(c => c.checked).map(c => c.value);
-
-    try {
-        const res = await fetch(`/admin_app/recursos/editar/${id}/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-            body: JSON.stringify({ titulo, descripcion, categoria, carreras })
-        });
-        const data = await res.json();
-        if (data.success) {
-            location.reload();
-        } else {
-            alert("Error: " + data.error);
-        }
-    } catch(e) {
-        alert("Error al conectar con el servidor.");
+    function toggleTodas(chk) {
+        document.querySelectorAll('.checkCarrera').forEach(c => c.checked = chk.checked);
     }
-}
-
-async function eliminarRecurso(id) {
-    if (!confirm("¿Seguro que quieres eliminar este recurso de la biblioteca?")) return;
     
-    try {
-        const res = await fetch(`/admin_app/recursos/eliminar/${id}/`, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
-        });
-        const data = await res.json();
-        if (data.success) {
-            document.getElementById(`recurso-${id}`).remove();
-        } else {
-            alert("Error: " + data.error);
-        }
-    } catch(e) {
-        alert("Error al conectar con el servidor.");
+    function toggleTodasEdit(chk) {
+        document.querySelectorAll('.editCheckCarrera').forEach(c => c.checked = chk.checked);
     }
-}
+
+    function prepararEdicion(id, titulo, desc, cat, carreras) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editTitulo').value = titulo;
+        document.getElementById('editDesc').value = desc;
+        document.getElementById('editCat').value = cat;
+        
+        const checks = document.querySelectorAll('.editCheckCarrera');
+
+        checks.forEach(c => {
+            c.checked = carreras.includes(c.value);
+        });
+        
+        // Mostrar modal
+        document.getElementById('modalEditar').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalEditar').style.display = 'none';
+    }
+
+    // Cerrar modal al hacer clic fuera
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalEditar');
+
+        if (event.target == modal) {
+            cerrarModal();
+        }
+    }
+
+    async function guardarEdicion() {
+
+        const id = document.getElementById('editId').value;
+        const titulo = document.getElementById('editTitulo').value;
+        const descripcion = document.getElementById('editDesc').value;
+        const categoria = document.getElementById('editCat').value;
+
+        const carreras = Array.from(
+            document.querySelectorAll('.editCheckCarrera')
+        )
+        .filter(c => c.checked)
+        .map(c => c.value);
+
+        try {
+
+            // CORREGIDO
+            const res = await fetch(`/admin/recursos/editar/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    titulo,
+                    descripcion,
+                    categoria,
+                    carreras
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+
+                location.reload();
+
+            } else {
+
+                alert("Error: " + data.error);
+
+            }
+
+        } catch(e) {
+
+            console.error(e);
+            alert("Error al conectar con el servidor.");
+
+        }
+    }
+
+    async function eliminarRecurso(id) {
+
+        if (!confirm("¿Seguro que quieres eliminar este recurso permanentemente?")) {
+            return;
+        }
+
+        const item = document.getElementById(`recurso-${id}`);
+
+        item.style.opacity = '0.4';
+
+        try {
+
+            // CORREGIDO
+            const res = await fetch(`/admin/recursos/eliminar/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+
+                item.style.transform = 'translateX(50px)';
+                item.style.opacity = '0';
+
+                setTimeout(() => {
+                    item.remove();
+                }, 300);
+
+            } else {
+
+                item.style.opacity = '1';
+                alert("Error: " + data.error);
+
+            }
+
+        } catch(e) {
+
+            console.error(e);
+
+            item.style.opacity = '1';
+
+            alert("Error al conectar con el servidor.");
+
+        }
+    }
 </script>
 {% endblock %}

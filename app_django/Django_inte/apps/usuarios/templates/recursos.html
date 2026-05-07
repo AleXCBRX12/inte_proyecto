@@ -1,33 +1,261 @@
 {% extends "portal_publico.html" %}
 {% load static %}
 
-{% block title %}Biblioteca{% endblock %}
+{% block title %}Biblioteca Corporativa{% endblock %}
 
 {% block content %}
-<div style="max-width: 980px; margin: 110px auto 40px; padding: 0 18px;">
-    <h2 style="margin:0;">Biblioteca</h2>
-    <p style="margin:6px 0 18px; color:#64748b;">Plantillas, guías y materiales para avanzar más rápido.</p>
+<!-- Iconos de alta calidad -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+    /* Reseteo y Tipografía solicitada */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    :root {
+        --azul: #1f3c88;
+        --azul-accent: #2563eb;
+        --azul-vibrant: #3b82f6;
+        --navy-900: #0f172a;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-500: #64748b;
+        --slate-900: #1e293b;
+        --blanco: #ffffff;
+        --rojo: #ef4444;
+        --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+        background-color: var(--slate-50);
+    }
+
+    .main-container {
+        max-width: 1100px;
+        margin: 120px auto 60px;
+        padding: 0 24px;
+    }
+
+    /* Header Estilizado */
+    .section-header {
+        margin-bottom: 40px;
+        position: relative;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .section-header h2 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--navy-900);
+        letter-spacing: -0.025em;
+        margin-bottom: 8px;
+    }
+
+    .section-header p {
+        color: var(--slate-500);
+        font-size: 1.1rem;
+        max-width: 600px;
+    }
+
+    /* Grid Layout */
+    .recursos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+
+    /* Card Pro */
+    .recurso-card {
+        background: var(--blanco);
+        border: 1px solid var(--slate-200);
+        border-radius: 20px;
+        padding: 28px;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        animation: slideUp 0.6s ease-out both;
+    }
+
+    .recurso-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--azul-vibrant);
+    }
+
+    /* Icono de recurso */
+    .icon-wrapper {
+        width: 48px;
+        height: 48px;
+        background: var(--slate-100);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--azul);
+        margin-bottom: 20px;
+        transition: background 0.3s;
+    }
+
+    .recurso-card:hover .icon-wrapper {
+        background: var(--azul-vibrant);
+        color: var(--blanco);
+    }
+
+    .card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .recurso-titulo {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--slate-900);
+        line-height: 1.2;
+    }
+
+    .recurso-fecha {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--slate-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .recurso-desc {
+        color: var(--slate-500);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 24px;
+        flex-grow: 1;
+    }
+
+    /* Footer de la Card */
+    .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 20px;
+        border-top: 1px solid var(--slate-100);
+    }
+
+    .categoria-tag {
+        background: var(--slate-100);
+        color: var(--navy-900);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-descargar {
+        color: var(--azul);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.2s;
+    }
+
+    .btn-descargar:hover {
+        color: var(--azul-accent);
+    }
+
+    /* Empty State */
+    .empty-container {
+        padding: 80px 40px;
+        background: var(--blanco);
+        border: 2px dashed var(--slate-200);
+        border-radius: 24px;
+        text-align: center;
+        color: var(--slate-500);
+    }
+
+    /* Animaciones */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Staggered animation para las cards */
+    .recurso-card:nth-child(1) { animation-delay: 0.1s; }
+    .recurso-card:nth-child(2) { animation-delay: 0.2s; }
+    .recurso-card:nth-child(3) { animation-delay: 0.3s; }
+</style>
+
+<div class="main-container">
+    <header class="section-header">
+        <h2>Biblioteca de Recursos</h2>
+        <p>Accede a herramientas, guías y documentación técnica diseñada para acelerar tus resultados.</p>
+    </header>
 
     {% if recursos %}
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+        <div class="recursos-grid">
             {% for r in recursos %}
-            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:14px;">
-                <div style="display:flex; justify-content:space-between; gap:10px;">
-                    <div style="font-weight:800;">{{ r.titulo }}</div>
-                    <div style="font-size:12px; color:#94a3b8;">{{ r.fecha|default:"" }}</div>
+            <div class="recurso-card">
+                <div class="icon-wrapper">
+                    <i data-lucide="file-text" stroke-width="2"></i>
                 </div>
-                {% if r.descripcion %}<div style="margin-top:8px; color:#475569;">{{ r.descripcion }}</div>{% endif %}
-                <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
-                    {% if r.categoria %}<span style="font-size:12px; background:#f1f5f9; padding:4px 8px; border-radius:999px;">{{ r.categoria }}</span>{% endif %}
-                    <a href="{% url 'recurso_descargar_usuario' r.id %}" style="font-weight:800; color:#1f3c88; text-decoration:none;">Descargar</a>
+
+                <div class="card-head">
+                    <div class="recurso-titulo">{{ r.titulo }}</div>
+                    <div class="recurso-fecha">{{ r.fecha|date:"M Y"|default:"" }}</div>
+                </div>
+
+                <p class="recurso-desc">
+                    {% if r.descripcion %}
+                        {{ r.descripcion }}
+                    {% else %}
+                        Explora este recurso detallado para optimizar tus flujos de trabajo actuales.
+                    {% endif %}
+                </p>
+
+                <div class="card-footer">
+                    {% if r.categoria %}
+                    <span class="categoria-tag">
+                        <i data-lucide="tag" style="width: 14px; height: 14px;"></i>
+                        {{ r.categoria }}
+                    </span>
+                    {% endif %}
+                    
+                    <a href="{% url 'recurso_descargar_usuario' r.id %}" class="btn-descargar">
+                        <span>Descargar</span>
+                        <i data-lucide="arrow-right-circle" style="width: 18px; height: 18px;"></i>
+                    </a>
                 </div>
             </div>
             {% endfor %}
         </div>
     {% else %}
-        <div style="padding: 18px; background:#fff; border:1px solid #e2e8f0; border-radius:14px; color:#64748b;">
-            No hay recursos disponibles todavía.
+        <div class="empty-container">
+            <i data-lucide="folder-search" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4;"></i>
+            <h3>No hay recursos disponibles</h3>
+            <p>Estamos preparando nuevo material. Por favor, vuelve más tarde.</p>
         </div>
     {% endif %}
 </div>
+
+<script>
+    // Inicializar iconos de Lucide
+    lucide.createIcons();
+</script>
 {% endblock %}

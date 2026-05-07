@@ -2059,22 +2059,6 @@ def eliminar_admin(request, id):
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
 
-def lista_admins_api(request):
-    admins_cursor = db.usuarios.find(
-        {"rol_id": {"$in": ADMIN_ROLE_IDS}},
-        {"nombre": 1, "correo": 1, "contrasena": 1, "activo": 1}
-    ).sort("fecha_creacion", -1)
-
-    lista_admins = [{
-        "id": str(a.get("_id")),
-        "nombre": a.get("nombre", ""),
-        "correo": a.get("correo", ""),
-        "password": a.get("contrasena", ""),
-        "bloqueado": not a.get("activo", True)
-    } for a in admins_cursor]
-
-    return JsonResponse(lista_admins, safe=False)
-
 
 # =========================
 # PROYECTOS
@@ -2781,7 +2765,7 @@ def recursos_admin(request):
             "file_id": str(file_id),
             "filename": getattr(archivo, "name", "recurso"),
             "content_type": getattr(archivo, "content_type", "application/octet-stream"),
-            "uploaded_at": datetime.now(timezone.utc),
+            "uploaded_at": timezone.now(),
             "uploaded_by": str(request.session.get("usuario_id") or "admin"),
         })
         messages.success(request, "Recurso subido correctamente.")
@@ -2793,7 +2777,7 @@ def recursos_admin(request):
         fecha_str = ""
         if isinstance(fecha, datetime):
             try:
-                fecha_str = fecha.astimezone(timezone.utc).strftime("%d/%m/%Y %H:%M")
+                fecha_str = timezone.localtime(fecha).strftime("%d/%m/%Y %H:%M")
             except Exception:
                 fecha_str = fecha.strftime("%d/%m/%Y %H:%M")
         
@@ -2911,6 +2895,10 @@ def recurso_descargar_admin(request, id):
     resp = HttpResponse(blob, content_type=tipo)
     resp["Content-Disposition"] = 'attachment; filename="%s"' % nombre
     return resp
+
+# ========================================
+# CALENDARIO (ADMIN)
+# ========================================
 def calendario_admin(request):
     guard = _require_admin(request)
     if guard:
